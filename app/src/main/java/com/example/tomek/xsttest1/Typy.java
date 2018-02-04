@@ -1,0 +1,29 @@
+package com.example.tomek.xsttest1;
+
+/**
+ * Created by Tomek on 2017-10-19.
+ */
+
+public class Typy {
+    public static final String URL_PROTOCOL = "http";
+    public static final String URL_API = URL_PROTOCOL + "://api.xs-team.pl/index.php/";
+    public static final String URL_AVATAR = URL_PROTOCOL + "://xs-team.pl/images/avatars/";
+    public static final String API_MSG_GET = URL_API + "msg/get";
+    public static final String API_MSG_SEND = URL_API + "msg/send";
+    public static final String TAG_GET_MSG = "getmsg";
+    public static final String TAG_SEND_MSG = "sendmsg";
+    public static final String BROADCAST_INTERNET_OK = "jest_net";
+    public static final String BROADCAST_ONLINE = "online_change";
+    public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
+    public static final String PREFS_NAME = "xstprefs";
+    public static final String PREFS_API_KEY = "pak";
+    public static final String PREFS_LOGIN = "pl";
+    public static final String PREFS_NICNKAME = "pn";
+    public static final String API_ZALOGUJ = URL_API + "user/login";
+    public static final Object TAG_ZALOGUJ = "zaloguj";
+    public static final String PREFS_AVATAR = "avatar";
+    public static final String PREFS_LAST_DATE = "lastdate";
+    public static final String PREFS_MSGS = "msgs";
+    public static final String PREFS_ONLINE = "onlineitems";
+    public static final String PREFS_THEME = "theme";
+}

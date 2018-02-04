@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/message_padding_start"
+    android:paddingTop="@dimen/message_padding_top"
+    android:paddingRight="@dimen/message_padding_right"
+    android:paddingEnd="@dimen/message_padding_end"
+    android:background="?attr/msgBackground"
+    >
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/v_avatar"
+        android:layout_width="@dimen/avatar_width"
+        android:layout_height="@dimen/avatar_height"/>
+
+    <TextView
+        android:id="@+id/v_nick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/v_avatar"
+        android:paddingLeft="5sp"
+        android:text="Nick"
+        android:textColor="?attr/nickColor"
+        android:textSize="17sp" />
+
+    <TextView
+        android:id="@+id/statusOnline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:textColor="?attr/onlineTextColor"
+        android:paddingRight="5sp"
+        android:text="Online" />
+
+</RelativeLayout>

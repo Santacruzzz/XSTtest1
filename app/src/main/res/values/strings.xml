@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">XST Shoutbox</string>
+    <string name="login">Login</string>
+    <string name="zaloguj">Zaloguj</string>
+    <string name="tresc_wiad">Treść</string>
+    <string name="wyslij">Wyślij</string>
+    <string name="haslo">Hasło</string>
+    <string name="ab_opened">opened</string>
+    <string name="ab_closed">closed</string>
+</resources>

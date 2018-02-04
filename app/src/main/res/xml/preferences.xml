@@ -1,0 +1,34 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Aktualizacje">
+
+        <CheckBoxPreference
+            android:key="automatyczne_aktualizacje"
+            android:title="Automatyczne aktualizacje"
+            android:summary="Czy apka XST ma sama sprawdzać czy jest aktualna?" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Powiadomienia">
+
+        <CheckBoxPreference
+            android:key="pokazuj_powidomienia"
+            android:title="Pokazuj powiadomienia"
+            android:defaultValue="true"
+            android:summary="Czy apka XST ma sama sprawdzać czy jest aktualna?" />
+
+        <!-- ListPreference
+            android:key="list_preference"
+            android:title="@string/title_list_preference"
+            android:summary="@string/summary_list_preference"
+            android:entries="@array/entries_list_preference"
+            android:entryValues="@array/entryvalues_list_preference"
+            android:dialogTitle="@string/dialog_title_list_preference" / -->
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

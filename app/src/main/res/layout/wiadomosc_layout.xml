@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/message_padding_start"
+    android:paddingTop="@dimen/message_padding_top"
+    android:paddingRight="@dimen/message_padding_right"
+    android:paddingEnd="@dimen/message_padding_end"
+    android:id="@+id/layoutWiadomosc"
+    android:background="?attr/msgBackground"
+    android:drawSelectorOnTop="true"
+    >
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/v_avatar"
+        android:layout_width="@dimen/avatar_width"
+        android:layout_height="@dimen/avatar_height"/>
+
+    <TextView
+        android:id="@+id/v_nick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/v_avatar"
+        android:textColor="?attr/nickColor"
+        android:textSize="17sp"
+        android:paddingLeft="5sp"
+        android:text="Nick" />
+
+    <TextView
+        android:id="@+id/v_wiadomosc"
+        android:textColor="?attr/msgColor"
+        android:textSize="14sp"
+        android:autoLink="web"
+        android:paddingHorizontal="5sp"
+        android:paddingVertical="3sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/v_nick"
+        android:layout_toRightOf="@+id/v_avatar"
+        android:text="wiadomosc blebleblelbelbleblel" />
+
+    <TextView
+        android:id="@+id/v_data"
+        android:textColor="?attr/offlineTextColor"
+        android:text="13.07.2017"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:id="@+id/v_lajki"
+        android:text="3"
+        android:paddingEnd="5dp"
+        android:textColor="#3c71ec"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/v_lajk_ikona" />
+
+    <ImageView
+        android:id="@+id/v_lajk_ikona"
+        android:src="@drawable/like"
+        android:paddingEnd="5dp"
+        android:layout_toLeftOf="@id/v_data"
+        android:layout_width="@dimen/lajk_height"
+        android:layout_height="@dimen/lajk_height" />
+</RelativeLayout>

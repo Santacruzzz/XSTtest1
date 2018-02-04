@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="menuArray">
+        <item>Shoutbox</item>
+        <item>Online</item>
+        <item>Forum</item>
+        <item>Ustawienia</item>
+    </array>
+</resources>
