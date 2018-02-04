@@ -95,10 +95,8 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         if (pozycja % 2 == 0) {
             layWiadomosc.setBackgroundResource(mBgResourceID_even);
-//            layWiadomosc.setBackgroundColor(Color.RED);
         } else {
             layWiadomosc.setBackgroundResource(mBgResourceID_odd);
-//            layWiadomosc.setBackgroundColor(Color.BLUE);
         }
 
         if (imageLoader == null) {
@@ -107,7 +105,6 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         NetworkImageView avatar = row.findViewById(R.id.v_avatar);
         avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
-        Log.i("xst", mWiadomosc.getAvatar());
 
         autor.setText(mWiadomosc.getAutor());
         String obr = "";
@@ -128,7 +125,6 @@ public class AdapterWiadomosci extends BaseAdapter {
 
 
         wiadomosc.setText(str_wiadomosc);
-//        wiadomosc.setLinksClickable(false);
         data.setText(mWiadomosc.getData());
         lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
         if (mWiadomosc.getLajki() < 1) {

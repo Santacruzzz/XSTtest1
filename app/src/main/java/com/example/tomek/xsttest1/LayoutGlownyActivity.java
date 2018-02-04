@@ -72,6 +72,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     private String mNickname;
     private String mAvatar;
     private String mTheme;
+    private String mAktualnyWidok;
 
     private boolean mPozwolNaZmianeStylu;
 
@@ -88,6 +89,16 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAktualnyWidok = "shoutbox";
+        if (savedInstanceState != null) {
+            String l_aktualnyWidok = savedInstanceState.getString("mAktualnyWidok");
+            if (l_aktualnyWidok != null) {
+                if (l_aktualnyWidok.length() > 0) {
+                    mAktualnyWidok = l_aktualnyWidok;
+                }
+            }
+        }
 
         mSharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
         mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
@@ -253,6 +264,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         HashMap<String, String> params = new HashMap<>();
         params.put("key", mApiKey);
         params.put("msg", wiadomosc);
+        params.put("msg-base64", Utils.zakodujWiadomosc(wiadomosc));
         JSONObject request = new JSONObject(params);
 
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_SEND, request, new Response.Listener<JSONObject>() {

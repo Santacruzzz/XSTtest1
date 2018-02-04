@@ -70,7 +70,6 @@ public class FragmentSb extends Fragment implements View.OnClickListener {
     }
 
     public void odswiezWiadomosci(ArrayList<Wiadomosc> nowe) {
-        // Log.i("xst", "-FRAGMENT: odswiezam: " + nowe.size());
             arrayWiadomosci.clear();
             arrayWiadomosci.addAll(nowe);
         if (adapterWiadomosci != null) {
@@ -99,6 +98,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener {
     }
 
     public void wyslano_wiadomosc(boolean success) {
+        mBtnSend.setEnabled(true);
         if (success) {
             mWiadomosc.setText("");
         }
@@ -107,6 +107,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener {
     private void wyslij_wiadomosc() {
         String wiadomosc = mWiadomosc.getText().toString();
         if (wiadomosc.length() > 0) {
+            mBtnSend.setEnabled(false);
             mImain.wyslij_wiadomosc(wiadomosc);
         }
     }
