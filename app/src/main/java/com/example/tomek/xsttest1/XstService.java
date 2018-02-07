@@ -11,6 +11,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +54,7 @@ public class XstService extends Service {
     private SharedPreferences mSharedPref;
     private int mDelayMillis;
     private boolean mJestemOnline;
+    private int mAppVersion;
     JobScheduler mJobScheduler;
 
     public XstService() {
@@ -60,6 +63,7 @@ public class XstService extends Service {
         mServiceReady = false;
         mHandler = new Handler();
         mLastDate = -1;
+        mAppVersion = 1;
 
         mShowNotifications = true;
         mKey = "";
@@ -79,6 +83,7 @@ public class XstService extends Service {
         mSharedPref = getSharedPreferences(Typy.PREFS_NAME, 0);
         mLastDate = mSharedPref.getInt(Typy.PREFS_LAST_DATE, 0);
         mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
+        mAppVersion = getAppVersiont();
 
         mServiceReady = true;
 
@@ -195,6 +200,12 @@ public class XstService extends Service {
             public void onResponse(JSONObject response) {
                 try {
                     mLastDate = response.getInt("last_date");
+                    mAppVersion = response.getInt("version");
+
+                    if (mAppVersion > getAppVersiont()) {
+                        // TODO show_notification("Jest nowa wersja aplikacji!");
+                    }
+
                     JSONArray items = response.getJSONArray("items");
                     int new_items = items.length();
                     if (new_items > 0) {
@@ -219,7 +230,7 @@ public class XstService extends Service {
                         editor.putString(Typy.PREFS_ONLINE, online.toString());
                         editor.apply();
 
-                        if (mShowNotifications == false) {
+                        if ( ! mShowNotifications) {
                             // aplikacja włączona
                             Intent i = new Intent();
                             i.putExtra("online", online.toString());
@@ -272,5 +283,15 @@ public class XstService extends Service {
     private void startScheduleService() {
         //TODO dodać do usługi listenera jeśli wróci internet
         mJobScheduler.schedule(new JobInfo.Builder(1, new ComponentName(this, JobServiceInternetOK.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build());
+    }
+
+    private int getAppVersiont() {
+        try {
+            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
+            return pInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 }

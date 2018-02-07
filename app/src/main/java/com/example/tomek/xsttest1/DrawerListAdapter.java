@@ -54,7 +54,7 @@ class DrawerListAdapter extends BaseAdapter {
         TextView titleView = view.findViewById(R.id.title);
         ImageView iconView = view.findViewById(R.id.icon);
 
-        titleView.setText( mNavItems.get(position).mTitle );
+        titleView.setText( Utils.capitalizeFirstLetter(mNavItems.get(position).mTitle) );
         iconView.setImageResource(mNavItems.get(position).mIcon);
 
         return view;

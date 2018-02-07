@@ -30,4 +30,5 @@ public class Typy {
 
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";
     public static final String FRAGMENT_USTAWIENIA = "ustawienia";
+    public static final String FRAGMENT_ZALOGUJ = "Zaloguj";
 }

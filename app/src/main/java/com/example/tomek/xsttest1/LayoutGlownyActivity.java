@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -74,7 +75,8 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     private String mNickname;
     private String mAvatar;
     private String mTheme;
-    private String mAktualnyWidok;
+    private String mAktualnyWidok = Typy.FRAGMENT_USTAWIENIA;
+    private String mPoprzedniWidok;
 
     private boolean mPozwolNaZmianeStylu;
 
@@ -92,7 +94,6 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAktualnyWidok = "";
         wczytaj_saved_instance_state(savedInstanceState);
 
         mSharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
@@ -114,8 +115,8 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         arrayWiadomosci = new ArrayList<>();
         arrayOnline = new ArrayList<>();
         mNavItems = new ArrayList<>();
-        mNavItems.add(new NavItem(Utils.capitalizeFirstLetter(Typy.FRAGMENT_SHOUTBOX), R.drawable.xst));
-        mNavItems.add(new NavItem(Utils.capitalizeFirstLetter(Typy.FRAGMENT_USTAWIENIA), R.drawable.xst));
+        mNavItems.add(new NavItem(Typy.FRAGMENT_SHOUTBOX, R.drawable.xst));
+        mNavItems.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, R.drawable.xst));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerList = findViewById(R.id.left_drawer);
@@ -125,6 +126,9 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
         mCheckBoxDarkTheme = findViewById(R.id.checkBoxTheme);
         mButtonWyloguj = findViewById(R.id.buttonWyloguj);
+
+        mPoprzedniWidok = "";
+        mAktualnyWidok = "";
 
         mPozwolNaZmianeStylu = true;
         wczytaj_ustawienia();
@@ -137,7 +141,6 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
         mButtonWyloguj.setOnClickListener(this);
         mCheckBoxDarkTheme.setOnCheckedChangeListener(this);
-
     }
 
 
@@ -148,11 +151,15 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         wczytaj_saved_instance_state(savedInstanceState);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        outState.putString("mAktualnyWidok", mAktualnyWidok);
 
-        super.onSaveInstanceState(outState, outPersistentState);
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        mPoprzedniWidok = mAktualnyWidok;
+        outState.putString("mPoprzedniWidok", mPoprzedniWidok);
+
+        Log.i("xst", "ON SAVE: " + mPoprzedniWidok);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -274,7 +281,11 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         }
         pobierz_wiadomosc(null);
 
-        selectDrawerItem(getMenuItemIdFromName(mAktualnyWidok));
+        mAktualnyWidok = "";
+        if (mPoprzedniWidok.equals("")) {
+            mPoprzedniWidok = Typy.FRAGMENT_SHOUTBOX;
+        }
+        selectDrawerItem(getMenuItemIdFromName(mPoprzedniWidok));
     }
 
     @Override
@@ -291,10 +302,12 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
     private void wczytaj_saved_instance_state(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            String l_aktualnyWidok = savedInstanceState.getString("mAktualnyWidok");
-            if (l_aktualnyWidok != null) {
-                if (l_aktualnyWidok.length() > 0) {
-                    mAktualnyWidok = l_aktualnyWidok;
+            String l_mPoprzedniWidok = savedInstanceState.getString("mPoprzedniWidok");
+            if (l_mPoprzedniWidok != null) {
+                if (l_mPoprzedniWidok.length() > 0) {
+                    mPoprzedniWidok = l_mPoprzedniWidok;
+
+                    Log.i("xst", "ON RESTORE " + mPoprzedniWidok );
                 }
             }
         }
@@ -352,12 +365,16 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         return mFragmentOnline;
     }
 
-    private int getMenuItemIdFromName(String p_mAktualnyWidok) {
+    private int getMenuItemIdFromName(String p_mPoprzedniWidok) {
+        int i = 0;
         for (NavItem l_navItem : mNavItems) {
-            if (l_navItem.mTitle.toLowerCase().equals(mAktualnyWidok)) {
-                return mNavItems.indexOf(l_navItem);
+            if (l_navItem.mTitle.toLowerCase().equals(p_mPoprzedniWidok.toLowerCase())) {
+                Log.i("xst", "__zwracam: " + i);
+                return i;
             }
+            i++;
         }
+        Log.i("xst", "__NIC NIE ZNALAZLEM, zwracam: " + i);
         return 0;
     }
 
@@ -365,7 +382,6 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         if (mRequestQueue == null) {
             mRequestQueue = Volley.newRequestQueue(getApplicationContext());
         }
-
         return mRequestQueue;
     }
 
@@ -388,14 +404,9 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
         zarejestrujReceivery();
 
-        updateDrawerList(true);
         selectDrawerItem(0);
         mStartService("zalogowano");
         pobierz_wiadomosc(null);
-    }
-
-    private void updateDrawerList(boolean zalogowano) {
-
     }
 
     private void pobierz_wiadomosc(Intent intent) {
@@ -462,13 +473,13 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     private void selectDrawerItem(int i) {
-        if (mNavItems.get(i).mTitle.equals(Utils.capitalizeFirstLetter(Typy.FRAGMENT_SHOUTBOX))) {
+        if (mNavItems.get(i).mTitle.toLowerCase().equals(Typy.FRAGMENT_SHOUTBOX)) {
             if ( ! mAktualnyWidok.equals(Typy.FRAGMENT_SHOUTBOX)) {
                 fragmentManager.beginTransaction().replace(R.id.content_frame, new PagerFragmentSB()).commit();
             }
             mAktualnyWidok = Typy.FRAGMENT_SHOUTBOX;
-        } else if (mNavItems.get(i).mTitle.equals(Utils.capitalizeFirstLetter(Typy.FRAGMENT_USTAWIENIA))) {
-            if ( ! mAktualnyWidok.equals(Typy.FRAGMENT_USTAWIENIA)) {
+        } else if (mNavItems.get(i).mTitle.toLowerCase().equals(Typy.FRAGMENT_USTAWIENIA)) {
+            if ( !mAktualnyWidok.equals(Typy.FRAGMENT_USTAWIENIA)) {
                 fragmentManager.beginTransaction().replace(R.id.content_frame, new UstawieniaFragment()).commit();
             }
             mAktualnyWidok = Typy.FRAGMENT_USTAWIENIA;
@@ -495,8 +506,8 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         editor.remove(Typy.PREFS_LAST_DATE);
         editor.commit();
         mZalogowany = false;
+        mAktualnyWidok = Typy.FRAGMENT_ZALOGUJ;
 
-        updateDrawerList(false);
         wyrejestrujReceivery();
 
         mRelativeLayoutProfileBox.setVisibility(View.GONE);
