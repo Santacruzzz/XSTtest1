@@ -1,5 +1,6 @@
 package com.example.tomek.xsttest1;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -7,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -90,15 +92,8 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAktualnyWidok = "shoutbox";
-        if (savedInstanceState != null) {
-            String l_aktualnyWidok = savedInstanceState.getString("mAktualnyWidok");
-            if (l_aktualnyWidok != null) {
-                if (l_aktualnyWidok.length() > 0) {
-                    mAktualnyWidok = l_aktualnyWidok;
-                }
-            }
-        }
+        mAktualnyWidok = "";
+        wczytaj_saved_instance_state(savedInstanceState);
 
         mSharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
         mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
@@ -119,8 +114,8 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         arrayWiadomosci = new ArrayList<>();
         arrayOnline = new ArrayList<>();
         mNavItems = new ArrayList<>();
-        mNavItems.add(new NavItem("Shoutbox", R.drawable.xst));
-        mNavItems.add(new NavItem("Ustawienia", R.drawable.xst));
+        mNavItems.add(new NavItem(Utils.capitalizeFirstLetter(Typy.FRAGMENT_SHOUTBOX), R.drawable.xst));
+        mNavItems.add(new NavItem(Utils.capitalizeFirstLetter(Typy.FRAGMENT_USTAWIENIA), R.drawable.xst));
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerList = findViewById(R.id.left_drawer);
@@ -145,61 +140,28 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
     }
 
-    private void pokazFragmentLogowanie() {
-        fragmentManager.beginTransaction().replace(R.id.content_frame, getmFragmentLogowanie()).commit();
-    }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+
+        wczytaj_saved_instance_state(savedInstanceState);
     }
 
-    private void wczytaj_ustawienia() {
-        mApiKey = mSharedPrefs.getString(Typy.PREFS_API_KEY, "");
-        mLogin = mSharedPrefs.getString(Typy.PREFS_LOGIN, "");
-        mNickname = mSharedPrefs.getString(Typy.PREFS_NICNKAME, "");
-        mAvatar = mSharedPrefs.getString(Typy.PREFS_AVATAR, "");
-        mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        outState.putString("mAktualnyWidok", mAktualnyWidok);
 
-        mPozwolNaZmianeStylu = false;
-        if (mTheme.equals("dark")) {
-            mCheckBoxDarkTheme.setChecked(true);
-        } else {
-            mCheckBoxDarkTheme.setChecked(false);
-        }
-        mPozwolNaZmianeStylu = true;
-
-        Log.i("xst", mApiKey + ", " + mLogin + ", " + mNickname + ", " + mAvatar);
-
-        mZalogowany = mApiKey.length() == 32;
-        if (mLogin.isEmpty()) {
-            mZalogowany = false;
-        }
-        if (mNickname.isEmpty()) {
-            mZalogowany = false;
-        }
-
-        if (mZalogowany) {
-            mRelativeLayoutProfileBox.setVisibility(View.VISIBLE);
-            if (mAvatar.length() > 0) {
-                userAvatar.setImageUrl(Typy.URL_AVATAR + mAvatar, getImageLoader());
-            }
-            userNick.setText(mNickname);
-        }
+        super.onSaveInstanceState(outState, outPersistentState);
     }
 
-    public FragmentSb getmFragmentSb() {
-        if (mFragmentSb == null) {
-            mFragmentSb = new FragmentSb();
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawers();
+            return;
         }
-        return mFragmentSb;
-    }
-
-    public FragmentOnline getmFragmentOnline() {
-        if (mFragmentOnline == null) {
-            mFragmentOnline = new FragmentOnline();
-        }
-        return mFragmentOnline;
+        super.onBackPressed();
     }
 
     @Override
@@ -292,26 +254,6 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         getRequestQueue().add(req);
     }
 
-    private FragmentLogowanie getmFragmentLogowanie() {
-        if (mFragmentLogowanie == null) {
-            mFragmentLogowanie = new FragmentLogowanie();
-        }
-        return mFragmentLogowanie;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i("xst", "___onResume");
-        zarejestrujReceivery();
-        if (mZalogowany) {
-            mStartService("onResume");
-        } else {
-            mStartService("wylogowano");
-        }
-        pobierz_wiadomosc(null);
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -322,8 +264,101 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    protected void onResume() {
+        super.onResume();
+        zarejestrujReceivery();
+        if (mZalogowany) {
+            mStartService("onResume");
+        } else {
+            mStartService("wylogowano");
+        }
+        pobierz_wiadomosc(null);
+
+        selectDrawerItem(getMenuItemIdFromName(mAktualnyWidok));
+    }
+
+    @Override
+    public void broadcastReceived(String intent) {
+        if (Objects.equals(intent, Typy.BROADCAST_INTERNET_OK)) {
+            pobierz_wiadomosc(null);
+        }
+    }
+
+    @Override
+    public void nowa_wiadomosc(Intent i) {
+        pobierz_wiadomosc(i);
+    }
+
+    private void wczytaj_saved_instance_state(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            String l_aktualnyWidok = savedInstanceState.getString("mAktualnyWidok");
+            if (l_aktualnyWidok != null) {
+                if (l_aktualnyWidok.length() > 0) {
+                    mAktualnyWidok = l_aktualnyWidok;
+                }
+            }
+        }
+    }
+
+    private void pokazFragmentLogowanie() {
+        fragmentManager.beginTransaction().replace(R.id.content_frame, new FragmentLogowanie()).commit();
+    }
+
+    private void wczytaj_ustawienia() {
+        mApiKey = mSharedPrefs.getString(Typy.PREFS_API_KEY, "");
+        mLogin = mSharedPrefs.getString(Typy.PREFS_LOGIN, "");
+        mNickname = mSharedPrefs.getString(Typy.PREFS_NICNKAME, "");
+        mAvatar = mSharedPrefs.getString(Typy.PREFS_AVATAR, "");
+        mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
+
+        mPozwolNaZmianeStylu = false;
+        if (mTheme.equals("dark")) {
+            mCheckBoxDarkTheme.setChecked(true);
+        } else {
+            mCheckBoxDarkTheme.setChecked(false);
+        }
+        mPozwolNaZmianeStylu = true;
+
+        Log.i("xst", mApiKey + ", " + mLogin + ", " + mNickname + ", " + mAvatar);
+
+        mZalogowany = mApiKey.length() == 32;
+        if (mLogin.isEmpty()) {
+            mZalogowany = false;
+        }
+        if (mNickname.isEmpty()) {
+            mZalogowany = false;
+        }
+
+        if (mZalogowany) {
+            mRelativeLayoutProfileBox.setVisibility(View.VISIBLE);
+            if (mAvatar.length() > 0) {
+                userAvatar.setImageUrl(Typy.URL_AVATAR + mAvatar, getImageLoader());
+            }
+            userNick.setText(mNickname);
+        }
+    }
+
+    public FragmentSb getmFragmentSb() {
+        if (mFragmentSb == null) {
+            mFragmentSb = new FragmentSb();
+        }
+        return mFragmentSb;
+    }
+
+    public FragmentOnline getmFragmentOnline() {
+        if (mFragmentOnline == null) {
+            mFragmentOnline = new FragmentOnline();
+        }
+        return mFragmentOnline;
+    }
+
+    private int getMenuItemIdFromName(String p_mAktualnyWidok) {
+        for (NavItem l_navItem : mNavItems) {
+            if (l_navItem.mTitle.toLowerCase().equals(mAktualnyWidok)) {
+                return mNavItems.indexOf(l_navItem);
+            }
+        }
+        return 0;
     }
 
     public RequestQueue getRequestQueue() {
@@ -340,25 +375,6 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
             mImageLoader = new ImageLoader(this.mRequestQueue, new LruBitmapCache());
         }
         return this.mImageLoader;
-    }
-
-    public PagerFragmentSB getmPagerFragmentSb() {
-        if (mPagerFragmentSb == null) {
-            mPagerFragmentSb = new PagerFragmentSB();
-        }
-        return this.mPagerFragmentSb;
-    }
-
-    @Override
-    public void broadcastReceived(String intent) {
-        if (Objects.equals(intent, Typy.BROADCAST_INTERNET_OK)) {
-            pobierz_wiadomosc(null);
-        }
-    }
-
-    @Override
-    public void nowa_wiadomosc(Intent i) {
-        pobierz_wiadomosc(i);
     }
 
     public void zalogowano(boolean wczytano_ustawienia) {
@@ -416,6 +432,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         }
     }
 
+    @SuppressLint("ApplySharedPref")
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
         if (b) {
@@ -445,10 +462,16 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     private void selectDrawerItem(int i) {
-        if (mNavItems.get(i).mTitle.equals("Shoutbox")) {
-            fragmentManager.beginTransaction().replace(R.id.content_frame, new PagerFragmentSB()).commit();
-        } else if (mNavItems.get(i).mTitle.equals("Ustawienia")) {
-            fragmentManager.beginTransaction().replace(R.id.content_frame, new UstawieniaFragment()).commit();
+        if (mNavItems.get(i).mTitle.equals(Utils.capitalizeFirstLetter(Typy.FRAGMENT_SHOUTBOX))) {
+            if ( ! mAktualnyWidok.equals(Typy.FRAGMENT_SHOUTBOX)) {
+                fragmentManager.beginTransaction().replace(R.id.content_frame, new PagerFragmentSB()).commit();
+            }
+            mAktualnyWidok = Typy.FRAGMENT_SHOUTBOX;
+        } else if (mNavItems.get(i).mTitle.equals(Utils.capitalizeFirstLetter(Typy.FRAGMENT_USTAWIENIA))) {
+            if ( ! mAktualnyWidok.equals(Typy.FRAGMENT_USTAWIENIA)) {
+                fragmentManager.beginTransaction().replace(R.id.content_frame, new UstawieniaFragment()).commit();
+            }
+            mAktualnyWidok = Typy.FRAGMENT_USTAWIENIA;
         }
 
         //Bundle args = new Bundle();
@@ -498,12 +521,4 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         registerReceiver(mNowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
     }
 
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawers();
-            return;
-        }
-        super.onBackPressed();
-    }
 }

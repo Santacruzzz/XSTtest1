@@ -25,12 +25,11 @@ import java.util.ArrayList;
  */
 
 public class AdapterWiadomosci extends BaseAdapter {
-    ArrayList<Wiadomosc> lista;
-    Context context;
-    LayoutInflater inflater;
-    ImageLoader imageLoader;
-    IMainActivity imain;
-    Activity mAct;
+    private ArrayList<Wiadomosc> lista;
+    private LayoutInflater inflater;
+    private ImageLoader imageLoader;
+    private IMainActivity imain;
+    private Activity mAct;
 
     private int mBgResourceID_even = 0;
     private int mBgResourceID_odd = 0;
@@ -38,8 +37,7 @@ public class AdapterWiadomosci extends BaseAdapter {
 
     public AdapterWiadomosci(Activity act, ArrayList<Wiadomosc> _list) {
         lista = _list;
-        this.context = act.getApplicationContext();
-        inflater = LayoutInflater.from(context);
+        inflater = LayoutInflater.from(act.getApplicationContext());
         imain = (IMainActivity) act;
         imageLoader = imain.getImageLoader();
         mAct = act;
@@ -75,10 +73,15 @@ public class AdapterWiadomosci extends BaseAdapter {
             inflater = (LayoutInflater) mAct.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
-        if (row == null) {
-            isReused = false;
-            row = inflater.inflate(R.layout.wiadomosc_layout, null);
+        try {
+            if (inflater != null) {
+                row = inflater.inflate(R.layout.wiadomosc_layout, arg2, false);
+            } else return null;
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            return null;
         }
+
         TextView autor = row.findViewById(R.id.v_nick);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
         TextView data = row.findViewById(R.id.v_data);

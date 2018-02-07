@@ -4,6 +4,7 @@ package com.example.tomek.xsttest1;
  * Created by Tomek on 2017-10-19.
  */
 
+@SuppressWarnings("ALL")
 public class Typy {
     public static final String URL_PROTOCOL = "http";
     public static final String URL_API = URL_PROTOCOL + "://api.xs-team.pl/index.php/";
@@ -26,4 +27,7 @@ public class Typy {
     public static final String PREFS_MSGS = "msgs";
     public static final String PREFS_ONLINE = "onlineitems";
     public static final String PREFS_THEME = "theme";
+
+    public static final String FRAGMENT_SHOUTBOX = "shoutbox";
+    public static final String FRAGMENT_USTAWIENIA = "ustawienia";
 }
