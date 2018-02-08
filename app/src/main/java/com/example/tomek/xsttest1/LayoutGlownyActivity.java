@@ -285,7 +285,10 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         if (mPoprzedniWidok.equals("")) {
             mPoprzedniWidok = Typy.FRAGMENT_SHOUTBOX;
         }
-        selectDrawerItem(getMenuItemIdFromName(mPoprzedniWidok));
+        if (mZalogowany)
+            selectDrawerItem(getMenuItemIdFromName(mPoprzedniWidok));
+        else
+            pokazFragmentLogowanie();
     }
 
     @Override
@@ -314,6 +317,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     private void pokazFragmentLogowanie() {
+        mAktualnyWidok = "logowanie";
         fragmentManager.beginTransaction().replace(R.id.content_frame, new FragmentLogowanie()).commit();
     }
 

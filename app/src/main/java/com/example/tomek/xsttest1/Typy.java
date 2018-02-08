@@ -7,7 +7,7 @@ package com.example.tomek.xsttest1;
 @SuppressWarnings("ALL")
 public class Typy {
     public static final String URL_PROTOCOL = "http";
-    public static final String URL_API = URL_PROTOCOL + "://api.xs-team.pl/index.php/";
+    public static final String URL_API = URL_PROTOCOL + "://xs-team.pl/api/";
     public static final String URL_AVATAR = URL_PROTOCOL + "://xs-team.pl/images/avatars/";
     public static final String API_MSG_GET = URL_API + "msg/get";
     public static final String API_MSG_SEND = URL_API + "msg/send";
