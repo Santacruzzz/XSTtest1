@@ -6,19 +6,20 @@
 
         <CheckBoxPreference
             android:key="automatyczne_aktualizacje"
-            android:title="Automatyczne aktualizacje"
-            android:summary="Czy apka XST ma sama sprawdzać czy jest aktualna?" />
+            android:title="Aktualizacje"
+            android:defaultValue="true"
+            android:summary="Sprawdzaj aktualizacje automatycznie" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Powiadomienia">
+        android:title="Wiadomości">
 
         <CheckBoxPreference
-            android:key="pokazuj_powidomienia"
+            android:key="pokazuj_powiadomienia"
             android:title="Pokazuj powiadomienia"
             android:defaultValue="true"
-            android:summary="Czy apka XST ma sama sprawdzać czy jest aktualna?" />
+            android:summary="Informuj o nowych wiadomościach" />
 
         <!-- ListPreference
             android:key="list_preference"

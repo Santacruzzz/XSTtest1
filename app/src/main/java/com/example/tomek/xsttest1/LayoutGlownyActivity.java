@@ -168,6 +168,10 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
             mDrawerLayout.closeDrawers();
             return;
         }
+        if (mAktualnyWidok.equals(Typy.FRAGMENT_USTAWIENIA)) {
+            selectDrawerItem(0);
+            return;
+        }
         super.onBackPressed();
     }
 

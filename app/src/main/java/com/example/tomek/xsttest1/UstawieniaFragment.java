@@ -12,9 +12,14 @@ public class UstawieniaFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-//        super.onCreate(savedInstanceState);
 
+        getPreferenceManager().setSharedPreferencesName(Typy.PREFS_NAME);
         addPreferencesFromResource(R.xml.preferences);
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 }

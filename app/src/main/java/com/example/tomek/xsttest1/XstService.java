@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
@@ -14,18 +13,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.android.volley.NetworkError;
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -56,6 +52,8 @@ public class XstService extends Service {
     private boolean mJestemOnline;
     private int mAppVersion;
     JobScheduler mJobScheduler;
+    private boolean mSprawdzajAktualizacje;
+    private boolean mPokazujPowiadomienia;
 
     public XstService() {
         mJestemOnline = false;
@@ -83,7 +81,7 @@ public class XstService extends Service {
         mSharedPref = getSharedPreferences(Typy.PREFS_NAME, 0);
         mLastDate = mSharedPref.getInt(Typy.PREFS_LAST_DATE, 0);
         mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
-        mAppVersion = getAppVersiont();
+        mAppVersion = getAppVersion();
 
         mServiceReady = true;
 
@@ -100,6 +98,7 @@ public class XstService extends Service {
             public void run() {
                 try {
                     if (mServiceReady) {
+                        wczytajUstawienia();
                         pobierz_wiadomosc();
                     }
                 }
@@ -202,15 +201,15 @@ public class XstService extends Service {
                     mLastDate = response.getInt("last_date");
                     mAppVersion = response.getInt("version");
 
-                    if (mAppVersion > getAppVersiont()) {
-                        // TODO show_notification("Jest nowa wersja aplikacji!");
+                    if (mAppVersion > getAppVersion() && mSprawdzajAktualizacje) {
+                        show_notification("Jest nowa wersja aplikacji!", "update");
                     }
 
                     JSONArray items = response.getJSONArray("items");
                     int new_items = items.length();
                     if (new_items > 0) {
-                        if (mShowNotifications) {
-                            show_notification("Nowe wiadomości");
+                        if (mShowNotifications && mPokazujPowiadomienia) {
+                            show_notification("Nowe wiadomości", "msg");
                         }
                         SharedPreferences.Editor editor = mSharedPref.edit();
                         editor.putString(Typy.PREFS_MSGS, items.toString());
@@ -259,8 +258,13 @@ public class XstService extends Service {
         mHandler.removeCallbacks(mRunnableWiadomosci);
     }
 
-    private void show_notification(String txt) {
-        Intent intent = new Intent(this, LayoutGlownyActivity.class);
+    private void show_notification(String txt, String typ) {
+        Intent intent = new Intent();
+        if (typ.equals("msg")) {
+             intent = new Intent(this, LayoutGlownyActivity.class);
+        } else if (typ.equals("update")) {
+             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://xs-team.pl/android/XST.apk"));
+        }
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         // build notification
@@ -285,7 +289,7 @@ public class XstService extends Service {
         mJobScheduler.schedule(new JobInfo.Builder(1, new ComponentName(this, JobServiceInternetOK.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build());
     }
 
-    private int getAppVersiont() {
+    private int getAppVersion() {
         try {
             PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
             return pInfo.versionCode;
@@ -293,5 +297,10 @@ public class XstService extends Service {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    private void wczytajUstawienia() {
+        mSprawdzajAktualizacje = mSharedPref.getBoolean("automatyczne_aktualizacje", true);
+        mPokazujPowiadomienia = mSharedPref.getBoolean("pokazuj_powiadomienia", true);
     }
 }
