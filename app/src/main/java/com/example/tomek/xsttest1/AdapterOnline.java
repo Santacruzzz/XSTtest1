@@ -7,10 +7,12 @@ import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
@@ -71,7 +73,8 @@ class AdapterOnline extends BaseAdapter {
         }
         View row = convertView;
         if (row == null) {
-            row = inflater.inflate(R.layout.online_item, null);
+            assert inflater != null;
+            row = inflater.inflate(R.layout.online_item, viewGroup, false);
         }
         TextView nick = row.findViewById(R.id.v_nick);
         TextView status = row.findViewById(R.id.statusOnline);
@@ -92,8 +95,18 @@ class AdapterOnline extends BaseAdapter {
         NetworkImageView avatar = row.findViewById(R.id.v_avatar);
         avatar.setImageUrl(str_av, imageLoader);
         nick.setText(mOnlineItem.getNick());
-
+        final RelativeLayout layOnline = row.findViewById(R.id.layOnline);
         status.setText(mOnlineItem.getTimeString());
+
+        row.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                layOnline.getBackground().setHotspot(event.getX(), event.getY());
+                layOnline.performClick();
+                return(false);
+            }
+        });
+
         if (mOnlineItem.isOnline()) {
             int[] attr_color_nick = {R.attr.nickColor};
             nick.setTextColor(imain.getThemeColor(attr_color_nick));

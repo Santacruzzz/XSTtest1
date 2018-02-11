@@ -2,6 +2,7 @@ package com.example.tomek.xsttest1;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,9 +10,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -19,7 +22,7 @@ import java.util.ArrayList;
  * Created by Tomek on 2017-10-25.
  */
 
-public class FragmentSb extends Fragment implements View.OnClickListener {
+public class FragmentSb extends Fragment implements View.OnClickListener, ListView.OnItemLongClickListener, ListView.OnItemClickListener {
     private View mView;
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
@@ -61,6 +64,8 @@ public class FragmentSb extends Fragment implements View.OnClickListener {
 
         mBtnSend.setOnClickListener(this);
         mBtnCamera.setOnClickListener(this);
+        listViewWiadomosci.setOnItemClickListener(this);
+        listViewWiadomosci.setOnItemLongClickListener(this);
         return mView;
     }
 
@@ -95,6 +100,28 @@ public class FragmentSb extends Fragment implements View.OnClickListener {
             case R.id.buttonCamera:
                 break;
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Wiadomosc item = arrayWiadomosci.get(position);
+
+        ArrayList<String> linki = item.getLinki();
+        if (linki.isEmpty()) {
+            Toast.makeText(mAct,"Brak linkow", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(mAct, "Są linki: " + linki.size(), Toast.LENGTH_SHORT).show();
+        }
+
+//        Intent intent = new Intent(mAct, );
+//        //based on item add info to intent
+//        startActivity(intent);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(mAct,"TEST LAJKOWANIA", Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     public void wyslano_wiadomosc(boolean success) {

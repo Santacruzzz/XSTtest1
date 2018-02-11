@@ -20,7 +20,9 @@
     <color name="msgColor_dark">#838086</color>
     <color name="msgDateColor_dark">#777</color>
     <color name="msgBackground_dark">#212121</color>
+    <color name="msgBackground_dark_pressed">#585858</color>
     <color name="msgBackground_odd_dark">#1b1b1b</color>
+    <color name="msgBackground_odd_dark_pressed">#454545</color>
     <color name="drawerBackground_dark">#1a1a1a</color>
     <color name="drawerHeaderBackground_dark">#444</color>
     <color name="drawerHeaderTextColor_dark">#fff</color>

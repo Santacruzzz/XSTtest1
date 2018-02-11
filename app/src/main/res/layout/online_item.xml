@@ -7,6 +7,7 @@
     android:paddingRight="@dimen/message_padding_right"
     android:paddingEnd="@dimen/message_padding_end"
     android:background="?attr/msgBackground"
+    android:id="@+id/layOnline"
     >
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/v_avatar"

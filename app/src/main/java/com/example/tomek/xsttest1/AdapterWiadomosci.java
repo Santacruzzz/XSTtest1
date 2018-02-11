@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -86,7 +87,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
         TextView data = row.findViewById(R.id.v_data);
         TextView lajki = row.findViewById(R.id.v_lajki);
-        RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
+        final RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
         Wiadomosc mWiadomosc;
 
@@ -101,6 +102,15 @@ public class AdapterWiadomosci extends BaseAdapter {
         } else {
             layWiadomosc.setBackgroundResource(mBgResourceID_odd);
         }
+
+        row.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                layWiadomosc.getBackground().setHotspot(event.getX(), event.getY());
+                layWiadomosc.performClick();
+                return(false);
+            }
+        });
 
         if (imageLoader == null) {
             imageLoader = imain.getImageLoader();
@@ -122,10 +132,8 @@ public class AdapterWiadomosci extends BaseAdapter {
             }
         }
 
-
 //        SpannableString spn = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc() + " " + obr).toString()));
 //        wiadomosc.setText(imain.getTekstEmotki(spn));
-
 
         wiadomosc.setText(str_wiadomosc);
         data.setText(mWiadomosc.getData());

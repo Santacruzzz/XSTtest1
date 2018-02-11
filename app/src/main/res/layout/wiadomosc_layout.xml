@@ -8,12 +8,14 @@
     android:paddingEnd="@dimen/message_padding_end"
     android:id="@+id/layoutWiadomosc"
     android:background="?attr/msgBackground"
-    android:drawSelectorOnTop="true"
-    >
+    android:drawSelectorOnTop="true">
+
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/v_avatar"
         android:layout_width="@dimen/avatar_width"
-        android:layout_height="@dimen/avatar_height"/>
+        android:layout_height="@dimen/avatar_height"
+        android:clickable="true"
+        />
 
     <TextView
         android:id="@+id/v_nick"
@@ -30,7 +32,6 @@
         android:id="@+id/v_wiadomosc"
         android:textColor="?attr/msgColor"
         android:textSize="14sp"
-        android:autoLink="web"
         android:paddingHorizontal="5sp"
         android:paddingVertical="3sp"
         android:layout_width="wrap_content"

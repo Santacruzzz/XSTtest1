@@ -23,6 +23,7 @@ public class Wiadomosc {
 
     Wiadomosc(JSONObject obj) {
         obrazki = new ArrayList<>();
+        linki = new ArrayList<>();
         try {
             setAutor(obj.getString("nickname"));
             setAutorId(obj.getInt("userID"));
@@ -37,13 +38,26 @@ public class Wiadomosc {
                 JSONObject addon = addons.getJSONObject(i);
                 if (addon.getString("type").equals("image")) {
                     obrazki.add(addon.getString("content"));
+                } else if (addon.getString("type").equals("link")) {
+                    linki.add(addon.getString("content"));
                 }
             }
         } catch (JSONException ex) {
 
         }
     }
-    Wiadomosc(String autor, String wiadomosc, String data, int id, int autorid, int lajki, ArrayList<String> obrazki, ArrayList<String> linki, String avatar) {
+    Wiadomosc(
+            String autor,
+            String wiadomosc,
+            String data,
+            int id,
+            int autorid,
+            int lajki,
+            ArrayList<String> obrazki,
+            ArrayList<String> linki,
+            String avatar) {
+        obrazki = new ArrayList<>();
+        linki = new ArrayList<>();
         this.setAutor(autor);
         this.setWiadomosc(wiadomosc);
         this.setData(data);
