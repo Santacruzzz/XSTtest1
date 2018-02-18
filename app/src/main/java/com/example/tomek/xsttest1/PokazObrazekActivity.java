@@ -11,7 +11,7 @@ import com.github.chrisbanes.photoview.PhotoView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-class PokazObrazekActivity extends Activity implements Callback {
+public class PokazObrazekActivity extends Activity implements Callback {
 
     private ImageView photoView;
     private ProgressBar progressBar;
