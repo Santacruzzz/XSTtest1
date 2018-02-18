@@ -4,28 +4,26 @@
     package="com.example.tomek.xsttest1">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/xst"
         android:label="@string/app_name"
-        android:theme="@style/SplashTheme"
-        android:supportsRtl="false">
-
+        android:supportsRtl="false"
+        android:theme="@style/SplashTheme">
         <activity android:name=".LayoutGlownyActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <service
             android:name=".JobServiceInternetOK"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true" />
-
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".XstService" />
 
         <receiver android:name=".PowerUpReceiver">
@@ -34,6 +32,11 @@
             </intent-filter>
         </receiver>
 
+        <activity
+            android:name=".PokazObrazekActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_pokaz_obrazek"
+            android:theme="@style/FullscreenTheme"></activity>
     </application>
 
 </manifest>

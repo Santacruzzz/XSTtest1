@@ -2,22 +2,21 @@ package com.example.tomek.xsttest1;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+
+import org.apmem.tools.layouts.FlowLayout;
 
 import java.util.ArrayList;
 
@@ -83,6 +82,7 @@ public class AdapterWiadomosci extends BaseAdapter {
             return null;
         }
 
+        FlowLayout layoutImages = row.findViewById(R.id.layoutImages);
         TextView autor = row.findViewById(R.id.v_nick);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
         TextView data = row.findViewById(R.id.v_data);
@@ -120,22 +120,24 @@ public class AdapterWiadomosci extends BaseAdapter {
         avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
 
         autor.setText(mWiadomosc.getAutor());
-        String obr = "";
-        String str_wiadomosc = mWiadomosc.getWiadomosc();
-
         int numer_obrazka = 1;
         if (mWiadomosc.getObrazki() != null) {
             for (String obrazek : mWiadomosc.getObrazki()) {
                 //TODO OBRAZKI
-                str_wiadomosc = str_wiadomosc.replace("[Obrazek #" + numer_obrazka + "]", "[Obrazek #1: " + obrazek + "]");
-                ++numer_obrazka;
+                NetworkImageView v_obrazek = new NetworkImageView(mAct);
+                v_obrazek.setLayoutParams(new LinearLayout.LayoutParams(160, 160));
+                v_obrazek.setImageUrl(obrazek, imageLoader);
+                layoutImages.addView(v_obrazek);
+                layoutImages.setMinimumHeight(160);
+
+                v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
             }
         }
 
 //        SpannableString spn = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc() + " " + obr).toString()));
 //        wiadomosc.setText(imain.getTekstEmotki(spn));
 
-        wiadomosc.setText(str_wiadomosc);
+        wiadomosc.setText(mWiadomosc.getWiadomosc());
         data.setText(mWiadomosc.getData());
         lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
         if (mWiadomosc.getLajki() < 1) {
@@ -148,5 +150,21 @@ public class AdapterWiadomosci extends BaseAdapter {
 
     public void clear() {
         lista.clear();
+    }
+
+    private class ObrazekOnClickListener implements View.OnClickListener {
+        String m_url;
+
+        ObrazekOnClickListener(String p_url) {
+            m_url = p_url;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent l_intent = new Intent(mAct, PokazObrazekActivity.class);
+            l_intent.putExtra("image_url", m_url);
+            mAct.startActivity(l_intent);
+
+        }
     }
 }

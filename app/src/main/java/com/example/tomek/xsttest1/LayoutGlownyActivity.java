@@ -266,6 +266,11 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     @Override
+    public void lajkujWiadomosc(int id) {
+
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         wyrejestrujReceivery();

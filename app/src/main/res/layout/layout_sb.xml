@@ -21,7 +21,8 @@
         android:fadingEdge="vertical"
         android:fadingEdgeLength="20sp"
         android:dividerHeight="1dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        />
 
     <LinearLayout
         android:minHeight="35sp"

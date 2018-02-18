@@ -56,4 +56,6 @@
     <color name="drawerTextColor_light">#000</color>
     <color name="drawerActiveItemBackground_light">#999</color>
     <color name="sbBottomBackground_light">@color/colorPrimary_light</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>
