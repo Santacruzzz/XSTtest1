@@ -17,6 +17,7 @@
     <attr name="offlineNickColor" format="color" />
     <attr name="btn" format="color" />
     <attr name="drawerItemBackground" format="reference|color" />
+    <attr name="miniaturaTxtBg" format="reference|color" />
 
     <style name="SplashTheme" parent="xstThemeDark">
         <item name="android:windowBackground">@drawable/splash</item>
@@ -58,6 +59,8 @@
         <item name="btn">@drawable/btn_dark</item>
         <item name="msgBackground">@drawable/bg_msg_dark</item>
         <item name="msgBackground_odd">@drawable/bg_msg_dark_odd</item>
+
+        <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_dark</item>
     </style>
 
     <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
@@ -97,6 +100,8 @@
         <item name="btn">@drawable/btn_dark</item>
         <item name="msgBackground">@drawable/bg_msg_light</item>
         <item name="msgBackground_odd">@drawable/bg_msg_light_odd</item>
+
+        <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_light</item>
     </style>
 
     <style name="FullscreenTheme" parent="SplashTheme">

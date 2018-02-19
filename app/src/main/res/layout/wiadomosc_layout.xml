@@ -4,18 +4,25 @@
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/message_padding_start"
     android:paddingTop="@dimen/message_padding_top"
-    android:paddingRight="@dimen/message_padding_right"
     android:paddingEnd="@dimen/message_padding_end"
     android:id="@+id/layoutWiadomosc"
     android:background="?attr/msgBackground"
     android:descendantFocusability="blocksDescendants"
     android:drawSelectorOnTop="true">
 
-    <com.android.volley.toolbox.NetworkImageView
+    <!--<com.android.volley.toolbox.NetworkImageView-->
+        <!--android:id="@+id/v_avatar"-->
+        <!--android:layout_width="@dimen/avatar_width"-->
+        <!--android:layout_height="@dimen/avatar_height"-->
+        <!--android:clickable="true"-->
+        <!--android:focusable="true"-->
+        <!--/>-->
+    <ImageView
         android:id="@+id/v_avatar"
         android:layout_width="@dimen/avatar_width"
         android:layout_height="@dimen/avatar_height"
         android:clickable="true"
+        android:focusable="true"
         />
 
     <TextView

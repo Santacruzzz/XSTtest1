@@ -121,7 +121,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        //Toast.makeText(mAct,"TEST LAJKOWANIA", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mAct,"Jeszcze nie działa", Toast.LENGTH_SHORT).show();
         return true;
     }
 

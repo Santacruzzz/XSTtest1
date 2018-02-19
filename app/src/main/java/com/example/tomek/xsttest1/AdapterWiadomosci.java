@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.squareup.picasso.Picasso;
 
 import org.apmem.tools.layouts.FlowLayout;
 
@@ -116,21 +118,29 @@ public class AdapterWiadomosci extends BaseAdapter {
             imageLoader = imain.getImageLoader();
         }
 
-        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
-        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
+//        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
+//        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
+        ImageView avatar = row.findViewById(R.id.v_avatar);
+        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
+        LayoutInflater l_inflater = (LayoutInflater)mAct.getApplicationContext().getSystemService
+                (Context.LAYOUT_INFLATER_SERVICE);
 
         autor.setText(mWiadomosc.getAutor());
         int numer_obrazka = 1;
         if (mWiadomosc.getObrazki() != null) {
             for (String obrazek : mWiadomosc.getObrazki()) {
-                //TODO OBRAZKI
-                NetworkImageView v_obrazek = new NetworkImageView(mAct);
-                v_obrazek.setLayoutParams(new LinearLayout.LayoutParams(160, 160));
-                v_obrazek.setImageUrl(obrazek, imageLoader);
-                layoutImages.addView(v_obrazek);
-                layoutImages.setMinimumHeight(160);
+                View l_inflatedView = l_inflater.inflate(R.layout.layout_miniatura_obrazka, layoutImages, false);
 
+                ImageView v_obrazek = l_inflatedView.findViewById(R.id.miniatura_obrazek);
+                TextView txt_obrazek = l_inflatedView.findViewById(R.id.miniatura_tekst);
+                txt_obrazek.setText("#" + numer_obrazka);
+
+                Picasso.with(mAct).load(obrazek).into(v_obrazek);
+//                v_obrazek.setImageUrl(obrazek, imageLoader);
+
+                layoutImages.addView(l_inflatedView);
                 v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
+                numer_obrazka ++;
             }
         }
 

@@ -11,4 +11,6 @@
     <dimen name="message_padding_top">5dp</dimen>
     <dimen name="message_padding_right">2dp</dimen>
     <dimen name="message_padding_end">5dp</dimen>
+
+    <dimen name="miniatura_size">60sp</dimen>
 </resources>

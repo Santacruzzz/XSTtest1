@@ -29,6 +29,7 @@
     <color name="drawerTextColor_dark">#aaa</color>
     <color name="drawerActiveItemBackground_dark">#333</color>
     <color name="sbBottomBackground_dark">@color/colorPrimary_dark</color>
+    <color name="colorMiniaturaTxt_dark">#33000000</color>
 
     <!--LIGHT-->
     <color name="colorPrimary_light">#ede9e9</color>
@@ -56,6 +57,7 @@
     <color name="drawerTextColor_light">#000</color>
     <color name="drawerActiveItemBackground_light">#999</color>
     <color name="sbBottomBackground_light">@color/colorPrimary_light</color>
+    <color name="colorMiniaturaTxt_light">#33aaaaaa</color>
 
     <color name="black_overlay">#66000000</color>
 </resources>
