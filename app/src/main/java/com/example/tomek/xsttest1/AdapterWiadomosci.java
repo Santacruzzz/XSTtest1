@@ -3,6 +3,8 @@ package com.example.tomek.xsttest1;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.text.Html;
+import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +34,7 @@ public class AdapterWiadomosci extends BaseAdapter {
     private ImageLoader imageLoader;
     private IMainActivity imain;
     private Activity mAct;
+    private EmoticonsParser m_parserEmotek;
 
     private int mBgResourceID_even = 0;
     private int mBgResourceID_odd = 0;
@@ -43,6 +46,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         imain = (IMainActivity) act;
         imageLoader = imain.getImageLoader();
         mAct = act;
+        m_parserEmotek = new EmoticonsParser(mAct);
         mBgResourceID_even = imain.getThemeRecourceId(new int[]{R.attr.msgBackground});
         mBgResourceID_odd = imain.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
     }
@@ -84,21 +88,14 @@ public class AdapterWiadomosci extends BaseAdapter {
             return null;
         }
 
-        FlowLayout layoutImages = row.findViewById(R.id.layoutImages);
-        TextView autor = row.findViewById(R.id.v_nick);
-        TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
-        TextView data = row.findViewById(R.id.v_data);
-        TextView lajki = row.findViewById(R.id.v_lajki);
-        final RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
-        ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
         Wiadomosc mWiadomosc;
-
         try {
             mWiadomosc = lista.get(pozycja);
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
 
+        final RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
         if (pozycja % 2 == 0) {
             layWiadomosc.setBackgroundResource(mBgResourceID_even);
         } else {
@@ -114,12 +111,22 @@ public class AdapterWiadomosci extends BaseAdapter {
             }
         });
 
-        if (imageLoader == null) {
-            imageLoader = imain.getImageLoader();
-        }
 
+        FlowLayout layoutImages = row.findViewById(R.id.layoutImages);
+        TextView autor = row.findViewById(R.id.v_nick);
+        TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
+        TextView data = row.findViewById(R.id.v_data);
+        TextView lajki = row.findViewById(R.id.v_lajki);
+        TextView naglowekObrazkow = row.findViewById(R.id.naglowekObrazkow);
+        ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
+
+
+//        if (imageLoader == null) {
+//            imageLoader = imain.getImageLoader();
+//        }
 //        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
 //        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
+
         ImageView avatar = row.findViewById(R.id.v_avatar);
         Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
         LayoutInflater l_inflater = (LayoutInflater)mAct.getApplicationContext().getSystemService
@@ -127,7 +134,8 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         autor.setText(mWiadomosc.getAutor());
         int numer_obrazka = 1;
-        if (mWiadomosc.getObrazki() != null) {
+        if (mWiadomosc.getObrazki().size() > 0) {
+            naglowekObrazkow.setVisibility(View.VISIBLE);
             for (String obrazek : mWiadomosc.getObrazki()) {
                 View l_inflatedView = l_inflater.inflate(R.layout.layout_miniatura_obrazka, layoutImages, false);
 
@@ -142,12 +150,16 @@ public class AdapterWiadomosci extends BaseAdapter {
                 v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
                 numer_obrazka ++;
             }
+        } else {
+            naglowekObrazkow.setVisibility(View.GONE);
         }
 
 //        SpannableString spn = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc() + " " + obr).toString()));
 //        wiadomosc.setText(imain.getTekstEmotki(spn));
 
-        wiadomosc.setText(mWiadomosc.getWiadomosc());
+        SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
+        wiadomosc.setText(m_parserEmotek.getSmiledText(spannableString));
+
         data.setText(mWiadomosc.getData());
         lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
         if (mWiadomosc.getLajki() < 1) {

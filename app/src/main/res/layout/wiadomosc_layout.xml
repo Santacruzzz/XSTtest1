@@ -48,13 +48,25 @@
         android:layout_below="@+id/v_nick"
         android:layout_toRightOf="@+id/v_avatar"/>
 
+    <TextView
+        android:id="@+id/naglowekObrazkow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="5sp"
+        android:paddingVertical="2sp"
+        android:layout_below="@+id/v_wiadomosc"
+        android:layout_toEndOf="@id/v_avatar"
+        android:text="OBRAZKI"
+        android:textColor="@color/textColorSecondary_dark"
+        android:textSize="8sp" />
+
     <org.apmem.tools.layouts.FlowLayout
         android:id="@+id/layoutImages"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/v_wiadomosc"
+        android:layout_below="@+id/naglowekObrazkow"
         android:layout_toEndOf="@id/v_avatar">
 
     </org.apmem.tools.layouts.FlowLayout>
