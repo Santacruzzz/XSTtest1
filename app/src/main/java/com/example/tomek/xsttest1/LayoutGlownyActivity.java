@@ -266,8 +266,13 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     }
 
     @Override
-    public void lajkujWiadomosc(int id) {
+    public void polajkowanoWiadomosc(int msgid) {
+        getmFragmentSb().polajkowanoWiadomosc(msgid);
+    }
 
+    @Override
+    public void lajkujWiadomosc(int id) {
+        mStartService("like", id);
     }
 
     @Override
@@ -442,6 +447,13 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     private void mStartService(String msg) {
         Intent intentStartService = new Intent(this, XstService.class);
         intentStartService.putExtra("msg", msg);
+        startService(intentStartService);
+    }
+
+    private void mStartService(String msg, int value) {
+        Intent intentStartService = new Intent(this, XstService.class);
+        intentStartService.putExtra("msg", msg);
+        intentStartService.putExtra("value", value);
         startService(intentStartService);
     }
 

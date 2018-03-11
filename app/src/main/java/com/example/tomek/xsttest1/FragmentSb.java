@@ -184,4 +184,14 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
             mImain.wyslij_wiadomosc(wiadomosc);
         }
     }
+
+    public void polajkowanoWiadomosc(int msgid) {
+        for (Wiadomosc w : arrayWiadomosci) {
+            if (w.getId() == msgid) {
+                w.addLike();
+                adapterWiadomosci.notifyDataSetChanged();
+                return;
+            }
+        }
+    }
 }

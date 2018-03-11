@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -153,6 +154,9 @@ public class XstService extends Service {
                 } else if (msg.equals("odswiez")) {
                     cancelRefresh();
                     mRunnableWiadomosci.run();
+                } else if (msg.equals("like")) {
+                    int msgId = extra.getInt("value");
+                    lajkujWiadomosc(msgId);
                 }
             }
         } else {
@@ -250,6 +254,41 @@ public class XstService extends Service {
             }
         });
         req.setTag(Typy.TAG_GET_MSG);
+        getRequestQueue().add(req);
+    }
+
+    private void lajkujWiadomosc(final int msgId) {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("key", mKey);
+        params.put("msgid", String.valueOf(msgId));
+        JSONObject request = new JSONObject(params);
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_LIKE, request, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    int success = response.getInt("success");
+                    String msg = response.getString("message");
+                    if (success == 1) {
+                        Intent i = new Intent();
+                        i.putExtra("msgid", msgId);
+                        i.setAction(Typy.BROADCAST_LIKE_MSG);
+                        Log.i("xst", "--- SERVICE: wysyłam broadcast nowy lajk!!!");
+                        sendBroadcast(i);
+                    } else {
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException ignored) {
+
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError volleyError) {
+                cancelRefresh();
+            }
+        });
+        req.setTag(Typy.TAG_LIKE_MSG);
         getRequestQueue().add(req);
     }
 

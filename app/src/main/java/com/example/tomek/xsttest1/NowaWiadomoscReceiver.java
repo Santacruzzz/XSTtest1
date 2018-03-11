@@ -21,6 +21,8 @@ public class NowaWiadomoscReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Typy.BROADCAST_NEW_MSG)) {
             mIact.nowa_wiadomosc(intent);
+        } else if (intent.getAction().equals(Typy.BROADCAST_LIKE_MSG)) {
+            mIact.polajkowanoWiadomosc(intent.getExtras().getInt("msgid"));
         }
     }
 }

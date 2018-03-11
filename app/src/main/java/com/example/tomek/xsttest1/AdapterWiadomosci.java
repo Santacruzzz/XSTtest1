@@ -121,14 +121,14 @@ public class AdapterWiadomosci extends BaseAdapter {
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
 
 
-//        if (imageLoader == null) {
-//            imageLoader = imain.getImageLoader();
-//        }
-//        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
-//        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
+        if (imageLoader == null) {
+            imageLoader = imain.getImageLoader();
+        }
+        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
+        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
 
-        ImageView avatar = row.findViewById(R.id.v_avatar);
-        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
+//        ImageView avatar = row.findViewById(R.id.v_avatar);
+//        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
         LayoutInflater l_inflater = (LayoutInflater)mAct.getApplicationContext().getSystemService
                 (Context.LAYOUT_INFLATER_SERVICE);
 
@@ -153,9 +153,6 @@ public class AdapterWiadomosci extends BaseAdapter {
         } else {
             naglowekObrazkow.setVisibility(View.GONE);
         }
-
-//        SpannableString spn = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc() + " " + obr).toString()));
-//        wiadomosc.setText(imain.getTekstEmotki(spn));
 
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
         wiadomosc.setText(m_parserEmotek.getSmiledText(spannableString));

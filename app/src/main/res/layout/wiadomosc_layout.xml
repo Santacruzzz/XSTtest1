@@ -10,6 +10,14 @@
     android:descendantFocusability="blocksDescendants"
     android:drawSelectorOnTop="true">
 
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/v_avatar"
+        android:layout_width="@dimen/avatar_width"
+        android:layout_height="@dimen/avatar_height"
+        android:clickable="true"
+        android:focusable="true"
+        />
+
     <!--<com.android.volley.toolbox.NetworkImageView-->
         <!--android:id="@+id/v_avatar"-->
         <!--android:layout_width="@dimen/avatar_width"-->
@@ -17,13 +25,6 @@
         <!--android:clickable="true"-->
         <!--android:focusable="true"-->
         <!--/>-->
-    <ImageView
-        android:id="@+id/v_avatar"
-        android:layout_width="@dimen/avatar_width"
-        android:layout_height="@dimen/avatar_height"
-        android:clickable="true"
-        android:focusable="true"
-        />
 
     <TextView
         android:id="@+id/v_nick"

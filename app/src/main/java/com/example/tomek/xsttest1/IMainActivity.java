@@ -25,6 +25,6 @@ interface IMainActivity {
     int getThemeRecourceId(int[] arr);
     void nowe_online(Intent intent);
     void wyslij_wiadomosc(String wiadomosc);
-
+    void polajkowanoWiadomosc(int msgid);
     void lajkujWiadomosc(int id);
 }
