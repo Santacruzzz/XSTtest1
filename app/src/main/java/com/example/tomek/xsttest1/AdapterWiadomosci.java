@@ -164,6 +164,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         } else {
             img_like.setVisibility(View.VISIBLE);
         }
+        row.setTag(mWiadomosc.getId());
         return row;
     }
 

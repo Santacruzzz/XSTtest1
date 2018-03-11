@@ -20,11 +20,12 @@ interface IMainActivity {
     FragmentSb getmFragmentSb();
     FragmentOnline getmFragmentOnline();
     ArrayList<Wiadomosc> getWiadomosci();
+    void odswiezWiadomosci();
     ArrayList<OnlineItem> getOnline();
     int getThemeColor(int[] arr);
     int getThemeRecourceId(int[] arr);
     void nowe_online(Intent intent);
     void wyslij_wiadomosc(String wiadomosc);
     void polajkowanoWiadomosc(int msgid);
-    void lajkujWiadomosc(int id);
+    void lajkujWiadomosc(int id, int position);
 }

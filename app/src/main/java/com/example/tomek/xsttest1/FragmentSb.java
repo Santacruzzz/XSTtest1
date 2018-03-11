@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -17,7 +18,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -26,7 +29,7 @@ import java.util.ArrayList;
  * Created by Tomek on 2017-10-25.
  */
 
-public class FragmentSb extends Fragment implements View.OnClickListener, ListView.OnItemLongClickListener, ListView.OnItemClickListener {
+public class FragmentSb extends Fragment implements View.OnClickListener, ListView.OnItemLongClickListener, ListView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
     private View mView;
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
@@ -34,6 +37,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
     private ImageButton mBtnSend;
     private ImageButton mBtnCamera;
     private EditText mWiadomosc;
+    private SwipeRefreshLayout mRefreshLayout;
 
     private Activity mAct;
     private IMainActivity mImain;
@@ -65,12 +69,14 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         mBtnSend = mView.findViewById(R.id.buttonWyslij);
         mBtnCamera = mView.findViewById(R.id.buttonCamera);
         mWiadomosc = mView.findViewById(R.id.editWyslij);
+        mRefreshLayout = mView.findViewById(R.id.swiperefresh);
 
         registerForContextMenu(listViewWiadomosci);
 
         mBtnSend.setOnClickListener(this);
         mBtnCamera.setOnClickListener(this);
         listViewWiadomosci.setOnItemClickListener(this);
+        mRefreshLayout.setOnRefreshListener(this);
         //listViewWiadomosci.setOnItemLongClickListener(this);
         return mView;
     }
@@ -85,6 +91,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
             arrayWiadomosci.addAll(nowe);
         if (adapterWiadomosci != null) {
             this.adapterWiadomosci.notifyDataSetChanged();
+            mRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -153,7 +160,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         Wiadomosc obj = arrayWiadomosci.get(info.position);
         int l_id = item.getItemId();
         if (l_id == 99) {
-            mImain.lajkujWiadomosc(obj.getId());
+            mImain.lajkujWiadomosc(obj.getId(), info.position);
         } else {
             ArrayList<String> l_linki = obj.getLinki();
             if (l_linki.size() > 0) {
@@ -185,13 +192,30 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         }
     }
 
-    public void polajkowanoWiadomosc(int msgid) {
-        for (Wiadomosc w : arrayWiadomosci) {
-            if (w.getId() == msgid) {
-                w.addLike();
-                adapterWiadomosci.notifyDataSetChanged();
-                return;
-            }
+    public void polajkowanoWiadomosc(int msgid, int position) {
+        Log.i("xst", "--- Fragment sb: zwiekszam like dla wiadomosci: " + msgid);
+        int firstPosition = listViewWiadomosci.getFirstVisiblePosition() - listViewWiadomosci.getHeaderViewsCount();
+        Wiadomosc w = arrayWiadomosci.get(position);
+        w.addLike();
+        View row = listViewWiadomosci.getChildAt(position - firstPosition);
+        if (row == null) {
+            return;
         }
+        if (row.getTag() != msgid) {
+            return;
+        }
+        Log.i("xst", "tag: " + row.getTag());
+        TextView ilosc_lajkow = row.findViewById(R.id.v_lajki);
+        ilosc_lajkow.setText(String.valueOf(w.getLajki()));
+        ImageView ikona_lajkow = row.findViewById(R.id.v_lajk_ikona);
+        if (ikona_lajkow.getVisibility() != View.VISIBLE) {
+            ikona_lajkow.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onRefresh() {
+        mImain.odswiezWiadomosci();
+        Log.i("xst", "--- Fragment SB: Odświeżam wiadomosci");
     }
 }

@@ -152,6 +152,7 @@ public class XstService extends Service {
                     mShowNotifications = false;
                     mJestemOnline = false;
                 } else if (msg.equals("odswiez")) {
+                    mLastDate = 0;
                     cancelRefresh();
                     mRunnableWiadomosci.run();
                 } else if (msg.equals("like")) {
@@ -268,7 +269,7 @@ public class XstService extends Service {
             public void onResponse(JSONObject response) {
                 try {
                     int success = response.getInt("success");
-                    String msg = response.getString("message");
+                    Log.i("xst", "--- SERVICE: odpowiedz na lajk: " + success);
                     if (success == 1) {
                         Intent i = new Intent();
                         i.putExtra("msgid", msgId);
@@ -276,16 +277,17 @@ public class XstService extends Service {
                         Log.i("xst", "--- SERVICE: wysyłam broadcast nowy lajk!!!");
                         sendBroadcast(i);
                     } else {
+                        String msg = response.getString("message");
                         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException ignored) {
-
+                    Log.e("xst", "--- SERVICE: exception: " + ignored.getMessage());
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
-                cancelRefresh();
+                Toast.makeText(getApplicationContext(), "Problem z połączeniem", Toast.LENGTH_SHORT).show();
             }
         });
         req.setTag(Typy.TAG_LIKE_MSG);

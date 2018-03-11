@@ -89,6 +89,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     private FragmentManager fragmentManager;
     private ArrayAdapter<String> mMenuAdapter;
     private View mPrevView;
+    private int mLikedMsgPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +130,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
         mPoprzedniWidok = "";
         mAktualnyWidok = "";
+        mLikedMsgPosition = 0;
 
         mPozwolNaZmianeStylu = true;
         wczytaj_ustawienia();
@@ -178,6 +180,11 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     @Override
     public ArrayList<Wiadomosc> getWiadomosci() {
         return arrayWiadomosci;
+    }
+
+    @Override
+    public void odswiezWiadomosci() {
+        mStartService("odswiez");
     }
 
     @Override
@@ -267,11 +274,13 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
     @Override
     public void polajkowanoWiadomosc(int msgid) {
-        getmFragmentSb().polajkowanoWiadomosc(msgid);
+        Log.i("xst", "--- MainActivity: odebralem broadcast o polajkowaniu wiadomosci " + msgid);
+        getmFragmentSb().polajkowanoWiadomosc(msgid, mLikedMsgPosition);
     }
 
     @Override
-    public void lajkujWiadomosc(int id) {
+    public void lajkujWiadomosc(int id, int position) {
+        mLikedMsgPosition = position;
         mStartService("like", id);
     }
 
@@ -555,6 +564,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
     private void zarejestrujReceivery() {
         registerReceiver(mReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
         registerReceiver(mNowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
+        registerReceiver(mNowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }
 
 }
