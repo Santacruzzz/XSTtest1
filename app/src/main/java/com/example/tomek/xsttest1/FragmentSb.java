@@ -201,7 +201,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         if (row == null) {
             return;
         }
-        if (row.getTag() != msgid) {
+        if ((int)row.getTag() != msgid) {
             return;
         }
         Log.i("xst", "tag: " + row.getTag());

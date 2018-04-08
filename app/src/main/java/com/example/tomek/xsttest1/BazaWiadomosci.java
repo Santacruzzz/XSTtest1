@@ -16,4 +16,9 @@ public class BazaWiadomosci {
     public BazaWiadomosci(Activity p_activity) {
         m_activity = p_activity;
     }
+
+    public void setListaWiadomosci(ArrayList<Wiadomosc> p_lista) {
+
+    }
+
 }

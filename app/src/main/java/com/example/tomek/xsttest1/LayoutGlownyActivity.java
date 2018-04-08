@@ -434,6 +434,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         selectDrawerItem(0);
         mStartService("zalogowano");
         pobierz_wiadomosc(null);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
     private void pobierz_wiadomosc(Intent intent) {
@@ -544,6 +545,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
         wyrejestrujReceivery();
 
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         mRelativeLayoutProfileBox.setVisibility(View.GONE);
         mButtonWyloguj.setVisibility(View.GONE);
         mStartService("wylogowano");
