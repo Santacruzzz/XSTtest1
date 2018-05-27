@@ -11,14 +11,22 @@ import java.util.ArrayList;
 public class BazaWiadomosci {
     private Activity m_activity;
     private ArrayList<Wiadomosc> m_listaWiadomosci;
-    private int m_lastDate;
+    private int m_lastDate = 0;
+    private int m_iloscPobranych = 0;
 
     public BazaWiadomosci(Activity p_activity) {
         m_activity = p_activity;
     }
 
     public void setListaWiadomosci(ArrayList<Wiadomosc> p_lista) {
+        m_listaWiadomosci = p_lista;
+    }
+
+    public void odswiezWiadomosci() {
 
     }
 
+    public void pobierzStarsze() {
+
+    }
 }

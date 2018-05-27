@@ -197,8 +197,8 @@ public class XstService extends Service {
         if (mJestemOnline) {
             params.put("is_online", "1");
         }
+        params.put("android_version", android.os.Build.VERSION.RELEASE);
         JSONObject request = new JSONObject(params);
-
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, request, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -250,12 +250,30 @@ public class XstService extends Service {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 cancelRefresh();
+                Log.e("xst", volleyError.getMessage());
+                JobScheduler mJobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                JobInfo.Builder builder = new JobInfo.Builder(1, new ComponentName(getPackageName(), JobServiceInternetOK.class.getName() ))
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setPeriodic(10 * 1000);
+
+                if (mJobScheduler.schedule(builder.build()) > 0) {
+                    Log.e("xst", "JOB SCHEDULED");
+                } else {
+                    Log.e("xst", "JOB NOT SCHEDULED");
+                }
+                broadcastError();
                 // TODO sprawdzi czy blad to odpowiedz 500 czy brak internetu
                 // TODO dodać job internetu
             }
         });
         req.setTag(Typy.TAG_GET_MSG);
         getRequestQueue().add(req);
+    }
+
+    private void broadcastError() {
+        Intent i = new Intent();
+        i.setAction(Typy.BROADCAST_ERROR);
+        sendBroadcast(i);
     }
 
     private void lajkujWiadomosc(final int msgId) {

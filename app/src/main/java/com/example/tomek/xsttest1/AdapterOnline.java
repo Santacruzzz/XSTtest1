@@ -78,6 +78,9 @@ class AdapterOnline extends BaseAdapter {
         }
         TextView nick = row.findViewById(R.id.v_nick);
         TextView status = row.findViewById(R.id.statusOnline);
+        TextView txtPlatforma = row.findViewById(R.id.v_txtPlatforma);
+        TextView txtUa = row.findViewById(R.id.v_txtUa);
+        ImageView platformaImage = row.findViewById(R.id.v_platforma);
         OnlineItem mOnlineItem;
 
         try {
@@ -118,6 +121,23 @@ class AdapterOnline extends BaseAdapter {
             int[] attrs = {R.attr.offlineTextColor};
             status.setTextColor(imain.getThemeColor(attrs));
         }
+
+        switch (mOnlineItem.getPlatform()) {
+            case "Windows":
+                platformaImage.setImageResource(R.drawable.windows);
+                break;
+            case "Android":
+                platformaImage.setImageResource(R.drawable.android);
+                break;
+            case "Linux":
+                platformaImage.setImageResource(R.drawable.linux);
+                break;
+            default:
+                platformaImage.setImageResource(R.drawable.xst);
+                break;
+        }
+        txtPlatforma.setText(mOnlineItem.getOs());
+        txtUa.setText(mOnlineItem.getUa());
 
         return row;
     }

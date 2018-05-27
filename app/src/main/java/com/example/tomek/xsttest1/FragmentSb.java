@@ -218,4 +218,8 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         mImain.odswiezWiadomosci();
         Log.i("xst", "--- Fragment SB: Odświeżam wiadomosci");
     }
+
+    public void bladOdswiezania() {
+        mRefreshLayout.setRefreshing(false);
+    }
 }

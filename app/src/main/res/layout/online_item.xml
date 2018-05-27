@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/message_padding_start"
@@ -30,9 +32,40 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:textColor="?attr/onlineTextColor"
+        android:layout_centerVertical="false"
         android:paddingRight="5sp"
-        android:text="Online" />
+        android:text="Online"
+        android:textColor="?attr/onlineTextColor" />
+
+    <ImageView
+        android:id="@+id/v_platforma"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_below="@+id/v_nick"
+        android:layout_toEndOf="@+id/v_avatar"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        app:srcCompat="@drawable/xst" />
+
+    <TextView
+        android:id="@+id/v_txtPlatforma"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/v_platforma"
+        android:layout_toEndOf="@+id/v_platforma"
+        android:text="Platforma"
+        android:textSize="12dp"
+        android:textColor="?attr/msgDateColor" />
+
+    <TextView
+        android:id="@+id/v_txtUa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/v_platforma"
+        android:layout_below="@id/v_txtPlatforma"
+        android:text="Platforma"
+        android:textSize="10dp"
+        android:textColor="?attr/msgDateColor" />
 
 </RelativeLayout>

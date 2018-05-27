@@ -4,7 +4,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
@@ -23,6 +29,8 @@ import com.squareup.picasso.Picasso;
 import org.apmem.tools.layouts.FlowLayout;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Tomek on 2017-10-19.
@@ -112,50 +120,36 @@ public class AdapterWiadomosci extends BaseAdapter {
         });
 
 
-        FlowLayout layoutImages = row.findViewById(R.id.layoutImages);
         TextView autor = row.findViewById(R.id.v_nick);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
         TextView data = row.findViewById(R.id.v_data);
         TextView lajki = row.findViewById(R.id.v_lajki);
-        TextView naglowekObrazkow = row.findViewById(R.id.naglowekObrazkow);
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
-
-
+        
         if (imageLoader == null) {
             imageLoader = imain.getImageLoader();
         }
+
         NetworkImageView avatar = row.findViewById(R.id.v_avatar);
         avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
 
 //        ImageView avatar = row.findViewById(R.id.v_avatar);
 //        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
-        LayoutInflater l_inflater = (LayoutInflater)mAct.getApplicationContext().getSystemService
-                (Context.LAYOUT_INFLATER_SERVICE);
 
         autor.setText(mWiadomosc.getAutor());
-        int numer_obrazka = 1;
+        SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
+        Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString);
+
         if (mWiadomosc.getObrazki().size() > 0) {
-            naglowekObrazkow.setVisibility(View.VISIBLE);
+            int numer_obrazka = 1;
             for (String obrazek : mWiadomosc.getObrazki()) {
-                View l_inflatedView = l_inflater.inflate(R.layout.layout_miniatura_obrazka, layoutImages, false);
-
-                ImageView v_obrazek = l_inflatedView.findViewById(R.id.miniatura_obrazek);
-                TextView txt_obrazek = l_inflatedView.findViewById(R.id.miniatura_tekst);
-                txt_obrazek.setText("#" + numer_obrazka);
-
-                Picasso.with(mAct).load(obrazek).into(v_obrazek);
-//                v_obrazek.setImageUrl(obrazek, imageLoader);
-
-                layoutImages.addView(l_inflatedView);
-                v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
+                l_spanableWiadomosc = setSpannableImgLink(l_spanableWiadomosc, obrazek, numer_obrazka);
                 numer_obrazka ++;
             }
-        } else {
-            naglowekObrazkow.setVisibility(View.GONE);
         }
 
-        SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
-        wiadomosc.setText(m_parserEmotek.getSmiledText(spannableString));
+        wiadomosc.setText(l_spanableWiadomosc);
+        wiadomosc.setMovementMethod(LinkMovementMethod.getInstance());
 
         data.setText(mWiadomosc.getData());
         lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
@@ -172,10 +166,10 @@ public class AdapterWiadomosci extends BaseAdapter {
         lista.clear();
     }
 
-    private class ObrazekOnClickListener implements View.OnClickListener {
+    private class SpanOnClickListener extends ClickableSpan  {
         String m_url;
 
-        ObrazekOnClickListener(String p_url) {
+        SpanOnClickListener(String p_url) {
             m_url = p_url;
         }
 
@@ -186,5 +180,36 @@ public class AdapterWiadomosci extends BaseAdapter {
             mAct.startActivity(l_intent);
 
         }
+    }
+
+    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id) {
+        Pattern mImgsPattern = Pattern.compile("\\[Obrazek\\ #" + id + "\\]");
+        int start = 0;
+        int end = 0;
+        Matcher l_matcher = mImgsPattern.matcher(txt);
+        while(l_matcher.find()) {
+            start = l_matcher.start();
+            end = l_matcher.end();
+        }
+        txt.setSpan(new SpanOnClickListener(obrazek), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return txt;
+
+        // v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
+
+        // All the rest will have the same spannable.
+//        ClickableSpan cs = new ClickableSpan() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d("main", "textview clicked");
+//                Toast.makeText(mAct, "textview clicked", Toast.LENGTH_SHORT).show();
+//            } };
+
+        // set the "test " spannable.
+        //txt.setSpan(cs, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        // set the " span" spannable
+        //txt.setSpan(cs, 6, txt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        //tv.setText(txt);
+        //tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

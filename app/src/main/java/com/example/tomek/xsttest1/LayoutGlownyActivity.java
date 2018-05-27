@@ -264,6 +264,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
+                obsluzBrakInternetu();
                 // TODO sprawdzi czy blad to odpowiedz 500 czy brak internetu
                 // TODO dodać job internetu
             }
@@ -316,9 +317,23 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
     @Override
     public void broadcastReceived(String intent) {
-        if (Objects.equals(intent, Typy.BROADCAST_INTERNET_OK)) {
-            pobierz_wiadomosc(null);
+        switch (intent) {
+            case Typy.BROADCAST_INTERNET_OK: {
+                pobierz_wiadomosc(null);
+                Log.e("xst", "WRÓCIŁ INTERNEEET");
+                break;
+            }
+            case Typy.BROADCAST_ERROR: {
+                obsluzBrakInternetu();
+                mFragmentSb.bladOdswiezania();
+                break;
+            }
         }
+
+    }
+
+    private void obsluzBrakInternetu() {
+        Toast.makeText(this, "Brak internetu", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -565,6 +580,7 @@ public class LayoutGlownyActivity extends AppCompatActivity implements IMainActi
 
     private void zarejestrujReceivery() {
         registerReceiver(mReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
+        registerReceiver(mReceiver, new IntentFilter(Typy.BROADCAST_ERROR));
         registerReceiver(mNowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(mNowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }

@@ -12,7 +12,7 @@ import android.util.Log;
 public class JobServiceInternetOK extends JobService {
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        Log.i("xst", "INTERNET OK, rozsyłam info");
+        Log.e("xst", "INTERNET OK, rozsyłam info");
         Intent intent = new Intent();
         intent.setAction(Typy.BROADCAST_INTERNET_OK);
         sendBroadcast(intent);
