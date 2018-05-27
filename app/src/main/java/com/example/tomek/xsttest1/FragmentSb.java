@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -40,6 +41,7 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
     private SwipeRefreshLayout mRefreshLayout;
 
     private Activity mAct;
+
     private IMainActivity mImain;
 
     public FragmentSb() {
@@ -52,11 +54,6 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         mAct = (LayoutGlownyActivity) context;
         mImain = (IMainActivity) mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -77,8 +74,14 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         mBtnCamera.setOnClickListener(this);
         listViewWiadomosci.setOnItemClickListener(this);
         mRefreshLayout.setOnRefreshListener(this);
-        //listViewWiadomosci.setOnItemLongClickListener(this);
+
         return mView;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(Typy.STATE_MSG, mWiadomosc.getText().toString());
     }
 
     @Override
@@ -95,9 +98,10 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         }
     }
 
+
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         if (arrayWiadomosci.size() == 0) {
             odswiezWiadomosci(mImain.getWiadomosci());
         }

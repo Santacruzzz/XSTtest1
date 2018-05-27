@@ -7,8 +7,8 @@ android {
         applicationId "com.example.tomek.xsttest1"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 4
-        versionName "1.03"
+        versionCode 5
+        versionName "1.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
