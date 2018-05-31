@@ -8,18 +8,23 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,15 +35,21 @@ import java.util.ArrayList;
  * Created by Tomek on 2017-10-25.
  */
 
-public class FragmentSb extends Fragment implements View.OnClickListener, ListView.OnItemLongClickListener, ListView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class FragmentSb extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener, ViewPager.OnPageChangeListener {
     private View mView;
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
     private AdapterWiadomosci adapterWiadomosci;
     private ImageButton mBtnSend;
-    private ImageButton mBtnCamera;
+    private ImageButton mBtnAddImage;
+    private ImageButton mBtnTagi;
+    private ImageButton mBtnEmotki;
+    private ImageButton mBtnExpand;
     private EditText mWiadomosc;
     private SwipeRefreshLayout mRefreshLayout;
+    private LinearLayout mLayoutPrzyciski;
+    private ViewPager pagerTagiEmotki;
+    private PagerAdapterTagiEmotki pagerAdapterTagiEmotki;
 
     private Activity mAct;
 
@@ -64,16 +75,38 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         listViewWiadomosci.setAdapter(adapterWiadomosci);
         adapterWiadomosci.notifyDataSetChanged();
         mBtnSend = mView.findViewById(R.id.buttonWyslij);
-        mBtnCamera = mView.findViewById(R.id.buttonCamera);
+        mBtnAddImage = mView.findViewById(R.id.buttonAddImage);
+        mBtnExpand = mView.findViewById(R.id.btnExpand);
+        mBtnTagi = mView.findViewById(R.id.buttonTags);
+        mBtnEmotki = mView.findViewById(R.id.buttonEmotki);
         mWiadomosc = mView.findViewById(R.id.editWyslij);
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
+        mLayoutPrzyciski = mView.findViewById(R.id.layoutPrzyciski);
+        pagerTagiEmotki = mView.findViewById(R.id.viewPagerTagiEmotki);
 
         registerForContextMenu(listViewWiadomosci);
 
         mBtnSend.setOnClickListener(this);
-        mBtnCamera.setOnClickListener(this);
-        listViewWiadomosci.setOnItemClickListener(this);
+        mBtnAddImage.setOnClickListener(this);
+        mBtnExpand.setOnClickListener(this);
+        mBtnTagi.setOnClickListener(this);
+        mBtnEmotki.setOnClickListener(this);
+
         mRefreshLayout.setOnRefreshListener(this);
+        pagerTagiEmotki.addOnPageChangeListener(this);
+        pagerAdapterTagiEmotki = new PagerAdapterTagiEmotki(getChildFragmentManager(), mAct);
+        pagerTagiEmotki.setAdapter(pagerAdapterTagiEmotki);
+
+        mWiadomosc.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    pagerTagiEmotki.setVisibility(View.GONE);
+                    mLayoutPrzyciski.setVisibility(View.GONE);
+                    mBtnExpand.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         return mView;
     }
@@ -98,7 +131,6 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
         }
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
@@ -114,26 +146,26 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
                 wyslij_wiadomosc();
                 break;
 
-            case R.id.buttonCamera:
+            case R.id.buttonAddImage:
+                break;
+            case R.id.buttonEmotki:
+                pagerTagiEmotki.setCurrentItem(1, true);
+                pagerTagiEmotki.setVisibility(View.VISIBLE);
+                mWiadomosc.clearFocus();
+                hideKeyboard(mAct);
+                break;
+            case R.id.buttonTags:
+                pagerTagiEmotki.setCurrentItem(0, true);
+                pagerTagiEmotki.setVisibility(View.VISIBLE);
+                mWiadomosc.clearFocus();
+                hideKeyboard(mAct);
+                break;
+            case R.id.btnExpand:
+                mWiadomosc.clearFocus();
+                mBtnExpand.setVisibility(View.GONE);
+                mLayoutPrzyciski.setVisibility(View.VISIBLE);
                 break;
         }
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Wiadomosc item = arrayWiadomosci.get(position);
-        ArrayList<String> linki = item.getLinki();
-        if (linki.isEmpty()) {
-            //Toast.makeText(mAct,"Brak linkow", Toast.LENGTH_SHORT).show();
-        } else {
-            //Toast.makeText(mAct, "Są linki: " + linki.size(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(mAct,"Jeszcze nie działa", Toast.LENGTH_SHORT).show();
-        return true;
     }
 
     @Override
@@ -147,14 +179,14 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
 
             menu.add(0, 99, 0, "Lubię to!"); //groupId, itemId, order, title
 
-            int id_linka = 0;
-            for (String link : obj.getLinki()) {
-                if (link.length() > 30) {
-                    link = link.substring(0, 25) + "...";
-                }
-                menu.add(1, id_linka, id_linka, "Link " + (id_linka + 1) + ": " + link);
-                id_linka++;
-            }
+//            int id_linka = 0;
+//            for (String link : obj.getLinki()) {
+//                if (link.length() > 30) {
+//                    link = link.substring(0, 25) + "...";
+//                }
+//                menu.add(1, id_linka, id_linka, "Link " + (id_linka + 1) + ": " + link);
+//                id_linka++;
+//            }
         }
     }
 
@@ -225,5 +257,29 @@ public class FragmentSb extends Fragment implements View.OnClickListener, ListVi
 
     public void bladOdswiezania() {
         mRefreshLayout.setRefreshing(false);
+    }
+
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        View view = activity.findViewById(android.R.id.content);
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

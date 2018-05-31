@@ -39,6 +39,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_pokaz_obrazek"
             android:theme="@style/FullscreenTheme" />
+        <activity android:name=".LoginActivity"></activity>
     </application>
 
 </manifest>

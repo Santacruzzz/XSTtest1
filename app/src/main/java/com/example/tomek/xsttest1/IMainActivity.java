@@ -16,7 +16,7 @@ interface IMainActivity {
     RequestQueue getRequestQueue();
     void broadcastReceived(String intent);
     void nowa_wiadomosc(Intent i);
-    void zalogowano(boolean b);
+    void zalogowano();
     FragmentSb getmFragmentSb();
     FragmentOnline getmFragmentOnline();
     ArrayList<Wiadomosc> getWiadomosci();

@@ -1,16 +1,12 @@
 package com.example.tomek.xsttest1;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,57 +18,47 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 
-/**
- * Created by Tomek on 2017-10-26.
- */
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
-public class FragmentLogowanie extends Fragment implements View.OnClickListener {
-    View mView;
     Button mBtnZaloguj;
     EditText mInputLogin;
     EditText mInputHaslo;
-    IMainActivity mImain;
-    Activity mMain;
-
-    public FragmentLogowanie() {
-
-    }
+    private SharedPreferences mSharedPrefs;
+    private String mTheme;
 
     @Override
-    public void onAttach(Context main) {
-        super.onAttach(main);
-        mImain = (IMainActivity) main;
-        mMain = (LayoutGlownyActivity) main;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
+        mSharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
+        mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
+        if (mTheme.equals("light")) {
+            setTheme(R.style.xstThemeLight);
+            getApplicationContext().setTheme(R.style.xstThemeLight);
+        } else {
+            setTheme(R.style.xstThemeDark);
+            getApplicationContext().setTheme(R.style.xstThemeDark);
+        }
+        
+        setContentView(R.layout.login_layout);
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.login_layout, container, false);
-        mInputHaslo = mView.findViewById(R.id.editTextPassword);
-        mInputLogin = mView.findViewById(R.id.editTextLogin);
-        mBtnZaloguj = mView.findViewById(R.id.btnZaloguj);
+        mInputHaslo = findViewById(R.id.editTextPassword);
+        mInputLogin = findViewById(R.id.editTextLogin);
+        mBtnZaloguj = findViewById(R.id.btnZaloguj);
 
         mBtnZaloguj.setOnClickListener(this);
-
-        return mView;
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
     @Override
@@ -92,7 +78,7 @@ public class FragmentLogowanie extends Fragment implements View.OnClickListener 
                     try {
                         String msg = response.getString("message");
                         if (response.getInt("success") == 1) {
-                            SharedPreferences.Editor editor = mMain.getSharedPreferences(Typy.PREFS_NAME, 0).edit();
+                            SharedPreferences.Editor editor = getSharedPreferences(Typy.PREFS_NAME, 0).edit();
 
                             JSONObject user = response.getJSONObject("user");
                             editor.putString(Typy.PREFS_API_KEY, user.getString("keyValue"));
@@ -100,11 +86,13 @@ public class FragmentLogowanie extends Fragment implements View.OnClickListener 
                             editor.putString(Typy.PREFS_NICNKAME, user.getString("nickname"));
                             editor.putString(Typy.PREFS_AVATAR, user.getString("avatar"));
                             editor.commit();
-                            mImain.zalogowano(false);
+                            Intent setData = new Intent();
+                            setData.putExtra("msg", msg);
+                            setResult(RESULT_OK, setData);
+                            finish();
                         }
-                        Toast.makeText(mMain, msg, Toast.LENGTH_SHORT).show();
                     } catch (JSONException ex) {
-                        Log.i("xst", "PARSE ERROR: " + ex.getMessage());
+                        Log.e("xst", "Login PARSE ERROR: " + ex.getMessage());
                     }
                 }
             }, new Response.ErrorListener() {
@@ -120,28 +108,11 @@ public class FragmentLogowanie extends Fragment implements View.OnClickListener 
                         message = "Connection TimeOut! Please check your internet connection2.";
 //                    startScheduleService();
                     }
-                    Toast.makeText(mMain, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getBaseContext(), message, Toast.LENGTH_SHORT).show();
                 }
             });
             req.setTag(Typy.TAG_ZALOGUJ);
-            mImain.getRequestQueue().add(req);
+            Volley.newRequestQueue(getApplicationContext()).add(req);
         }
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-
-        try {
-            Field childFragmentManager = Fragment.class.getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

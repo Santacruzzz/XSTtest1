@@ -14,21 +14,23 @@
     android:focusableInTouchMode="true"
     tools:context="com.example.tomek.xsttest1.LayoutGlownyActivity">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"
         android:layout_width="match_parent"
+        android:layout_height="0sp"
         android:layout_weight="1"
-        android:layout_height="0sp">
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
         <ListView
             android:id="@+id/listaWiadomosci"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:dividerHeight="1dp"
             android:fadingEdge="vertical"
             android:fadingEdgeLength="20sp"
-            android:dividerHeight="1dp"
-            />
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -41,32 +43,73 @@
 
 
         <LinearLayout
-            android:minHeight="30sp"
-            android:layout_width="0sp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:minHeight="30sp"
+            android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/buttonCamera"
+                android:id="@+id/btnExpand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_weight="0"
                 android:background="?attr/btn"
-                android:padding="6sp"
-                app:srcCompat="@android:drawable/ic_menu_camera" />
+                android:padding="6dp"
+                app:srcCompat="@android:drawable/ic_menu_add" />
+
+            <LinearLayout
+                android:id="@+id/layoutPrzyciski"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/buttonAddImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    android:background="?attr/btn"
+                    android:padding="6dp"
+                    app:srcCompat="@android:drawable/ic_menu_gallery" />
+
+                <ImageButton
+                    android:id="@+id/buttonTags"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    android:background="?attr/btn"
+                    android:padding="6dp"
+                    app:srcCompat="@android:drawable/ic_menu_more" />
+
+                <ImageButton
+                    android:id="@+id/buttonEmotki"
+                    android:layout_width="40dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    android:background="?attr/btn"
+                    android:padding="10dp"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/smile1" />
+            </LinearLayout>
 
             <EditText
                 android:id="@+id/editWyslij"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="30sp"
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="@string/tresc_wiad"
                 android:imeActionLabel="@string/wyslij"
                 android:inputType="textMultiLine"
-                android:maxLength="500" />
+                android:maxLength="500"
+                android:minHeight="25dp" />
 
         </LinearLayout>
 
@@ -74,12 +117,19 @@
             android:id="@+id/buttonWyslij"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:layout_weight="0"
             android:background="?attr/btn"
-            android:padding="6sp"
+            android:padding="6dp"
             app:srcCompat="@android:drawable/ic_menu_send" />
 
     </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPagerTagiEmotki"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:visibility="gone" />
 </LinearLayout>
 
 

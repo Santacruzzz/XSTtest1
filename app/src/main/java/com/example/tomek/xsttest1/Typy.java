@@ -37,4 +37,5 @@ public class Typy {
     public static final String FRAGMENT_ZALOGUJ = "Zaloguj";
 
     public static final String STATE_MSG = "state_msg";
+    public static final int REQUEST_ZALOGUJ = 100;
 }

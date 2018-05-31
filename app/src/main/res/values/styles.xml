@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <attr name="nickColor" format="reference|color" />
     <attr name="msgColor" format="reference|color" />
     <attr name="msgDateColor" format="reference|color" />
@@ -18,6 +17,7 @@
     <attr name="btn" format="color" />
     <attr name="drawerItemBackground" format="reference|color" />
     <attr name="miniaturaTxtBg" format="reference|color" />
+    <attr name="tabBackground" format="reference" />
 
     <style name="SplashTheme" parent="xstThemeDark">
         <item name="android:windowBackground">@drawable/splash</item>
@@ -42,11 +42,10 @@
         <item name="android:windowBackground">@color/windowBackground_dark</item>
         <item name="drawerItemBackground">@drawable/drawer_list_selector</item>
 
+        <item name="tabBackground">@drawable/tab_layout_background_dark</item>
         <item name="nickColor">@color/nickColor_dark</item>
         <item name="msgColor">@color/msgColor_dark</item>
         <item name="msgDateColor">@color/msgDateColor_dark</item>
-        <!--item name="msgBackground">@color/msgBackground_dark</item>
-        <item name="msgBackground_odd">@color/msgBackground_odd_dark</item-->
         <item name="drawerBackground">@color/drawerBackground_dark</item>
         <item name="drawerHeaderBackground">@color/drawerHeaderBackground_dark</item>
         <item name="drawerHeaderTextColor">@color/drawerHeaderTextColor_dark</item>
@@ -82,12 +81,10 @@
         <item name="android:windowBackground">@color/windowBackground_light</item>
         <item name="drawerItemBackground">@drawable/drawer_list_selector_light</item>
 
-        <!--<item name="colorButtonNormal">@color/colorButtonNormal_light</item>-->>
+        <item name="tabBackground">@drawable/tab_layout_background_light</item>
         <item name="nickColor">@color/nickColor_light</item>
         <item name="msgColor">@color/msgColor_light</item>
         <item name="msgDateColor">@color/msgDateColor_light</item>
-        <!--item name="msgBackground">@color/msgBackground_light</item>
-        <item name="msgBackground_odd">@color/msgBackground_odd_light</item-->
         <item name="drawerBackground">@color/drawerBackground_light</item>
         <item name="drawerHeaderBackground">@color/drawerHeaderBackground_light</item>
         <item name="drawerHeaderTextColor">@color/drawerHeaderTextColor_light</item>
