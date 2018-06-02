@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.tomek.xsttest1">
+    package="com.example.tomek.shoutbox">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -13,8 +13,8 @@
         android:supportsRtl="false"
         android:theme="@style/SplashTheme">
         <activity
-            android:name=".LayoutGlownyActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:name=".activities.LayoutGlownyActivity"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,11 +35,14 @@
         </receiver>
 
         <activity
-            android:name=".PokazObrazekActivity"
+            android:name=".activities.PokazObrazekActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_pokaz_obrazek"
             android:theme="@style/FullscreenTheme" />
-        <activity android:name=".LoginActivity"></activity>
+        <activity android:name=".activities.LoginActivity" />
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings" />
     </application>
 
 </manifest>

@@ -30,6 +30,7 @@
     <color name="drawerActiveItemBackground_dark">#333</color>
     <color name="sbBottomBackground_dark">@color/colorPrimary_dark</color>
     <color name="colorMiniaturaTxt_dark">#33000000</color>
+    <color name="tagi_emotki_background_dark">#262626</color>
 
     <!--LIGHT-->
     <color name="colorPrimary_light">#ede9e9</color>
@@ -60,4 +61,5 @@
     <color name="colorMiniaturaTxt_light">#33aaaaaa</color>
 
     <color name="black_overlay">#66000000</color>
+    <color name="tagi_emotki_background_light">#dbdbdb</color>
 </resources>

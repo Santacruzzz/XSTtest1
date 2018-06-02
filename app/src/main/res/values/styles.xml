@@ -18,6 +18,7 @@
     <attr name="drawerItemBackground" format="reference|color" />
     <attr name="miniaturaTxtBg" format="reference|color" />
     <attr name="tabBackground" format="reference" />
+    <attr name="tagiEmotkiBackgroundColor" format="color"/>
 
     <style name="SplashTheme" parent="xstThemeDark">
         <item name="android:windowBackground">@drawable/splash</item>
@@ -60,6 +61,7 @@
         <item name="msgBackground_odd">@drawable/bg_msg_dark_odd</item>
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_dark</item>
+        <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_dark</item>
     </style>
 
     <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
@@ -99,6 +101,7 @@
         <item name="msgBackground_odd">@drawable/bg_msg_light_odd</item>
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_light</item>
+        <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_light</item>
     </style>
 
     <style name="FullscreenTheme" parent="SplashTheme">

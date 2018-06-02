@@ -12,7 +12,7 @@
     android:orientation="vertical"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    tools:context="com.example.tomek.xsttest1.LayoutGlownyActivity">
+    tools:context="com.example.tomek.shoutbox.activities.LayoutGlownyActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"
@@ -85,6 +85,7 @@
                     android:layout_weight="1"
                     android:background="?attr/btn"
                     android:padding="6dp"
+                    android:visibility="gone"
                     app:srcCompat="@android:drawable/ic_menu_more" />
 
                 <ImageButton
@@ -96,7 +97,18 @@
                     android:background="?attr/btn"
                     android:padding="10dp"
                     android:scaleType="fitCenter"
+                    android:visibility="gone"
                     app:srcCompat="@drawable/smile1" />
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/tabsTagiEmotki"
+                    android:layout_width="90dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="bottom"
+                    app:tabGravity="fill"
+                    app:tabIndicatorHeight="1dp"
+                    app:tabMode="fixed" />
+
             </LinearLayout>
 
             <EditText
@@ -128,8 +140,9 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPagerTagiEmotki"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:visibility="gone" />
+        android:layout_height="220dp"
+        android:background="?attr/tagiEmotkiBackgroundColor"
+        android:visibility="visible" />
 </LinearLayout>
 
 
