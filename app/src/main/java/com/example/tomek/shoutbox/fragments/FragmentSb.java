@@ -3,6 +3,7 @@ package com.example.tomek.shoutbox.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,10 +15,12 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -56,6 +59,7 @@ public class FragmentSb extends Fragment implements
     private LinearLayout mLayoutPrzyciski;
     private ViewPager pagerTagiEmotki;
     private TabLayout mTabsTagiEmotki;
+    private Integer keyboradSize;
 
     private Activity mAct;
 
@@ -76,7 +80,7 @@ public class FragmentSb extends Fragment implements
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View mView = inflater.inflate(R.layout.layout_sb, container, false);
+        final View mView = inflater.inflate(R.layout.layout_sb, container, false);
         listViewWiadomosci = mView.findViewById(R.id.listaWiadomosci);
         listViewWiadomosci.setAdapter(adapterWiadomosci);
         adapterWiadomosci.notifyDataSetChanged();
@@ -122,6 +126,15 @@ public class FragmentSb extends Fragment implements
             }
         });
 
+        mView.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+                Rect r = new Rect(); mView.getWindowVisibleDisplayFrame(r);
+                int screenHeight = mView.getRootView().getHeight();
+                keyboradSize = screenHeight - (r.bottom - r.top);
+                Log.i("xst", "FragmentSB: kbSize=" + keyboradSize);
+            }
+        });
+
         return mView;
     }
 
@@ -161,32 +174,15 @@ public class FragmentSb extends Fragment implements
                 break;
 
             case R.id.buttonAddImage:
-                break;
-            case R.id.buttonEmotki:
-                if (pagerTagiEmotki.getCurrentItem() == 1 && pagerTagiEmotki.getVisibility() == View.VISIBLE) {
-                    pagerTagiEmotki.setVisibility(View.GONE);
-                } else {
-                    pagerTagiEmotki.setCurrentItem(1, false);
-                    pagerTagiEmotki.setVisibility(View.VISIBLE);
-                    mWiadomosc.clearFocus();
-                    hideKeyboard(mAct);
-                }
-                break;
-            case R.id.buttonTags:
-                if (pagerTagiEmotki.getCurrentItem() == 0 && pagerTagiEmotki.getVisibility() == View.VISIBLE) {
-                    pagerTagiEmotki.setVisibility(View.GONE);
-                } else {
-                    pagerTagiEmotki.setCurrentItem(0, false);
-                    pagerTagiEmotki.setVisibility(View.VISIBLE);
-                    mWiadomosc.clearFocus();
-                    hideKeyboard(mAct);
-                }
+
                 break;
             case R.id.btnExpand:
-                pagerTagiEmotki.setVisibility(View.VISIBLE);
                 mWiadomosc.clearFocus();
+                hideKeyboard(mAct);
                 mBtnExpand.setVisibility(View.GONE);
+                pagerTagiEmotki.setVisibility(View.VISIBLE);
                 mLayoutPrzyciski.setVisibility(View.VISIBLE);
+
                 break;
         }
     }
@@ -293,6 +289,7 @@ public class FragmentSb extends Fragment implements
     public static void hideKeyboard(Activity activity) {
         View view = activity.findViewById(android.R.id.content);
         if (view != null) {
+            Log.i("xst", "Chowam klawe!!!");
             InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
@@ -306,3 +303,5 @@ public class FragmentSb extends Fragment implements
         mWiadomosc.append(item);
     }
 }
+
+

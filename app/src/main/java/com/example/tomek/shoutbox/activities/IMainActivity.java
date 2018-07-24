@@ -21,8 +21,8 @@ public interface IMainActivity {
     void broadcastReceived(String intent);
     void nowa_wiadomosc(Intent i);
     void zalogowano();
-    FragmentSb getmFragmentSb();
-    FragmentOnline getmFragmentOnline();
+    FragmentSb getFragmentSb();
+    FragmentOnline getFragmentOnline();
     ArrayList<Wiadomosc> getWiadomosci();
     void odswiezWiadomosci();
     ArrayList<OnlineItem> getOnline();

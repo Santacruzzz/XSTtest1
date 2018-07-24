@@ -22,9 +22,9 @@ public class PagerAdapterTagiEmotki extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         // Log.i("xst", "++++ getItem: " + position);
         if (position == 0) {
-            return new FragmentTagi(imain.getmFragmentSb());
+            return new FragmentTagi(imain.getFragmentSb());
         } else {
-            return new FragmentEmotki(imain.getmFragmentSb());
+            return new FragmentEmotki(imain.getFragmentSb());
         }
     }
 

@@ -20,9 +20,9 @@ public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         // Log.i("xst", "++++ getItem: " + position);
         if (position == 0) {
-            return imain.getmFragmentSb();
+            return imain.getFragmentSb();
         } else {
-            return imain.getmFragmentOnline();
+            return imain.getFragmentOnline();
         }
     }
 

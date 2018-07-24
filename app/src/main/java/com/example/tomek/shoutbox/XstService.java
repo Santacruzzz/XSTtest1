@@ -261,7 +261,7 @@ public class XstService extends Service {
             @Override
             public void onErrorResponse(VolleyError volleyError) {
                 cancelRefresh();
-                if (volleyError != null) {
+                if (volleyError != null && volleyError.getMessage() != null) {
                     Log.e("xst", volleyError.getMessage());
                 }
                 startScheduleService();
@@ -276,7 +276,7 @@ public class XstService extends Service {
 
     private void broadcastError() {
         Intent i = new Intent();
-        i.setAction(Typy.BROADCAST_ERROR);
+        i.setAction(Typy.BROADCAST_INTERNET_LOST);
         sendBroadcast(i);
     }
 

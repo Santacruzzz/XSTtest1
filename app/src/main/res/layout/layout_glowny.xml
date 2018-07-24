@@ -75,9 +75,9 @@
 
                     <ImageView
                         android:id="@+id/preseceImage"
-                        android:src="@android:drawable/presence_online"
                         android:layout_width="16sp"
-                        android:layout_height="16sp" />
+                        android:layout_height="16sp"
+                        android:src="@android:drawable/presence_online" />
 
                     <TextView
                         android:id="@+id/textOnline"

@@ -19,7 +19,7 @@ public class Typy {
     public static final String BROADCAST_ONLINE = "online_change";
     public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
     public static final String BROADCAST_LIKE_MSG = "nowy_like";
-    public static final String BROADCAST_ERROR = "error";
+    public static final String BROADCAST_INTERNET_LOST = "error";
     public static final String PREFS_NAME = "xstprefs";
     public static final String PREFS_API_KEY = "pak";
     public static final String PREFS_LOGIN = "pl";
