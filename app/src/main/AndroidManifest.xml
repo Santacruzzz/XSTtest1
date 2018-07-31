@@ -37,12 +37,17 @@
         <activity
             android:name=".activities.PokazObrazekActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_pokaz_obrazek"
-            android:theme="@style/FullscreenTheme" />
+            android:label="@string/title_activity_pokaz_obrazek" />
         <activity android:name=".activities.LoginActivity" />
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".activities.MojeObrazki"
+            android:label="Moje obrazki" />
+        <activity
+            android:name=".activities.UploadActivity"
+            android:label="Wyślij obrazek"/>
     </application>
 
 </manifest>

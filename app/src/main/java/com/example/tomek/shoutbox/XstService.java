@@ -20,9 +20,15 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -57,6 +63,7 @@ public class XstService extends Service {
     JobScheduler mJobScheduler;
     private boolean mSprawdzajAktualizacje;
     private boolean mPokazujPowiadomienia;
+    private String mAppVersionName;
 
     public XstService() {
         mJestemOnline = false;
@@ -84,7 +91,13 @@ public class XstService extends Service {
         mSharedPref = getSharedPreferences(Typy.PREFS_NAME, 0);
         mLastDate = mSharedPref.getInt(Typy.PREFS_LAST_DATE, 0);
         mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
-        mAppVersion = getAppVersion();
+        mAppVersion = 0;
+        mAppVersionName = "";
+        PackageInfo appPackageInfo = getAppPackageInfo();
+        if (appPackageInfo != null) {
+            mAppVersion = appPackageInfo.versionCode;
+            mAppVersionName = appPackageInfo.versionName;
+        }
 
         mServiceReady = true;
 
@@ -127,43 +140,44 @@ public class XstService extends Service {
 
                 switch (msg) {
                     case "zalogowano":
-                        cancelRefresh();
                         mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
                         mJestemOnline = true;
-                        mRunnableWiadomosci.run();
-
+                        zacznijPobieracWiadomosci();
                         break;
+
                     case "onResume":
                         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                         assert notificationManager != null;
                         notificationManager.cancelAll();
                         mShowNotifications = false;
                         mNewItems = 0;
-                        cancelRefresh();
                         mDelayMillis = 5000;
                         mJestemOnline = true;
-                        mRunnableWiadomosci.run();
-
+                        zacznijPobieracWiadomosci();
                         break;
+
                     case "onPause":
                         mShowNotifications = true;
-                        cancelRefresh();
                         mJestemOnline = false;
                         mDelayMillis = 1000 * 30; // 30s
-
-                        mRunnableWiadomosci.run();
-
+                        zacznijPobieracWiadomosci();
                         break;
+
                     case "wylogowano":
                         cancelRefresh();
                         mShowNotifications = false;
                         mJestemOnline = false;
                         break;
-                    case "odswiez":
+
+                    case "wymusOdswiezenie":
                         mLastDate = 0;
-                        cancelRefresh();
-                        mRunnableWiadomosci.run();
+                        zacznijPobieracWiadomosci();
                         break;
+
+                    case "odswiez":
+                        zacznijPobieracWiadomosci();
+                        break;
+
                     case "like":
                         int msgId = extra.getInt("value");
                         lajkujWiadomosc(msgId);
@@ -173,17 +187,21 @@ public class XstService extends Service {
         } else {
             cancelRefresh();
             if (mKey.length() == 32) {
-                mRunnableWiadomosci.run();
+                zacznijPobieracWiadomosci();
             }
         }
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private void zacznijPobieracWiadomosci() {
+        cancelRefresh();
+        mRunnableWiadomosci.run();
+    }
+
     @Override
     public void onDestroy() {
-        Log.i("xst", "SERVICE: onDestroy ");
-        mHandler.removeCallbacks(mRunnableWiadomosci);
         super.onDestroy();
+        mHandler.removeCallbacks(mRunnableWiadomosci);
     }
 
     public RequestQueue getRequestQueue() {
@@ -208,24 +226,26 @@ public class XstService extends Service {
             params.put("is_online", "1");
         }
         params.put("android_version", android.os.Build.VERSION.RELEASE);
+        params.put("app_version", mAppVersionName);
         Log.i("xst", "--SERVICE: wysylam params: " + params.toString());
         JSONObject request = new JSONObject(params);
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, request, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
+                broadcastInternetOk();
                 try {
                     mLastDate = response.getInt("last_date");
-                    mAppVersion = response.getInt("version");
+                    int receivedAppVersion = response.getInt("version");
 
-                    if (mAppVersion > getAppVersion() && mSprawdzajAktualizacje) {
-                        show_notification("Jest nowa wersja aplikacji!", "update");
+                    if (receivedAppVersion > mAppVersion && mSprawdzajAktualizacje) {
+                        showNotification("Jest nowa wersja aplikacji!", "update");
                     }
 
                     JSONArray items = response.getJSONArray("items");
                     int new_items = items.length();
                     if (new_items > 0) {
                         if (mShowNotifications && mPokazujPowiadomienia) {
-                            show_notification("Nowe wiadomości", "msg");
+                            showNotification("Nowe wiadomości", "msg");
                         }
                         SharedPreferences.Editor editor = mSharedPref.edit();
                         editor.putString(Typy.PREFS_MSGS, items.toString());
@@ -253,28 +273,23 @@ public class XstService extends Service {
                             sendBroadcast(i);
                         }
                     }
-                } catch (JSONException ignored) {
-
+                } catch (JSONException exception) {
+                    Log.e("xst", exception.getMessage());
                 }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                cancelRefresh();
-                if (volleyError != null && volleyError.getMessage() != null) {
-                    Log.e("xst", volleyError.getMessage());
-                }
-                startScheduleService();
-                broadcastError();
-                // TODO sprawdzi czy blad to odpowiedz 500 czy brak internetu
-                // TODO dodać job internetu
-            }
-        });
+        }, new VolleyErrorListener());
         req.setTag(Typy.TAG_GET_MSG);
         getRequestQueue().add(req);
     }
 
-    private void broadcastError() {
+    private void broadcastInternetOk() {
+        Intent i = new Intent();
+        i.setAction(Typy.BROADCAST_INTERNET_OK);
+        Log.i("xst", "--- SERVICE: wysyłam broadcast internet ok");
+        sendBroadcast(i);
+    }
+
+    private void broadcastConnectionError() {
         Intent i = new Intent();
         i.setAction(Typy.BROADCAST_INTERNET_LOST);
         sendBroadcast(i);
@@ -304,13 +319,7 @@ public class XstService extends Service {
                     Log.e("xst", "service: Blad lajkowania");
                 }
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                Toast.makeText(getApplicationContext(), "Problem z połączeniem", Toast.LENGTH_SHORT).show();
-                startScheduleService();
-            }
-        });
+        }, new VolleyErrorListener());
         req.setTag(Typy.TAG_LIKE_MSG);
         getRequestQueue().add(req);
     }
@@ -320,7 +329,7 @@ public class XstService extends Service {
         mHandler.removeCallbacks(mRunnableWiadomosci);
     }
 
-    private void show_notification(String txt, String typ) {
+    private void showNotification(String txt, String typ) {
         Log.i("xst", "--SERVICE, pokazuje notification: " + typ);
         Intent intent = new Intent();
         if (typ.equals("msg")) {
@@ -332,7 +341,7 @@ public class XstService extends Service {
 
         // build notification
         // the addAction re-use the same intent to keep the example short
-        Notification n  = new Notification.Builder(this)
+        Notification notification  = new Notification.Builder(this)
                 .setContentTitle("XST Shoutbox")
                 .setContentText(txt)
                 .setSmallIcon(R.drawable.xst_text)
@@ -344,26 +353,46 @@ public class XstService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         assert notificationManager != null;
-        notificationManager.notify(1, n);
+        notificationManager.notify(Typy.APP_NOTIFICATION_ID, notification);
     }
 
-    private void startScheduleService() {
-        //TODO dodać do usługi listenera jeśli wróci internet
-        mJobScheduler.schedule(new JobInfo.Builder(1, new ComponentName(this, JobServiceInternetOK.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build());
+    private void startJobSchedulerInternetOK() {
+        mJobScheduler.schedule(
+                new JobInfo.Builder(
+                        1, new ComponentName(
+                                this, JobServiceInternetOK.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).build());
     }
 
-    private int getAppVersion() {
+    private PackageInfo getAppPackageInfo() {
         try {
-            PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), 0);
-            return pInfo.versionCode;
+            return this.getPackageManager().getPackageInfo(getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
-            return 0;
+            return null;
         }
     }
 
     private void wczytajUstawienia() {
         mSprawdzajAktualizacje = mSharedPref.getBoolean("automatyczne_aktualizacje", true);
         mPokazujPowiadomienia = mSharedPref.getBoolean("pokazuj_powiadomienia", true);
+    }
+
+    private class VolleyErrorListener implements Response.ErrorListener {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                cancelRefresh();
+                startJobSchedulerInternetOK();
+                broadcastConnectionError();
+            } else if (error instanceof AuthFailureError) {
+                Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
+            } else if (error instanceof ServerError) {
+                Toast.makeText(getApplicationContext(), "ServerError", Toast.LENGTH_SHORT).show();
+            } else if (error instanceof NetworkError) {
+                Toast.makeText(getApplicationContext(), "NetworkError", Toast.LENGTH_SHORT).show();
+            } else if (error instanceof ParseError) {
+                Toast.makeText(getApplicationContext(), "ParseError", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

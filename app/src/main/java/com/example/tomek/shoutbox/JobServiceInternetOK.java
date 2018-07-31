@@ -16,7 +16,7 @@ public class JobServiceInternetOK extends JobService {
     public boolean onStartJob(JobParameters jobParameters) {
         Log.e("xst", "INTERNET OK, rozsyłam info");
         Intent intent = new Intent();
-        intent.setAction(Typy.BROADCAST_INTERNET_OK);
+        intent.setAction(Typy.BROADCAST_INTERNET_WROCIL);
         sendBroadcast(intent);
         return false;
     }

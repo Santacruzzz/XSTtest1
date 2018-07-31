@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,33 +26,19 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends XstActivity implements View.OnClickListener {
 
     Button mBtnZaloguj;
     EditText mInputLogin;
     EditText mInputHaslo;
-    private SharedPreferences mSharedPrefs;
-    private String mTheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mSharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
-        mTheme = mSharedPrefs.getString(Typy.PREFS_THEME, "dark");
-        if (mTheme.equals("light")) {
-            setTheme(R.style.xstThemeLight);
-            getApplicationContext().setTheme(R.style.xstThemeLight);
-        } else {
-            setTheme(R.style.xstThemeDark);
-            getApplicationContext().setTheme(R.style.xstThemeDark);
-        }
-        
         setContentView(R.layout.login_layout);
-
         mInputHaslo = findViewById(R.id.editTextPassword);
         mInputLogin = findViewById(R.id.editTextLogin);
         mBtnZaloguj = findViewById(R.id.btnZaloguj);
-
         mBtnZaloguj.setOnClickListener(this);
     }
 

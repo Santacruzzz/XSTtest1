@@ -1,6 +1,5 @@
 package com.example.tomek.shoutbox.activities;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -8,11 +7,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.example.tomek.shoutbox.R;
-import com.github.chrisbanes.photoview.PhotoView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-public class PokazObrazekActivity extends Activity implements Callback {
+public class PokazObrazekActivity extends XstActivity implements Callback {
 
     private ImageView photoView;
     private ProgressBar progressBar;
@@ -20,6 +18,7 @@ public class PokazObrazekActivity extends Activity implements Callback {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        enableBackButtonInActionBar();
         setContentView(R.layout.activity_pokaz_obrazek);
 
         Bundle extras = getIntent().getExtras();
@@ -27,6 +26,11 @@ public class PokazObrazekActivity extends Activity implements Callback {
 
         if (extras != null) {
             url = extras.getString("image_url");
+            String author = extras.getString("author");
+            if (author == null) {
+                author = nickname;
+            }
+            setTitle("Autor: " + author);
         }
 
         photoView = findViewById(R.id.obrazek);

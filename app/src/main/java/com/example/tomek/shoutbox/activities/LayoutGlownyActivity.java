@@ -6,13 +6,15 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -26,14 +28,17 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
-import com.android.volley.toolbox.Volley;
 import com.example.tomek.shoutbox.MyBroadcastReceiver;
 import com.example.tomek.shoutbox.NavItem;
 import com.example.tomek.shoutbox.NowaWiadomoscReceiver;
@@ -45,60 +50,50 @@ import com.example.tomek.shoutbox.adapters.DrawerListAdapter;
 import com.example.tomek.shoutbox.adapters.ScreenSlidePagerAdapter;
 import com.example.tomek.shoutbox.fragments.FragmentOnline;
 import com.example.tomek.shoutbox.fragments.FragmentSb;
-import com.example.tomek.shoutbox.utils.LruBitmapCache;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class LayoutGlownyActivity extends AppCompatActivity
+public class LayoutGlownyActivity extends XstActivity
         implements ViewPager.OnPageChangeListener,
                    IMainActivity,
                    View.OnClickListener,
                    CompoundButton.OnCheckedChangeListener {
     ArrayList<Wiadomosc> arrayListWiadomosci;
     ArrayList<OnlineItem> arrayListOnline;
-    RequestQueue requestQueue;
-    ImageLoader imageLoader;
     MyBroadcastReceiver broadcastReceiver;
     NowaWiadomoscReceiver nowaWiadomoscReceiver;
 
-    SharedPreferences sharedPrefs;
-
     private DrawerLayout drawerLayout;
     private RelativeLayout relativeLayoutProfileBox;
-    NetworkImageView userAvatar;
-    TextView userNick;
-    ImageView presenceImage;
-    TextView textOnline;
-    private Switch mCheckBoxDarkTheme;
+    private NetworkImageView userAvatar;
+    private TextView userNick;
+    private ImageView presenceImage;
+    private TextView textOnline;
+    private TextView textConnectionError;
+
+    private Switch checkBoxDarkTheme;
     private Button buttonWyloguj;
     private Button buttonZaloguj;
 
-    private boolean czyZalogowany = false;
     private boolean czyJestInternet = true;
     private boolean wyswietlilemBladInternetu = false;
     private boolean pozwolNaZmianeStylu = true;
-    private String apiKey;
-    private String login;
-    private String nickname;
-    private String avatarFileName;
-    private String themeName;
+
     private FragmentSb fragmentSb;
     private FragmentOnline fragmentOnline;
-    ArrayList<NavItem> navItemsList;
+    private ArrayList<NavItem> navItemsList;
     private int likedMsgPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        wczytajStyl();
-        wczytaj_ustawienia();
         zaladujWidokPodstawowy();
 
         if (czyZalogowany) {
@@ -107,24 +102,13 @@ public class LayoutGlownyActivity extends AppCompatActivity
             zaladujWidokNiezalogowany();
         }
 
-        mCheckBoxDarkTheme.setOnCheckedChangeListener(this);
-    }
-
-    private void wczytajStyl() {
-        sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
-        themeName = sharedPrefs.getString(Typy.PREFS_THEME, "dark");
-        Log.i("xst", "Wczytuje styl: " + themeName);
-        if (themeName.equals("light")) {
-            setTheme(R.style.xstThemeLight);
-            getApplicationContext().setTheme(R.style.xstThemeLight);
-        } else {
-            setTheme(R.style.xstThemeDark);
-            getApplicationContext().setTheme(R.style.xstThemeDark);
-        }
+        checkBoxDarkTheme.setOnCheckedChangeListener(this);
     }
 
     private void zaladujWidokPodstawowy() {
         setContentView(R.layout.layout_glowny);
+
+        getSupportActionBar().hide();
 
         relativeLayoutProfileBox = findViewById(R.id.profileBox);
         userAvatar = findViewById(R.id.userAvatar);
@@ -132,10 +116,12 @@ public class LayoutGlownyActivity extends AppCompatActivity
         arrayListWiadomosci = new ArrayList<>();
         arrayListOnline = new ArrayList<>();
         navItemsList = new ArrayList<>();
-        navItemsList.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, R.drawable.xst));
+        navItemsList.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, android.R.drawable.ic_menu_preferences));
+        navItemsList.add(new NavItem(Typy.FRAGMENT_MOJE_OBRAZKI, android.R.drawable.ic_menu_gallery));
         drawerLayout = findViewById(R.id.drawer_layout);
         presenceImage = findViewById(R.id.preseceImage);
         textOnline = findViewById(R.id.textOnline);
+        textConnectionError = findViewById(R.id.textConnectionError);
         ListView mDrawerList = findViewById(R.id.left_drawer);
         mDrawerList.setAdapter(new DrawerListAdapter(this, navItemsList));
         mDrawerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -149,7 +135,7 @@ public class LayoutGlownyActivity extends AppCompatActivity
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mPager);
 
-        mCheckBoxDarkTheme = findViewById(R.id.checkBoxTheme);
+        checkBoxDarkTheme = findViewById(R.id.checkBoxTheme);
         buttonWyloguj = findViewById(R.id.buttonWyloguj);
         buttonZaloguj = findViewById(R.id.buttonZaloguj);
         buttonWyloguj.setOnClickListener(this);
@@ -158,9 +144,9 @@ public class LayoutGlownyActivity extends AppCompatActivity
         relativeLayoutProfileBox.setVisibility(View.VISIBLE);
         pozwolNaZmianeStylu = false;
         if (themeName.equals("dark")) {
-            mCheckBoxDarkTheme.setChecked(true);
+            checkBoxDarkTheme.setChecked(true);
         } else {
-            mCheckBoxDarkTheme.setChecked(false);
+            checkBoxDarkTheme.setChecked(false);
         }
         pozwolNaZmianeStylu = true;
         userNick.setText(nickname);
@@ -176,6 +162,12 @@ public class LayoutGlownyActivity extends AppCompatActivity
             drawerLayout.closeDrawers();
             return;
         }
+        if (fragmentSb != null) {
+            if (fragmentSb.isViewPagerVisible()) {
+                fragmentSb.hideViewPager();
+                return;
+            }
+        }
         super.onBackPressed();
     }
 
@@ -186,7 +178,7 @@ public class LayoutGlownyActivity extends AppCompatActivity
 
     @Override
     public void odswiezWiadomosci() {
-        mStartService("odswiez");
+        mStartService("wymusOdswiezenie");
     }
 
     @Override
@@ -204,7 +196,6 @@ public class LayoutGlownyActivity extends AppCompatActivity
         }
         return arrayListOnline;
     }
-
     @Override
     public int getThemeRecourceId(int[] attrs) {
         int themeId;
@@ -264,10 +255,18 @@ public class LayoutGlownyActivity extends AppCompatActivity
             }
         }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                obsluzBrakInternetu();
-                // TODO sprawdzi czy blad to odpowiedz 500 czy brak internetu
-                // TODO dodać job internetu
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                    obsluzBrakInternetu();
+                } else if (error instanceof AuthFailureError) {
+                    Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof ServerError) {
+                    Toast.makeText(getApplicationContext(), "ServerError", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof NetworkError) {
+                    Toast.makeText(getApplicationContext(), "NetworkError", Toast.LENGTH_SHORT).show();
+                } else if (error instanceof ParseError) {
+                    Toast.makeText(getApplicationContext(), "ParseError", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         req.setTag(Typy.TAG_SEND_MSG);
@@ -297,6 +296,11 @@ public class LayoutGlownyActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        if (czyJestInternet) {
+            obsluzPowrotInternetu();
+        } else {
+            obsluzBrakInternetu();
+        }
         zarejestrujReceivery();
         if (czyZalogowany) {
             mStartService("onResume");
@@ -309,7 +313,7 @@ public class LayoutGlownyActivity extends AppCompatActivity
     @Override
     public void broadcastReceived(String intent) {
         switch (intent) {
-            case Typy.BROADCAST_INTERNET_OK:
+            case Typy.BROADCAST_INTERNET_WROCIL:
                 mStartService("odswiez");
                 obsluzPowrotInternetu();
                 break;
@@ -317,6 +321,10 @@ public class LayoutGlownyActivity extends AppCompatActivity
             case Typy.BROADCAST_INTERNET_LOST:
                 obsluzBrakInternetu();
                 fragmentSb.bladOdswiezania();
+                break;
+
+            case Typy.BROADCAST_INTERNET_OK:
+                obsluzPowrotInternetu();
                 break;
         }
     }
@@ -326,10 +334,15 @@ public class LayoutGlownyActivity extends AppCompatActivity
         if (wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = false;
             Toast.makeText(this, "Połączenie przywrócone", Toast.LENGTH_SHORT).show();
-            textOnline.setText("Online");
-            textOnline.setTextColor(Color.GREEN);
-            presenceImage.setImageResource(android.R.drawable.presence_online);
         }
+        ustawWidokStanuPolaczenia("Online", Color.GREEN, android.R.drawable.presence_online, View.GONE);
+    }
+
+    private void ustawWidokStanuPolaczenia(String statusName, int statusTextColor, int presenceIcon, int infoTextViewVisibility) {
+        textOnline.setText(statusName);
+        textOnline.setTextColor(statusTextColor);
+        presenceImage.setImageResource(presenceIcon);
+        textConnectionError.setVisibility(infoTextViewVisibility);
     }
 
     private void obsluzBrakInternetu() {
@@ -337,31 +350,13 @@ public class LayoutGlownyActivity extends AppCompatActivity
         if (! wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = true;
             Toast.makeText(this, "Brak połączenia", Toast.LENGTH_SHORT).show();
-            textOnline.setText("Offline");
-            textOnline.setTextColor(Color.RED);
-            presenceImage.setImageResource(android.R.drawable.presence_offline);
         }
+        ustawWidokStanuPolaczenia("Offline", Color.RED, android.R.drawable.presence_offline, View.VISIBLE);
     }
 
     @Override
     public void nowa_wiadomosc(Intent i) {
         wczytajWiadomosci(i);
-    }
-
-    private void wczytaj_ustawienia() {
-        apiKey = sharedPrefs.getString(Typy.PREFS_API_KEY, "");
-        login = sharedPrefs.getString(Typy.PREFS_LOGIN, "");
-        nickname = sharedPrefs.getString(Typy.PREFS_NICNKAME, "");
-        avatarFileName = sharedPrefs.getString(Typy.PREFS_AVATAR, "");
-        themeName = sharedPrefs.getString(Typy.PREFS_THEME, "dark");
-
-        czyZalogowany = apiKey.length() == 32;
-        if (login.isEmpty()) {
-            czyZalogowany = false;
-        }
-        if (nickname.isEmpty()) {
-            czyZalogowany = false;
-        }
     }
 
     public FragmentSb getFragmentSb() {
@@ -376,21 +371,6 @@ public class LayoutGlownyActivity extends AppCompatActivity
             fragmentOnline = new FragmentOnline();
         }
         return fragmentOnline;
-    }
-
-    public RequestQueue getRequestQueue() {
-        if (requestQueue == null) {
-            requestQueue = Volley.newRequestQueue(getApplicationContext());
-        }
-        return requestQueue;
-    }
-
-    public ImageLoader getImageLoader() {
-        getRequestQueue();
-        if (imageLoader == null) {
-            imageLoader = new ImageLoader(this.requestQueue, new LruBitmapCache());
-        }
-        return this.imageLoader;
     }
 
     public void zalogowano() {
@@ -492,10 +472,14 @@ public class LayoutGlownyActivity extends AppCompatActivity
             }
         }
     }
+
     private void selectDrawerItem(int i) {
-        if (navItemsList.get(i).mTitle.toLowerCase().equals(Typy.FRAGMENT_USTAWIENIA)) {
-            //TODO START ACTIVITY USTAWIENIA
+        String selectedActivity = navItemsList.get(i).mTitle.toLowerCase();
+        if (selectedActivity.equals(Typy.FRAGMENT_USTAWIENIA)) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        } else if (selectedActivity.equals(Typy.FRAGMENT_MOJE_OBRAZKI)) {
+            Intent intent = new Intent(this, MojeObrazki.class);
             startActivity(intent);
         }
 
@@ -537,8 +521,9 @@ public class LayoutGlownyActivity extends AppCompatActivity
     }
 
     private void zarejestrujReceivery() {
-        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_WROCIL));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_LOST));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }
@@ -571,16 +556,26 @@ public class LayoutGlownyActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Typy.REQUEST_ZALOGUJ) {
-            if (resultCode == RESULT_OK) {
-                wczytaj_ustawienia();
-                zalogowano();
-                String msg = data.getStringExtra("msg");
-                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-            } else {
-                finish();
-            }
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case Typy.REQUEST_ZALOGUJ:
+                if (resultCode == RESULT_OK) {
+                    wczytajUstawienia();
+                    zalogowano();
+                    String msg = data.getStringExtra("msg");
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                } else {
+                    finish();
+                }
+                break;
+            case Typy.REQUEST_PICK_IMAGE:
+                if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                    Uri uri = data.getData();
+                    Intent uploadIntent = new Intent(this, UploadActivity.class);
+                    uploadIntent.putExtra("imageUri", uri.toString());
+                    startActivity(uploadIntent);
+                }
+                break;
         }
     }
-
 }

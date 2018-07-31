@@ -16,8 +16,6 @@ import java.util.ArrayList;
  */
 
 public interface IMainActivity {
-    ImageLoader getImageLoader();
-    RequestQueue getRequestQueue();
     void broadcastReceived(String intent);
     void nowa_wiadomosc(Intent i);
     void zalogowano();

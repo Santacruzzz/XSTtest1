@@ -11,7 +11,7 @@
     android:background="?attr/msgBackground"
     android:id="@+id/layOnline"
     >
-    <com.android.volley.toolbox.NetworkImageView
+    <com.example.tomek.shoutbox.FadeInNetworkImageView
         android:id="@+id/v_avatar"
         android:layout_width="@dimen/avatar_width"
         android:layout_height="@dimen/avatar_height"/>

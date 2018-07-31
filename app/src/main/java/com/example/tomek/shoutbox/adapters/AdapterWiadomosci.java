@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.tomek.shoutbox.activities.IVolley;
 import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
@@ -39,6 +40,7 @@ public class AdapterWiadomosci extends BaseAdapter {
     private LayoutInflater inflater;
     private ImageLoader imageLoader;
     private IMainActivity imain;
+    private IVolley iVolley;
     private Activity mAct;
     private EmoticonsParser m_parserEmotek;
 
@@ -50,7 +52,8 @@ public class AdapterWiadomosci extends BaseAdapter {
         lista = _list;
         inflater = LayoutInflater.from(act.getApplicationContext());
         imain = (IMainActivity) act;
-        imageLoader = imain.getImageLoader();
+        iVolley = (IVolley) act;
+        imageLoader = iVolley.getImageLoader();
         mAct = act;
         m_parserEmotek = new EmoticonsParser(mAct.getApplicationContext());
         mBgResourceID_even = imain.getThemeRecourceId(new int[]{R.attr.msgBackground});
@@ -125,7 +128,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
         
         if (imageLoader == null) {
-            imageLoader = imain.getImageLoader();
+            imageLoader = iVolley.getImageLoader();
         }
 
         NetworkImageView avatar = row.findViewById(R.id.v_avatar);
@@ -141,7 +144,10 @@ public class AdapterWiadomosci extends BaseAdapter {
         if (mWiadomosc.getObrazki().size() > 0) {
             int numer_obrazka = 1;
             for (String obrazek : mWiadomosc.getObrazki()) {
-                l_spanableWiadomosc = setSpannableImgLink(l_spanableWiadomosc, obrazek, numer_obrazka);
+                l_spanableWiadomosc = setSpannableImgLink(l_spanableWiadomosc,
+                                                          obrazek,
+                                                          numer_obrazka,
+                                                          mWiadomosc.getAutor());
                 numer_obrazka ++;
             }
         }
@@ -165,22 +171,25 @@ public class AdapterWiadomosci extends BaseAdapter {
     }
 
     private class SpanOnClickListener extends ClickableSpan  {
-        String m_url;
+        String url;
+        String author;
 
-        SpanOnClickListener(String p_url) {
-            m_url = p_url;
+        SpanOnClickListener(String p_url, String p_author) {
+            url = p_url;
+            author = p_author;
         }
 
         @Override
         public void onClick(View v) {
             Intent l_intent = new Intent(mAct, PokazObrazekActivity.class);
-            l_intent.putExtra("image_url", m_url);
+            l_intent.putExtra("image_url", url);
+            l_intent.putExtra("author", author);
             mAct.startActivity(l_intent);
 
         }
     }
 
-    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id) {
+    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id, String p_author) {
         Pattern mImgsPattern = Pattern.compile("\\[Obrazek\\ #" + id + "\\]");
         int start = 0;
         int end = 0;
@@ -189,7 +198,7 @@ public class AdapterWiadomosci extends BaseAdapter {
             start = l_matcher.start();
             end = l_matcher.end();
         }
-        txt.setSpan(new SpanOnClickListener(obrazek), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        txt.setSpan(new SpanOnClickListener(obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return txt;
 
         // v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));

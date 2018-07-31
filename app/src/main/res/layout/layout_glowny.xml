@@ -2,6 +2,7 @@
 
 <android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -10,14 +11,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/textConnectionError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent_dark"
+            android:gravity="center"
+            android:paddingBottom="2dp"
+            android:paddingTop="2dp"
+            android:text="Brak polączenia"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
-            android:background="?attr/tabBackground"
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            app:tabMode="fixed"
+            android:layout_below="@+id/textConnectionError"
+            android:background="?attr/tabBackground"
+            app:tabGravity="fill"
             app:tabIndicatorHeight="1dp"
-            app:tabGravity="fill"/>
+            app:tabMode="fixed" />
 
         <android.support.v4.view.ViewPager
             android:id="@+id/sb_pager"

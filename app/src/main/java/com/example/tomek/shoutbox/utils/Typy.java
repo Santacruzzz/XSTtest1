@@ -9,12 +9,15 @@ public class Typy {
     public static final String URL_PROTOCOL = "http";
     public static final String URL_API = URL_PROTOCOL + "://xs-team.pl/api/";
     public static final String URL_AVATAR = URL_PROTOCOL + "://xs-team.pl/images/avatars/";
+    public static final String URL_OBRAZKI = URL_PROTOCOL + "://xs-team.pl/uploads/";
     public static final String API_MSG_GET = URL_API + "msg/get";
     public static final String API_MSG_SEND = URL_API + "msg/send";
     public static final String API_MSG_LIKE = URL_API + "msg/like";
+    public static final String API_GET_OBRAZKI = URL_API + "msg/getObrazki";
     public static final String TAG_GET_MSG = "getmsg";
     public static final String TAG_SEND_MSG = "sendmsg";
     public static final String TAG_LIKE_MSG = "likemsg";
+    public static final String BROADCAST_INTERNET_WROCIL = "wrocil_net";
     public static final String BROADCAST_INTERNET_OK = "jest_net";
     public static final String BROADCAST_ONLINE = "online_change";
     public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
@@ -35,7 +38,10 @@ public class Typy {
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";
     public static final String FRAGMENT_USTAWIENIA = "ustawienia";
     public static final String FRAGMENT_ZALOGUJ = "Zaloguj";
+    public static final String FRAGMENT_MOJE_OBRAZKI = "obrazki";
 
     public static final String STATE_MSG = "state_msg";
     public static final int REQUEST_ZALOGUJ = 100;
+    public static final int APP_NOTIFICATION_ID = 1;
+    public static final int REQUEST_PICK_IMAGE = 80;
 }

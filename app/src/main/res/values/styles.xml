@@ -20,11 +20,7 @@
     <attr name="tabBackground" format="reference" />
     <attr name="tagiEmotkiBackgroundColor" format="color"/>
 
-    <style name="SplashTheme" parent="xstThemeDark">
-        <item name="android:windowBackground">@drawable/splash</item>
-    </style>
-
-    <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
+    <style name="xstThemeDark" parent="Theme.AppCompat">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:colorPrimary">@color/colorPrimary_dark</item>
         <item name="colorPrimary">@color/colorPrimary_dark</item>
@@ -64,7 +60,7 @@
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_dark</item>
     </style>
 
-    <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="xstThemeLight" parent="Theme.AppCompat.Light">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:colorPrimary">@color/colorPrimary_light</item>
         <item name="colorPrimary">@color/colorPrimary_light</item>
@@ -104,17 +100,8 @@
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_light</item>
     </style>
 
-    <style name="FullscreenTheme" parent="SplashTheme">
-        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
-        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    <style name="SplashTheme" parent="xstThemeDark">
+        <item name="android:windowBackground">@drawable/splash</item>
     </style>
-
-    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
-        <item name="android:background">@color/black_overlay</item>
-    </style>
-
 
 </resources>

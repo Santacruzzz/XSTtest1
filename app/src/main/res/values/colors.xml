@@ -4,7 +4,7 @@
     <!--DARK-->
     <color name="colorPrimary_dark">#201f1f</color>
     <color name="colorPrimaryDark_dark">#993000</color>
-    <color name="colorAccent_dark">#FF0000</color>
+    <color name="colorAccent_dark">#ff0000</color>
     <color name="colorBackground_dark">#000000</color>
     <color name="colorForeground_dark">#000000</color>
     <color name="navigationBarColor_dark">#000000</color>
@@ -14,7 +14,7 @@
     <color name="textColorSecondary_dark">#7e7f88</color>
     <color name="textColorSecondaryInverse_dark">#646fbe</color>
     <color name="windowBackground_dark">#222222</color>
-    <color name="colorButtonNormal_dark">#fff</color>
+    <color name="colorButtonNormal_dark">#ffffff</color>
 
     <color name="nickColor_dark">#929292</color>
     <color name="msgColor_dark">#e2e2e2</color>

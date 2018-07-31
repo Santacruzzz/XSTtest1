@@ -12,10 +12,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,14 +56,15 @@ public class FragmentSb extends Fragment implements
     private SwipeRefreshLayout mRefreshLayout;
     private LinearLayout mLayoutPrzyciski;
     private ViewPager pagerTagiEmotki;
-    private TabLayout mTabsTagiEmotki;
     private Integer keyboradSize;
+    private boolean viewPagerVisible;
 
     private Activity mAct;
 
     private IMainActivity mImain;
 
     public FragmentSb() {
+        viewPagerVisible = false;
         arrayWiadomosci = new ArrayList<>();
     }
 
@@ -94,7 +93,7 @@ public class FragmentSb extends Fragment implements
         mLayoutPrzyciski = mView.findViewById(R.id.layoutPrzyciski);
 
         pagerTagiEmotki = mView.findViewById(R.id.viewPagerTagiEmotki);
-        mTabsTagiEmotki = mView.findViewById(R.id.tabsTagiEmotki);
+        TabLayout mTabsTagiEmotki = mView.findViewById(R.id.tabsTagiEmotki);
         PagerAdapterTagiEmotki pagerAdapterTagiEmotki = new PagerAdapterTagiEmotki(getChildFragmentManager(), mAct);
         mTabsTagiEmotki.setupWithViewPager(pagerTagiEmotki);
         pagerTagiEmotki.setAdapter(pagerAdapterTagiEmotki);
@@ -118,9 +117,7 @@ public class FragmentSb extends Fragment implements
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     if (pagerTagiEmotki.getVisibility() == View.VISIBLE) {
-                        pagerTagiEmotki.setVisibility(View.GONE);
-                        mLayoutPrzyciski.setVisibility(View.GONE);
-                        mBtnExpand.setVisibility(View.VISIBLE);
+                        hideViewPager();
                     }
                 }
             }
@@ -131,11 +128,18 @@ public class FragmentSb extends Fragment implements
                 Rect r = new Rect(); mView.getWindowVisibleDisplayFrame(r);
                 int screenHeight = mView.getRootView().getHeight();
                 keyboradSize = screenHeight - (r.bottom - r.top);
-                Log.i("xst", "FragmentSB: kbSize=" + keyboradSize);
+                Log.i("xst", "FragmentSB: keyboardSize=" + keyboradSize);
             }
         });
 
         return mView;
+    }
+
+    public static Intent getPickImageIntent() {
+        Intent chooserIntent = new Intent();
+        chooserIntent.setType("image/*");
+        chooserIntent.setAction(Intent.ACTION_GET_CONTENT);
+        return chooserIntent;
     }
 
     @Override
@@ -174,17 +178,25 @@ public class FragmentSb extends Fragment implements
                 break;
 
             case R.id.buttonAddImage:
-
+                Intent l_intent = getPickImageIntent();
+                mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
                 break;
+
             case R.id.btnExpand:
                 mWiadomosc.clearFocus();
                 hideKeyboard(mAct);
-                mBtnExpand.setVisibility(View.GONE);
-                pagerTagiEmotki.setVisibility(View.VISIBLE);
-                mLayoutPrzyciski.setVisibility(View.VISIBLE);
-
+                showViewPager();
                 break;
         }
+    }
+
+    public boolean isViewPagerVisible() { return viewPagerVisible; }
+
+    private void showViewPager() {
+        viewPagerVisible = true;
+        mBtnExpand.setVisibility(View.GONE);
+        pagerTagiEmotki.setVisibility(View.VISIBLE);
+        mLayoutPrzyciski.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -228,6 +240,8 @@ public class FragmentSb extends Fragment implements
         mBtnSend.setEnabled(true);
         if (success) {
             mWiadomosc.setText("");
+            hideViewPager();
+            hideKeyboard(mAct);
         }
     }
 
@@ -301,6 +315,13 @@ public class FragmentSb extends Fragment implements
 
     public void kliknietoTag(String item) {
         mWiadomosc.append(item);
+    }
+
+    public void hideViewPager() {
+        viewPagerVisible = false;
+        mBtnExpand.setVisibility(View.VISIBLE);
+        pagerTagiEmotki.setVisibility(View.GONE);
+        mLayoutPrzyciski.setVisibility(View.GONE);
     }
 }
 

@@ -16,6 +16,7 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.OnlineItem;
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.activities.IVolley;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import java.util.ArrayList;
@@ -26,19 +27,21 @@ import java.util.ArrayList;
 
 public class AdapterOnline extends BaseAdapter {
 
-    ArrayList<OnlineItem> lista;
-    Context context;
-    LayoutInflater inflater;
-    ImageLoader imageLoader;
-    IMainActivity imain;
-    Activity mAct;
+    private ArrayList<OnlineItem> lista;
+    private Context context;
+    private LayoutInflater inflater;
+    private ImageLoader imageLoader;
+    private IMainActivity imain;
+    private IVolley iVolley;
+    private Activity mAct;
 
     public AdapterOnline(Activity act, ArrayList<OnlineItem> _list) {
         lista = _list;
-        this.context = act.getApplicationContext();
+        context = act.getApplicationContext();
         inflater = LayoutInflater.from(context);
         imain = (IMainActivity) act;
-        imageLoader = imain.getImageLoader();
+        iVolley = (IVolley) act;
+        imageLoader = iVolley.getImageLoader();
         mAct = act;
     }
 
@@ -89,7 +92,7 @@ public class AdapterOnline extends BaseAdapter {
         String str_av = Typy.URL_AVATAR + mOnlineItem.getAvatar();
 
         if (imageLoader == null) {
-            imageLoader = imain.getImageLoader();
+            imageLoader = iVolley.getImageLoader();
         }
 
         NetworkImageView avatar = row.findViewById(R.id.v_avatar);
@@ -112,11 +115,13 @@ public class AdapterOnline extends BaseAdapter {
             nick.setTextColor(imain.getThemeColor(attr_color_nick));
             int[] attrs = {R.attr.onlineTextColor};
             status.setTextColor(imain.getThemeColor(attrs));
+            avatar.setAlpha(1f);
         } else {
             int[] attr_color_nick = {R.attr.offlineNickColor};
             nick.setTextColor(imain.getThemeColor(attr_color_nick));
             int[] attrs = {R.attr.offlineTextColor};
             status.setTextColor(imain.getThemeColor(attrs));
+            avatar.setAlpha(0.4f);
         }
 
         switch (mOnlineItem.getPlatform()) {
