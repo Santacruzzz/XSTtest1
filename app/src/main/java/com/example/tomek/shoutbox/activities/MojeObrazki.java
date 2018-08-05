@@ -1,12 +1,7 @@
 package com.example.tomek.shoutbox.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -18,18 +13,14 @@ import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.tomek.shoutbox.MojObrazek;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.AdapterMojeObrazki;
-import com.example.tomek.shoutbox.utils.LruBitmapCache;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -70,7 +61,7 @@ public class MojeObrazki extends XstActivity implements AdapterView.OnItemClickL
             if (adapterMojeObrazki.getCount() >= position) {
                 MojObrazek obrazek = (MojObrazek) adapterMojeObrazki.getItem(position);
                 Intent l_intent = new Intent(this, PokazObrazekActivity.class);
-                l_intent.putExtra("image_url", obrazek.getFullPath());
+                l_intent.putExtra("image_url", obrazek.getObrazekUrl());
                 startActivity(l_intent);
             }
         }

@@ -11,13 +11,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.OnlineItem;
 import com.example.tomek.shoutbox.R;
-import com.example.tomek.shoutbox.activities.IVolley;
 import com.example.tomek.shoutbox.utils.Typy;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -28,20 +26,15 @@ import java.util.ArrayList;
 public class AdapterOnline extends BaseAdapter {
 
     private ArrayList<OnlineItem> lista;
-    private Context context;
     private LayoutInflater inflater;
-    private ImageLoader imageLoader;
     private IMainActivity imain;
-    private IVolley iVolley;
     private Activity mAct;
 
     public AdapterOnline(Activity act, ArrayList<OnlineItem> _list) {
         lista = _list;
-        context = act.getApplicationContext();
+        Context context = act.getApplicationContext();
         inflater = LayoutInflater.from(context);
         imain = (IMainActivity) act;
-        iVolley = (IVolley) act;
-        imageLoader = iVolley.getImageLoader();
         mAct = act;
     }
 
@@ -91,12 +84,9 @@ public class AdapterOnline extends BaseAdapter {
 
         String str_av = Typy.URL_AVATAR + mOnlineItem.getAvatar();
 
-        if (imageLoader == null) {
-            imageLoader = iVolley.getImageLoader();
-        }
+        ImageView avatar = row.findViewById(R.id.v_avatarOnline);
+        Picasso.with(mAct).load(mOnlineItem.getAvatarUrl()).into(avatar);
 
-        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
-        avatar.setImageUrl(str_av, imageLoader);
         nick.setText(mOnlineItem.getNick());
         final RelativeLayout layOnline = row.findViewById(R.id.layOnline);
         status.setText(mOnlineItem.getTimeString());
@@ -110,19 +100,6 @@ public class AdapterOnline extends BaseAdapter {
             }
         });
 
-        if (mOnlineItem.isOnline()) {
-            int[] attr_color_nick = {R.attr.nickColor};
-            nick.setTextColor(imain.getThemeColor(attr_color_nick));
-            int[] attrs = {R.attr.onlineTextColor};
-            status.setTextColor(imain.getThemeColor(attrs));
-            avatar.setAlpha(1f);
-        } else {
-            int[] attr_color_nick = {R.attr.offlineNickColor};
-            nick.setTextColor(imain.getThemeColor(attr_color_nick));
-            int[] attrs = {R.attr.offlineTextColor};
-            status.setTextColor(imain.getThemeColor(attrs));
-            avatar.setAlpha(0.4f);
-        }
 
         switch (mOnlineItem.getPlatform()) {
             case "Windows":
@@ -140,6 +117,22 @@ public class AdapterOnline extends BaseAdapter {
         }
         txtPlatforma.setText(mOnlineItem.getOs());
         txtUa.setText(mOnlineItem.getUa());
+
+        if (mOnlineItem.isOnline()) {
+            int[] attr_color_nick = {R.attr.nickColor};
+            nick.setTextColor(imain.getThemeColor(attr_color_nick));
+            int[] attrs = {R.attr.onlineTextColor};
+            status.setTextColor(imain.getThemeColor(attrs));
+            avatar.setAlpha(1f);
+            platformaImage.setAlpha(1f);
+        } else {
+            int[] attr_color_nick = {R.attr.offlineNickColor};
+            nick.setTextColor(imain.getThemeColor(attr_color_nick));
+            int[] attrs = {R.attr.offlineTextColor};
+            status.setTextColor(imain.getThemeColor(attrs));
+            avatar.setAlpha(0.4f);
+            platformaImage.setAlpha(0.4f);
+        }
 
         return row;
     }

@@ -90,6 +90,7 @@ public class LayoutGlownyActivity extends XstActivity
     private FragmentOnline fragmentOnline;
     private ArrayList<NavItem> navItemsList;
     private int likedMsgPosition;
+    private ListView drawerList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,10 +123,10 @@ public class LayoutGlownyActivity extends XstActivity
         presenceImage = findViewById(R.id.preseceImage);
         textOnline = findViewById(R.id.textOnline);
         textConnectionError = findViewById(R.id.textConnectionError);
-        ListView mDrawerList = findViewById(R.id.left_drawer);
-        mDrawerList.setAdapter(new DrawerListAdapter(this, navItemsList));
-        mDrawerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        drawerList = findViewById(R.id.left_drawer);
+        drawerList.setAdapter(new DrawerListAdapter(this, navItemsList));
+        drawerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         ViewPager mPager = findViewById(R.id.sb_pager);
         mPager.addOnPageChangeListener(this);
@@ -164,7 +165,8 @@ public class LayoutGlownyActivity extends XstActivity
         }
         if (fragmentSb != null) {
             if (fragmentSb.isViewPagerVisible()) {
-                fragmentSb.hideViewPager();
+                //TODO
+//                fragmentSb.hideViewPager();
                 return;
             }
         }
@@ -308,6 +310,9 @@ public class LayoutGlownyActivity extends XstActivity
             mStartService("wylogowano");
         }
         wczytajWiadomosci(null);
+        for (int i = 0; i < drawerList.getCount(); i++) {
+            //drawerList
+        }
     }
 
     @Override

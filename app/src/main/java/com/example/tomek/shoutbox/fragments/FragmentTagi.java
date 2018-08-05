@@ -19,10 +19,9 @@ import com.example.tomek.shoutbox.fragments.FragmentSb;
 public class FragmentTagi extends Fragment implements AdapterView.OnItemClickListener {
 
     AdapterTagi mAdapter;
-    FragmentSb mSb;
 
-    public FragmentTagi(FragmentSb fragmentSb) {
-        mSb = fragmentSb;
+    public FragmentTagi() {
+
     }
 
     @Override
@@ -48,6 +47,6 @@ public class FragmentTagi extends Fragment implements AdapterView.OnItemClickLis
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        mSb.kliknietoTag(mAdapter.getItem(position).toString());
+        //mSb.kliknietoTag(mAdapter.getItem(position).toString());
     }
 }

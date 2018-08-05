@@ -15,7 +15,12 @@
 
     <GridView
         android:id="@+id/gridObrazki"
-        android:numColumns="4"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:columnWidth="100dp"
+        android:fadeScrollbars="false"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:focusable="true" />
 </RelativeLayout>

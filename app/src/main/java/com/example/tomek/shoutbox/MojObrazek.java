@@ -18,7 +18,7 @@ public class MojObrazek {
         file = p_file;
     }
 
-    public String getFullPath() {
+    public String getObrazekUrl() {
         return Typy.URL_OBRAZKI + file;
     }
 }

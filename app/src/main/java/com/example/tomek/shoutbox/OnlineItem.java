@@ -1,5 +1,7 @@
 package com.example.tomek.shoutbox;
 
+import com.example.tomek.shoutbox.utils.Typy;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +52,10 @@ public class OnlineItem {
 
     public String getAvatar() {
         return avatar;
+    }
+
+    public String getAvatarUrl() {
+        return Typy.URL_AVATAR + getAvatar();
     }
 
     public void setAvatar(String avatar) {

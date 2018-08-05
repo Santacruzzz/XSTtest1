@@ -8,8 +8,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -28,12 +28,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
 import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
-import com.example.tomek.shoutbox.adapters.PagerAdapterTagiEmotki;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import java.util.ArrayList;
@@ -44,23 +44,18 @@ import java.util.ArrayList;
 
 public class FragmentSb extends Fragment implements
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener,
-        ViewPager.OnPageChangeListener {
+        SwipeRefreshLayout.OnRefreshListener {
 
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
     private AdapterWiadomosci adapterWiadomosci;
     private ImageButton mBtnSend;
-    private ImageButton mBtnExpand;
+    private ImageButton btnDodatki;
     private EditText mWiadomosc;
     private SwipeRefreshLayout mRefreshLayout;
-    private LinearLayout mLayoutPrzyciski;
-    private ViewPager pagerTagiEmotki;
     private Integer keyboradSize;
     private boolean viewPagerVisible;
-
     private Activity mAct;
-
     private IMainActivity mImain;
 
     public FragmentSb() {
@@ -84,48 +79,30 @@ public class FragmentSb extends Fragment implements
         listViewWiadomosci.setAdapter(adapterWiadomosci);
         adapterWiadomosci.notifyDataSetChanged();
         mBtnSend = mView.findViewById(R.id.buttonWyslij);
-        ImageButton mBtnAddImage = mView.findViewById(R.id.buttonAddImage);
-        mBtnExpand = mView.findViewById(R.id.btnExpand);
-        ImageButton mBtnTagi = mView.findViewById(R.id.buttonTags);
-        ImageButton mBtnEmotki = mView.findViewById(R.id.buttonEmotki);
+        btnDodatki = mView.findViewById(R.id.btnDodatki);
         mWiadomosc = mView.findViewById(R.id.editWyslij);
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
-        mLayoutPrzyciski = mView.findViewById(R.id.layoutPrzyciski);
-
-        pagerTagiEmotki = mView.findViewById(R.id.viewPagerTagiEmotki);
-        TabLayout mTabsTagiEmotki = mView.findViewById(R.id.tabsTagiEmotki);
-        PagerAdapterTagiEmotki pagerAdapterTagiEmotki = new PagerAdapterTagiEmotki(getChildFragmentManager(), mAct);
-        mTabsTagiEmotki.setupWithViewPager(pagerTagiEmotki);
-        pagerTagiEmotki.setAdapter(pagerAdapterTagiEmotki);
-        mTabsTagiEmotki.getTabAt(0).setIcon(android.R.drawable.ic_menu_more);
-        mTabsTagiEmotki.getTabAt(1).setIcon(R.drawable.smile1);
 
         registerForContextMenu(listViewWiadomosci);
 
         mBtnSend.setOnClickListener(this);
-        mBtnAddImage.setOnClickListener(this);
-        mBtnExpand.setOnClickListener(this);
-        mBtnTagi.setOnClickListener(this);
-        mBtnEmotki.setOnClickListener(this);
+        btnDodatki.setOnClickListener(this);
 
         mRefreshLayout.setOnRefreshListener(this);
-        pagerTagiEmotki.addOnPageChangeListener(this);
-        pagerTagiEmotki.setVisibility(View.GONE);
 
         mWiadomosc.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    if (pagerTagiEmotki.getVisibility() == View.VISIBLE) {
-                        hideViewPager();
-                    }
+                    // TODO pomyslec co z tym zrobic
                 }
             }
         });
 
         mView.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
             public void onGlobalLayout() {
-                Rect r = new Rect(); mView.getWindowVisibleDisplayFrame(r);
+                Rect r = new Rect();
+                mView.getWindowVisibleDisplayFrame(r);
                 int screenHeight = mView.getRootView().getHeight();
                 keyboradSize = screenHeight - (r.bottom - r.top);
                 Log.i("xst", "FragmentSB: keyboardSize=" + keyboradSize);
@@ -182,22 +159,15 @@ public class FragmentSb extends Fragment implements
                 mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
                 break;
 
-            case R.id.btnExpand:
-                mWiadomosc.clearFocus();
-                hideKeyboard(mAct);
-                showViewPager();
+            case R.id.btnDodatki:
+                new DialogDodatki().show(getChildFragmentManager(), "dialog");
+                //mWiadomosc.clearFocus();
+                //hideKeyboard(mAct);
                 break;
         }
     }
 
     public boolean isViewPagerVisible() { return viewPagerVisible; }
-
-    private void showViewPager() {
-        viewPagerVisible = true;
-        mBtnExpand.setVisibility(View.GONE);
-        pagerTagiEmotki.setVisibility(View.VISIBLE);
-        mLayoutPrzyciski.setVisibility(View.VISIBLE);
-    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -240,7 +210,6 @@ public class FragmentSb extends Fragment implements
         mBtnSend.setEnabled(true);
         if (success) {
             mWiadomosc.setText("");
-            hideViewPager();
             hideKeyboard(mAct);
         }
     }
@@ -285,21 +254,6 @@ public class FragmentSb extends Fragment implements
     }
 
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-    }
-
-    @Override
-    public void onPageSelected(int position) {
-
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
-    }
-
     public static void hideKeyboard(Activity activity) {
         View view = activity.findViewById(android.R.id.content);
         if (view != null) {
@@ -317,12 +271,6 @@ public class FragmentSb extends Fragment implements
         mWiadomosc.append(item);
     }
 
-    public void hideViewPager() {
-        viewPagerVisible = false;
-        mBtnExpand.setVisibility(View.VISIBLE);
-        pagerTagiEmotki.setVisibility(View.GONE);
-        mLayoutPrzyciski.setVisibility(View.GONE);
-    }
 }
 
 

@@ -18,14 +18,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
-import com.example.tomek.shoutbox.activities.IVolley;
 import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -38,9 +36,6 @@ import java.util.regex.Pattern;
 public class AdapterWiadomosci extends BaseAdapter {
     private ArrayList<Wiadomosc> lista;
     private LayoutInflater inflater;
-    private ImageLoader imageLoader;
-    private IMainActivity imain;
-    private IVolley iVolley;
     private Activity mAct;
     private EmoticonsParser m_parserEmotek;
 
@@ -48,20 +43,14 @@ public class AdapterWiadomosci extends BaseAdapter {
     private int mBgResourceID_odd = 0;
     private boolean isReused = true;
 
-    public AdapterWiadomosci(Activity act, ArrayList<Wiadomosc> _list) {
-        lista = _list;
+    public AdapterWiadomosci(Activity act, ArrayList<Wiadomosc> P_list) {
+        lista = P_list;
         inflater = LayoutInflater.from(act.getApplicationContext());
-        imain = (IMainActivity) act;
-        iVolley = (IVolley) act;
-        imageLoader = iVolley.getImageLoader();
+        IMainActivity imain = (IMainActivity) act;
         mAct = act;
         m_parserEmotek = new EmoticonsParser(mAct.getApplicationContext());
         mBgResourceID_even = imain.getThemeRecourceId(new int[]{R.attr.msgBackground});
         mBgResourceID_odd = imain.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
-    }
-
-    public void setLista(ArrayList<Wiadomosc> list) {
-        lista = list;
     }
 
     @Override
@@ -126,16 +115,9 @@ public class AdapterWiadomosci extends BaseAdapter {
         TextView data = row.findViewById(R.id.v_data);
         TextView lajki = row.findViewById(R.id.v_lajki);
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
-        
-        if (imageLoader == null) {
-            imageLoader = iVolley.getImageLoader();
-        }
 
-        NetworkImageView avatar = row.findViewById(R.id.v_avatar);
-        avatar.setImageUrl(mWiadomosc.getAvatar(), imageLoader);
-
-//        ImageView avatar = row.findViewById(R.id.v_avatar);
-//        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
+        ImageView avatar = row.findViewById(R.id.v_avatarOnline);
+        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
 
         autor.setText(mWiadomosc.getAutor());
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));

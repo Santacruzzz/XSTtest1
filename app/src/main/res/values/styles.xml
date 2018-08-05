@@ -9,7 +9,6 @@
     <attr name="drawerHeaderBackground" format="reference|color" />
     <attr name="drawerHeaderTextColor" format="reference|color" />
     <attr name="drawerTextColor" format="reference|color" />
-    <attr name="drawerActiveItemBackground" format="reference|color" />
     <attr name="sbBottomBackground" format="reference|color" />
     <attr name="onlineTextColor" format="color" />
     <attr name="offlineTextColor" format="color" />
@@ -37,17 +36,16 @@
         <item name="android:textColorSecondary">@color/textColorPrimaryInverse_dark</item>
         <item name="android:textColorSecondaryInverse">@color/textColorSecondaryInverse_dark</item>
         <item name="android:windowBackground">@color/windowBackground_dark</item>
-        <item name="drawerItemBackground">@drawable/drawer_list_selector</item>
 
         <item name="tabBackground">@drawable/tab_layout_background_dark</item>
         <item name="nickColor">@color/nickColor_dark</item>
         <item name="msgColor">@color/msgColor_dark</item>
         <item name="msgDateColor">@color/msgDateColor_dark</item>
         <item name="drawerBackground">@color/drawerBackground_dark</item>
+        <item name="drawerItemBackground">@drawable/drawer_list_selector</item>
         <item name="drawerHeaderBackground">@color/drawerHeaderBackground_dark</item>
         <item name="drawerHeaderTextColor">@color/drawerHeaderTextColor_dark</item>
         <item name="drawerTextColor">@color/drawerTextColor_dark</item>
-        <item name="drawerActiveItemBackground">@color/drawerActiveItemBackground_dark</item>
         <item name="sbBottomBackground">@drawable/border_top_sb_bottom_dark</item>
         <item name="onlineTextColor">#0f0</item>
         <item name="offlineTextColor">#555559</item>
@@ -77,17 +75,16 @@
         <item name="android:textColorSecondary">@color/textColorSecondary_light</item>
         <item name="android:textColorSecondaryInverse">@color/textColorSecondaryInverse_light</item>
         <item name="android:windowBackground">@color/windowBackground_light</item>
-        <item name="drawerItemBackground">@drawable/drawer_list_selector_light</item>
 
         <item name="tabBackground">@drawable/tab_layout_background_light</item>
         <item name="nickColor">@color/nickColor_light</item>
         <item name="msgColor">@color/msgColor_light</item>
         <item name="msgDateColor">@color/msgDateColor_light</item>
         <item name="drawerBackground">@color/drawerBackground_light</item>
+        <item name="drawerItemBackground">@drawable/drawer_list_selector_light</item>
         <item name="drawerHeaderBackground">@color/drawerHeaderBackground_light</item>
         <item name="drawerHeaderTextColor">@color/drawerHeaderTextColor_light</item>
         <item name="drawerTextColor">@color/drawerTextColor_light</item>
-        <item name="drawerActiveItemBackground">@color/drawerActiveItemBackground_light</item>
         <item name="sbBottomBackground">@drawable/border_top_sb_bottom_light</item>
         <item name="onlineTextColor">#1b9e4f</item>
         <item name="offlineTextColor">#282828</item>
