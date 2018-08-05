@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -18,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -163,13 +165,6 @@ public class LayoutGlownyActivity extends XstActivity
             drawerLayout.closeDrawers();
             return;
         }
-        if (fragmentSb != null) {
-            if (fragmentSb.isViewPagerVisible()) {
-                //TODO
-//                fragmentSb.hideViewPager();
-                return;
-            }
-        }
         super.onBackPressed();
     }
 
@@ -287,7 +282,19 @@ public class LayoutGlownyActivity extends XstActivity
     }
 
     @Override
+    public Integer getKeyboardSize() {
+        return keyboradSize;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i("xst", "====main ON SAVE");
+    }
+
+    @Override
     protected void onPause() {
+        Log.i("xst", "====main ON PAUSE");
         super.onPause();
         wyrejestrujReceivery();
         if (czyZalogowany) {
@@ -310,9 +317,6 @@ public class LayoutGlownyActivity extends XstActivity
             mStartService("wylogowano");
         }
         wczytajWiadomosci(null);
-        for (int i = 0; i < drawerList.getCount(); i++) {
-            //drawerList
-        }
     }
 
     @Override

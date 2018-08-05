@@ -4,22 +4,25 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.fragments.FragmentEmotki;
 import com.example.tomek.shoutbox.fragments.FragmentTagi;
 
 public class PagerAdapterTagiEmotki extends FragmentStatePagerAdapter {
+    private DialogDodatki.AddonSelectedListener listener;
 
-    public PagerAdapterTagiEmotki(FragmentManager fm) {
-        super(fm);
+    public PagerAdapterTagiEmotki(FragmentManager childFragmentManager, DialogDodatki.AddonSelectedListener listener) {
+        super(childFragmentManager);
+        this.listener = listener;
     }
 
     @Override
     public Fragment getItem(int position) {
         // Log.i("xst", "++++ getItem: " + position);
         if (position == 0) {
-            return new FragmentTagi();
+            return new FragmentTagi(listener);
         } else {
-            return new FragmentEmotki();
+            return new FragmentEmotki(listener);
         }
     }
 

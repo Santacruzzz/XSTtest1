@@ -65,7 +65,7 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
                     try {
                         String msg = response.getString("message");
                         if (response.getInt("success") == 1) {
-                            SharedPreferences.Editor editor = getSharedPreferences(Typy.PREFS_NAME, 0).edit();
+                            SharedPreferences.Editor editor = sharedPrefs.edit();
 
                             JSONObject user = response.getJSONObject("user");
                             editor.putString(Typy.PREFS_API_KEY, user.getString("keyValue"));

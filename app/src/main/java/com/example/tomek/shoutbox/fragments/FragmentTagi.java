@@ -11,17 +11,20 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
 
+import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.AdapterTagi;
 import com.example.tomek.shoutbox.fragments.FragmentSb;
 
 @SuppressLint("ValidFragment")
 public class FragmentTagi extends Fragment implements AdapterView.OnItemClickListener {
+    private DialogDodatki.AddonSelectedListener listener;
+    private AdapterTagi mAdapter;
 
-    AdapterTagi mAdapter;
+    public FragmentTagi() {}
 
-    public FragmentTagi() {
-
+    public FragmentTagi(DialogDodatki.AddonSelectedListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -47,6 +50,8 @@ public class FragmentTagi extends Fragment implements AdapterView.OnItemClickLis
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        //mSb.kliknietoTag(mAdapter.getItem(position).toString());
+        if (listener != null) {
+            listener.tagSelected(mAdapter.getItem(position).toString());
+        }
     }
 }

@@ -3,14 +3,12 @@ package com.example.tomek.shoutbox.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -18,13 +16,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -44,23 +40,24 @@ import java.util.ArrayList;
 
 public class FragmentSb extends Fragment implements
         View.OnClickListener,
-        SwipeRefreshLayout.OnRefreshListener {
+        SwipeRefreshLayout.OnRefreshListener,
+        DialogDodatki.AddonSelectedListener {
 
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
     private AdapterWiadomosci adapterWiadomosci;
     private ImageButton mBtnSend;
-    private ImageButton btnDodatki;
     private EditText mWiadomosc;
     private SwipeRefreshLayout mRefreshLayout;
-    private Integer keyboradSize;
-    private boolean viewPagerVisible;
     private Activity mAct;
     private IMainActivity mImain;
+    private Integer keyboradSize;
+    private DialogDodatki dodatkiDialog;
 
     public FragmentSb() {
-        viewPagerVisible = false;
         arrayWiadomosci = new ArrayList<>();
+        keyboradSize = 0;
+        dodatkiDialog = null;
     }
 
     @Override
@@ -69,17 +66,18 @@ public class FragmentSb extends Fragment implements
         mAct = (LayoutGlownyActivity) context;
         mImain = (IMainActivity) mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
+        keyboradSize = mImain.getKeyboardSize();
     }
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         final View mView = inflater.inflate(R.layout.layout_sb, container, false);
         listViewWiadomosci = mView.findViewById(R.id.listaWiadomosci);
         listViewWiadomosci.setAdapter(adapterWiadomosci);
         adapterWiadomosci.notifyDataSetChanged();
         mBtnSend = mView.findViewById(R.id.buttonWyslij);
-        btnDodatki = mView.findViewById(R.id.btnDodatki);
+        ImageButton btnDodatki = mView.findViewById(R.id.btnDodatki);
         mWiadomosc = mView.findViewById(R.id.editWyslij);
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
 
@@ -89,26 +87,6 @@ public class FragmentSb extends Fragment implements
         btnDodatki.setOnClickListener(this);
 
         mRefreshLayout.setOnRefreshListener(this);
-
-        mWiadomosc.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    // TODO pomyslec co z tym zrobic
-                }
-            }
-        });
-
-        mView.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
-            public void onGlobalLayout() {
-                Rect r = new Rect();
-                mView.getWindowVisibleDisplayFrame(r);
-                int screenHeight = mView.getRootView().getHeight();
-                keyboradSize = screenHeight - (r.bottom - r.top);
-                Log.i("xst", "FragmentSB: keyboardSize=" + keyboradSize);
-            }
-        });
-
         return mView;
     }
 
@@ -123,11 +101,6 @@ public class FragmentSb extends Fragment implements
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(Typy.STATE_MSG, mWiadomosc.getText().toString());
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 
     public void odswiezWiadomosci(ArrayList<Wiadomosc> nowe) {
@@ -154,20 +127,27 @@ public class FragmentSb extends Fragment implements
                 wyslij_wiadomosc();
                 break;
 
-            case R.id.buttonAddImage:
-                Intent l_intent = getPickImageIntent();
-                mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
-                break;
-
             case R.id.btnDodatki:
-                new DialogDodatki().show(getChildFragmentManager(), "dialog");
-                //mWiadomosc.clearFocus();
-                //hideKeyboard(mAct);
+                pokazDialogDodatki();
                 break;
         }
     }
 
-    public boolean isViewPagerVisible() { return viewPagerVisible; }
+    public void dismissDialog() {
+        Log.i("xst", "===================DISMISS");
+        if (dodatkiDialog != null) {
+            dodatkiDialog.dismiss();
+        }
+    }
+
+    private void pokazDialogDodatki() {
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+
+        // Create and show the dialog.
+        dodatkiDialog = DialogDodatki.newInstance(keyboradSize);
+        dodatkiDialog.setAddonSelectedListener(this);
+        dodatkiDialog.show(ft, "dialog");
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -263,14 +243,21 @@ public class FragmentSb extends Fragment implements
         }
     }
 
-    public void kliknietoEmotke(String pattern) {
-        mWiadomosc.append(pattern);
+    @Override
+    public void smileySelected(String smiley) {
+        mWiadomosc.append(smiley);
     }
 
-    public void kliknietoTag(String item) {
-        mWiadomosc.append(item);
+    @Override
+    public void tagSelected(String tag) {
+        mWiadomosc.append(tag);
     }
 
+    @Override
+    public void pickImageSelected() {
+        Intent l_intent = getPickImageIntent();
+        mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
+    }
 }
 
 

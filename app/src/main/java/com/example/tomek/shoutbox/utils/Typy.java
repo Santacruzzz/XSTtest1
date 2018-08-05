@@ -33,6 +33,7 @@ public class Typy {
     public static final String PREFS_LAST_DATE = "lastdate";
     public static final String PREFS_MSGS = "msgs";
     public static final String PREFS_ONLINE = "onlineitems";
+    public static final String PREFS_KB_SIZE = "kbsize";
 
     public static final String PREFS_THEME = "theme";
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";
@@ -44,4 +45,5 @@ public class Typy {
     public static final int REQUEST_ZALOGUJ = 100;
     public static final int APP_NOTIFICATION_ID = 1;
     public static final int REQUEST_PICK_IMAGE = 80;
+
 }

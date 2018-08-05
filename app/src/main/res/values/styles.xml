@@ -101,4 +101,14 @@
         <item name="android:windowBackground">@drawable/splash</item>
     </style>
 
+    <style name="DialogDodatkiTheme" parent="@android:style/Theme.Dialog">
+        <!--<item name="android:windowAnimationStyle">@style/DialogDodatkiAnimation</item>-->
+        <!--<item name="android:windowBackground">@null</item>-->
+    </style>
+
+    <style name="DialogDodatkiAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+
 </resources>

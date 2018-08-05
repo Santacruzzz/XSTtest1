@@ -1,5 +1,6 @@
 package com.example.tomek.shoutbox.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,12 +10,20 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.EmotkiAdapter;
 
+@SuppressLint("ValidFragment")
 public class FragmentEmotki extends Fragment implements AdapterView.OnItemClickListener {
+    private DialogDodatki.AddonSelectedListener listener;
+    private EmotkiAdapter mAdapter;
 
-    EmotkiAdapter mAdapter;
+    public FragmentEmotki() {}
+
+    public FragmentEmotki(DialogDodatki.AddonSelectedListener listener) {
+        this.listener = listener;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,7 +54,9 @@ public class FragmentEmotki extends Fragment implements AdapterView.OnItemClickL
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (mAdapter.getCount() >= position) {
-           // mSb.kliknietoEmotke(mAdapter.getItem(position).toString());
+            if (listener != null) {
+                listener.smileySelected(mAdapter.getItem(position).toString());
+            }
         }
     }
 }

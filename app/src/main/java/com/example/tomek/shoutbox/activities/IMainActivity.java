@@ -30,4 +30,5 @@ public interface IMainActivity {
     void wyslij_wiadomosc(String wiadomosc);
     void polajkowanoWiadomosc(int msgid);
     void lajkujWiadomosc(int id, int position);
+    Integer getKeyboardSize();
 }

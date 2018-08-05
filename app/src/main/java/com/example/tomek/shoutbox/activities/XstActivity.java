@@ -1,12 +1,16 @@
 package com.example.tomek.shoutbox.activities;
 
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewTreeObserver;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
@@ -26,6 +30,7 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected String nickname;
     protected String avatarFileName;
     protected boolean czyZalogowany;
+    protected int keyboradSize;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,6 +38,7 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
         wczytajUstawienia();
         wczytajStyl();
+        setKeyboardSizeListener();
     }
 
     @Override
@@ -79,9 +85,10 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         nickname = sharedPrefs.getString(Typy.PREFS_NICNKAME, "");
         avatarFileName = sharedPrefs.getString(Typy.PREFS_AVATAR, "");
         themeName = sharedPrefs.getString(Typy.PREFS_THEME, "dark");
+        keyboradSize = sharedPrefs.getInt(Typy.PREFS_KB_SIZE, 90);
 
-        Log.i("xst", String.format("wczytajUstawienia(): apiKey=%s, login=%s, nickname=%s, avatar=%s, theme=%s",
-                apiKey, login, nickname, avatarFileName, themeName) );
+        Log.i("xst", String.format("wczytajUstawienia(): apiKey=%s, login=%s, nickname=%s, avatar=%s, theme=%s kbsize=%d",
+                apiKey, login, nickname, avatarFileName, themeName, keyboradSize) );
 
         czyZalogowany = apiKey.length() == 32;
         if (login.isEmpty()) {
@@ -99,5 +106,41 @@ public class XstActivity extends AppCompatActivity implements IVolley {
             actionBar.setDisplayShowHomeEnabled(true);
 
         }
+    }
+
+    private void setKeyboardSizeListener() {
+
+
+        final View rootview = this.getWindow().getDecorView();
+        rootview.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
+            public void onGlobalLayout() {
+
+                int orientation = getResources().getConfiguration().orientation;
+                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    return;
+                }
+
+                Rect r = new Rect();
+                rootview.getWindowVisibleDisplayFrame(r);
+
+                int screenHeight = rootview.getRootView().getHeight();
+                int heightDifference = screenHeight - (r.bottom - r.top);
+                int resourceId = getResources().getIdentifier("status_bar_height","dimen", "android");
+                if (resourceId > 0) {
+                    heightDifference -= getResources().getDimensionPixelSize(resourceId);
+                }
+
+                Log.i("xst", "---- current keyboardSize=" + heightDifference);
+
+                if (heightDifference > 250 && heightDifference != keyboradSize) {
+                    SharedPreferences.Editor editor = sharedPrefs.edit();
+                    editor.putInt(Typy.PREFS_KB_SIZE, heightDifference);
+                    editor.commit();
+
+                    keyboradSize = sharedPrefs.getInt(Typy.PREFS_KB_SIZE, 249);
+                }
+
+            }
+        });
     }
 }
