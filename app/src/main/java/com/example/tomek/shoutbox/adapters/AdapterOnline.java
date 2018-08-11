@@ -2,6 +2,8 @@ package com.example.tomek.shoutbox.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -88,6 +90,12 @@ public class AdapterOnline extends BaseAdapter {
         Picasso.with(mAct).load(mOnlineItem.getAvatarUrl()).into(avatar);
 
         nick.setText(mOnlineItem.getNick());
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            Typeface face = Typeface.createFromAsset(mAct.getAssets(),
+                    "fonts/nasalization.ttf");
+            nick.setTypeface(face);
+        }
+
         final RelativeLayout layOnline = row.findViewById(R.id.layOnline);
         status.setText(mOnlineItem.getTimeString());
 

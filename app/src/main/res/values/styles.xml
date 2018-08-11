@@ -133,4 +133,8 @@
         <item name="android:fontFamily">@font/nasalization_font</item>
     </style>
 
+    <style name="NickAppearance" parent="">
+        <item name="android:fontFamily">@font/nasalization_font</item>
+    </style>
+
 </resources>

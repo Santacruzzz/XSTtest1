@@ -2,6 +2,7 @@ package com.example.tomek.shoutbox;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -47,9 +48,23 @@ public class DialogDodatki extends DialogFragment {
         kbsize = prefs.getInt(Typy.PREFS_KB_SIZE, 200);
     }
 
+    private int getSoftButtonsBarHeight() {
+        // getRealMetrics is only available with API 17 and +
+        DisplayMetrics metrics = new DisplayMetrics();
+        mAct.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int usableHeight = metrics.heightPixels;
+        mAct.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        int realHeight = metrics.heightPixels;
+        if (realHeight > usableHeight)
+            return realHeight - usableHeight;
+        else
+            return 0;
+    }
+
     private void calculateHeight() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         Window window = getDialog().getWindow();
+        int virtualKeysSize = getSoftButtonsBarHeight();
         if (window != null) {
             window.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             width = displayMetrics.widthPixels;
@@ -59,7 +74,7 @@ public class DialogDodatki extends DialogFragment {
             }
 
             if (useKbSize) {
-                height = kbsize - dpToPx(46);
+                height = kbsize - virtualKeysSize;
             } else {
                 height = halfHeight;
             }

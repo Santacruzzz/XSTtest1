@@ -3,6 +3,8 @@ package com.example.tomek.shoutbox.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -120,6 +122,11 @@ public class AdapterWiadomosci extends BaseAdapter {
         Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
 
         autor.setText(mWiadomosc.getAutor());
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            Typeface face = Typeface.createFromAsset(mAct.getAssets(),
+                    "fonts/nasalization.ttf");
+            autor.setTypeface(face);
+        }
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
         Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString);
 
