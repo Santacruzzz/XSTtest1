@@ -34,6 +34,8 @@ public class Typy {
     public static final String PREFS_MSGS = "msgs";
     public static final String PREFS_ONLINE = "onlineitems";
     public static final String PREFS_KB_SIZE = "kbsize";
+    public static final String PREFS_USE_KB_SIZE = "useKbsize";
+    public static final String PREFS_HIDE_KB_AFTER_SEND = "hideKbAfterSend";
 
     public static final String PREFS_THEME = "theme";
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";

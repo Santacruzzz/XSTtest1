@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +40,16 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         wczytajUstawienia();
         wczytajStyl();
         setKeyboardSizeListener();
+    }
+
+    protected void ustawToolbar() {
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+
+        ActionBar toolbar = getSupportActionBar();
+        if (toolbar != null) {
+            toolbar.setDisplayShowHomeEnabled(true);
+        }
+
     }
 
     @Override
@@ -104,7 +115,6 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
-
         }
     }
 
@@ -142,5 +152,9 @@ public class XstActivity extends AppCompatActivity implements IVolley {
 
             }
         });
+    }
+
+    public SharedPreferences getSharedPrefs() {
+        return sharedPrefs;
     }
 }

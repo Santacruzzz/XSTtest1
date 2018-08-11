@@ -5,21 +5,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -58,7 +57,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -66,6 +64,7 @@ public class LayoutGlownyActivity extends XstActivity
         implements ViewPager.OnPageChangeListener,
                    IMainActivity,
                    View.OnClickListener,
+                   SwipeRefreshLayout.OnRefreshListener,
                    CompoundButton.OnCheckedChangeListener {
     ArrayList<Wiadomosc> arrayListWiadomosci;
     ArrayList<OnlineItem> arrayListOnline;
@@ -93,6 +92,8 @@ public class LayoutGlownyActivity extends XstActivity
     private ArrayList<NavItem> navItemsList;
     private int likedMsgPosition;
     private ListView drawerList;
+    private ViewPager mPager;
+    private SwipeRefreshLayout mRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +112,6 @@ public class LayoutGlownyActivity extends XstActivity
     private void zaladujWidokPodstawowy() {
         setContentView(R.layout.layout_glowny);
 
-        getSupportActionBar().hide();
-
         relativeLayoutProfileBox = findViewById(R.id.profileBox);
         userAvatar = findViewById(R.id.userAvatar);
         userNick = findViewById(R.id.userName);
@@ -130,13 +129,13 @@ public class LayoutGlownyActivity extends XstActivity
         drawerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        ViewPager mPager = findViewById(R.id.sb_pager);
+        mPager = findViewById(R.id.sb_pager);
         mPager.addOnPageChangeListener(this);
         ScreenSlidePagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), this);
         mPager.setAdapter(mPagerAdapter);
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mPager);
+//        TabLayout tabLayout = findViewById(R.id.tabs);
+//        tabLayout.setupWithViewPager(mPager);
 
         checkBoxDarkTheme = findViewById(R.id.checkBoxTheme);
         buttonWyloguj = findViewById(R.id.buttonWyloguj);
@@ -153,6 +152,8 @@ public class LayoutGlownyActivity extends XstActivity
         }
         pozwolNaZmianeStylu = true;
         userNick.setText(nickname);
+
+        ustawToolbar();
     }
 
     private void zaladujWidokNiezalogowany() {
@@ -166,6 +167,30 @@ public class LayoutGlownyActivity extends XstActivity
             return;
         }
         super.onBackPressed();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                showDrawerMenu();
+                break;
+            case R.id.menu_ustawienia:
+                uruchomUstawienia();
+                break;
+        }
+        return true;
+    }
+
+    private void showDrawerMenu() {
+        drawerLayout.openDrawer(Gravity.START);
     }
 
     @Override
@@ -317,6 +342,31 @@ public class LayoutGlownyActivity extends XstActivity
             mStartService("wylogowano");
         }
         wczytajWiadomosci(null);
+        odswiezTytul();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        fragmentSb.dismissDialog();
+    }
+
+    private void odswiezTytul() {
+        setTitle(determineCurrentTitle());
+    }
+
+    private String determineCurrentTitle() {
+        if (mPager == null) return "";
+        int currentPageId = mPager.getCurrentItem();
+        switch (currentPageId) {
+            case 0: {
+                return "Shoutbox";
+            }
+            case 1: {
+                return "Online";
+            }
+        }
+        return "XST Shoutbox";
     }
 
     @Override
@@ -329,7 +379,7 @@ public class LayoutGlownyActivity extends XstActivity
 
             case Typy.BROADCAST_INTERNET_LOST:
                 obsluzBrakInternetu();
-                fragmentSb.bladOdswiezania();
+                fragmentSb.anulujOdswiezanie();
                 break;
 
             case Typy.BROADCAST_INTERNET_OK:
@@ -408,7 +458,7 @@ public class LayoutGlownyActivity extends XstActivity
         relativeLayoutProfileBox.setVisibility(View.GONE);
         buttonZaloguj.setVisibility(View.VISIBLE);
         buttonWyloguj.setVisibility(View.INVISIBLE);
-        drawerLayout.openDrawer(Gravity.START);
+        showDrawerMenu();
     }
 
     private void wczytajWiadomosci(Intent intent) {
@@ -472,6 +522,11 @@ public class LayoutGlownyActivity extends XstActivity
         }
     }
 
+    @Override
+    public void onRefresh() {
+
+    }
+
     private class DrawerItemClickListener implements android.widget.AdapterView.OnItemClickListener {
 
         @Override
@@ -485,11 +540,9 @@ public class LayoutGlownyActivity extends XstActivity
     private void selectDrawerItem(int i) {
         String selectedActivity = navItemsList.get(i).mTitle.toLowerCase();
         if (selectedActivity.equals(Typy.FRAGMENT_USTAWIENIA)) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+            uruchomUstawienia();
         } else if (selectedActivity.equals(Typy.FRAGMENT_MOJE_OBRAZKI)) {
-            Intent intent = new Intent(this, MojeObrazki.class);
-            startActivity(intent);
+            uruchomMojeObrazki();
         }
 
         //Bundle args = new Bundle();
@@ -497,6 +550,16 @@ public class LayoutGlownyActivity extends XstActivity
         //fragment.setArguments(args);
 
         drawerLayout.closeDrawers();
+    }
+
+    private void uruchomMojeObrazki() {
+        Intent intent = new Intent(this, MojeObrazki.class);
+        startActivity(intent);
+    }
+
+    private void uruchomUstawienia() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void wyloguj() {
@@ -544,18 +607,7 @@ public class LayoutGlownyActivity extends XstActivity
 
     @Override
     public void onPageSelected(int position) {
-
-        switch (position) {
-            case 0: {
-                setTitle("Shoutbox");
-                break;
-            }
-            case 1: {
-                setTitle("Online");
-                getFragmentOnline().odswiezOnline(getOnline());
-                break;
-            }
-        }
+        odswiezTytul();
     }
 
     @Override

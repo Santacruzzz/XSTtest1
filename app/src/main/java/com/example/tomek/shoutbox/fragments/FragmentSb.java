@@ -49,7 +49,7 @@ public class FragmentSb extends Fragment implements
     private ImageButton mBtnSend;
     private EditText mWiadomosc;
     private SwipeRefreshLayout mRefreshLayout;
-    private Activity mAct;
+    private LayoutGlownyActivity mAct;
     private IMainActivity mImain;
     private Integer keyboradSize;
     private DialogDodatki dodatkiDialog;
@@ -134,7 +134,6 @@ public class FragmentSb extends Fragment implements
     }
 
     public void dismissDialog() {
-        Log.i("xst", "===================DISMISS");
         if (dodatkiDialog != null) {
             dodatkiDialog.dismiss();
         }
@@ -144,7 +143,7 @@ public class FragmentSb extends Fragment implements
         FragmentTransaction ft = getChildFragmentManager().beginTransaction();
 
         // Create and show the dialog.
-        dodatkiDialog = DialogDodatki.newInstance(keyboradSize);
+        dodatkiDialog = DialogDodatki.newInstance(mAct);
         dodatkiDialog.setAddonSelectedListener(this);
         dodatkiDialog.show(ft, "dialog");
     }
@@ -190,7 +189,9 @@ public class FragmentSb extends Fragment implements
         mBtnSend.setEnabled(true);
         if (success) {
             mWiadomosc.setText("");
-            hideKeyboard(mAct);
+            if (mAct.getSharedPrefs().getBoolean(Typy.PREFS_HIDE_KB_AFTER_SEND, true)) {
+                hideKeyboard(mAct);
+            }
         }
     }
 
@@ -203,7 +204,6 @@ public class FragmentSb extends Fragment implements
     }
 
     public void polajkowanoWiadomosc(int msgid, int position) {
-        Log.i("xst", "--- Fragment sb: zwiekszam like dla wiadomosci: " + msgid);
         int firstPosition = listViewWiadomosci.getFirstVisiblePosition() - listViewWiadomosci.getHeaderViewsCount();
         Wiadomosc w = arrayWiadomosci.get(position);
         w.addLike();
@@ -214,7 +214,6 @@ public class FragmentSb extends Fragment implements
         if ((int)row.getTag() != msgid) {
             return;
         }
-        Log.i("xst", "tag: " + row.getTag());
         TextView ilosc_lajkow = row.findViewById(R.id.v_lajki);
         ilosc_lajkow.setText(String.valueOf(w.getLajki()));
         ImageView ikona_lajkow = row.findViewById(R.id.v_lajk_ikona);
@@ -229,17 +228,17 @@ public class FragmentSb extends Fragment implements
         Log.i("xst", "--- Fragment SB: Odświeżam wiadomosci");
     }
 
-    public void bladOdswiezania() {
+    public void anulujOdswiezanie() {
         mRefreshLayout.setRefreshing(false);
     }
-
 
     public static void hideKeyboard(Activity activity) {
         View view = activity.findViewById(android.R.id.content);
         if (view != null) {
-            Log.i("xst", "Chowam klawe!!!");
             InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 

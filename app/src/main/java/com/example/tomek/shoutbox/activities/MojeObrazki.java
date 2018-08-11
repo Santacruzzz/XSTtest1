@@ -37,8 +37,9 @@ public class MojeObrazki extends XstActivity implements AdapterView.OnItemClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        enableBackButtonInActionBar();
         setContentView(R.layout.activity_moje_obrazki);
+        ustawToolbar();
+        enableBackButtonInActionBar();
 
         adapterMojeObrazki = new AdapterMojeObrazki(this);
 

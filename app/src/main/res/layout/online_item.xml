@@ -21,10 +21,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/v_avatarOnline"
-        android:paddingLeft="5sp"
+        android:paddingLeft="5dp"
         android:text="@string/nick"
         android:textColor="?attr/nickColor"
-        android:textSize="17sp" />
+        android:textSize="@dimen/nickSize"
+        android:layout_marginTop="-5dp"
+        android:fontFamily="@font/nasalization"/>
 
     <TextView
         android:id="@+id/statusOnline"

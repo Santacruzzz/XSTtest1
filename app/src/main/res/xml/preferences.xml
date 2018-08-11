@@ -19,7 +19,7 @@
             android:key="pokazuj_powiadomienia"
             android:title="Pokazuj powiadomienia"
             android:defaultValue="true"
-            android:summary="Informuj o nowych wiadomościach" />
+            android:summary="Informuj powiadomieniem o nowych wiadomościach" />
 
         <!-- ListPreference
             android:key="list_preference"
@@ -28,6 +28,23 @@
             android:entries="@array/entries_list_preference"
             android:entryValues="@array/entryvalues_list_preference"
             android:dialogTitle="@string/dialog_title_list_preference" / -->
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Zachowanie">
+
+        <CheckBoxPreference
+            android:key="useKbsize"
+            android:title="Użyj wysokości klawiatury"
+            android:defaultValue="false"
+            android:summary="[Test] Okno z dodatkami (emotki, tagi) może być dopasowane do wysokości klawiatury"/>
+
+        <CheckBoxPreference
+            android:key="hideKbAfterSend"
+            android:title="Chowaj klawiaturę"
+            android:defaultValue="true"
+            android:summary="Chowaj klawiaturę po wysłaniu wiadomości"/>
 
     </PreferenceCategory>
 

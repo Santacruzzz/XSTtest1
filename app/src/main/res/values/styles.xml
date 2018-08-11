@@ -18,8 +18,9 @@
     <attr name="miniaturaTxtBg" format="reference|color" />
     <attr name="tabBackground" format="reference" />
     <attr name="tagiEmotkiBackgroundColor" format="color"/>
+    <attr name="toolbarStyle" format="reference"/>
 
-    <style name="xstThemeDark" parent="Theme.AppCompat">
+    <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:colorPrimary">@color/colorPrimary_dark</item>
         <item name="colorPrimary">@color/colorPrimary_dark</item>
@@ -56,9 +57,11 @@
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_dark</item>
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_dark</item>
+
+        <item name="toolbarStyle">@style/ToolbarThemeDark</item>
     </style>
 
-    <style name="xstThemeLight" parent="Theme.AppCompat.Light">
+    <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
         <item name="android:colorPrimary">@color/colorPrimary_light</item>
         <item name="colorPrimary">@color/colorPrimary_light</item>
@@ -95,6 +98,8 @@
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_light</item>
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_light</item>
+
+        <item name="toolbarStyle">@style/ToolbarThemeLight</item>
     </style>
 
     <style name="SplashTheme" parent="xstThemeDark">
@@ -103,12 +108,29 @@
 
     <style name="DialogDodatkiTheme" parent="@android:style/Theme.Dialog">
         <!--<item name="android:windowAnimationStyle">@style/DialogDodatkiAnimation</item>-->
-        <!--<item name="android:windowBackground">@null</item>-->
+        <item name="android:windowBackground">@null</item>
     </style>
-
     <style name="DialogDodatkiAnimation">
         <item name="android:windowEnterAnimation">@anim/slide_up</item>
         <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+
+    <!-- TOOLBAR -->
+
+    <style name="ToolbarThemeDark" parent="">
+        <item name="android:background">#181818</item>
+        <item name="android:colorControlNormal">#fff</item>
+    </style>
+
+    <style name="ToolbarThemeLight" parent="">
+        <item name="android:background">#eee</item>
+        <item name="android:colorControlNormal">#000</item>
+    </style>
+
+    <style name="XstToolbarTitleStyle" parent="">
+        <item name="android:textSize">22sp</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:fontFamily">@font/nasalization_font</item>
     </style>
 
 </resources>

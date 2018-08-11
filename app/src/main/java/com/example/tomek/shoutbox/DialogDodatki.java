@@ -1,13 +1,12 @@
 package com.example.tomek.shoutbox;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -17,29 +16,60 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 
+import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
 import com.example.tomek.shoutbox.adapters.PagerAdapterTagiEmotki;
 import com.example.tomek.shoutbox.utils.Typy;
 
 @SuppressLint("ValidFragment")
 public class DialogDodatki extends DialogFragment {
-    private AddonSelectedListener listener;
+    private int halfHeight;
+    private int width;
+    private int height;
     private int kbsize;
+    private AddonSelectedListener listener;
+    private boolean useKbSize;
+    private LayoutGlownyActivity mAct;
 
-    public DialogDodatki() {}
+    public DialogDodatki() {
+        halfHeight = 0;
+        width = 0;
+        height = 0;
+        mAct = null;
+    }
 
-    public DialogDodatki(int kbsize) {
+    public DialogDodatki(LayoutGlownyActivity pAct) {
         listener = null;
-        this.kbsize = kbsize;
+        mAct = pAct;
+        SharedPreferences prefs = mAct.getSharedPrefs();
+        useKbSize = prefs.getBoolean(Typy.PREFS_USE_KB_SIZE,false);
+        kbsize = prefs.getInt(Typy.PREFS_KB_SIZE, 200);
+    }
+
+    private void calculateHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        Window window = getDialog().getWindow();
+        if (window != null) {
+            window.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            width = displayMetrics.widthPixels;
+            halfHeight = displayMetrics.heightPixels / 2;
+            if (kbsize > halfHeight) {
+                kbsize = halfHeight;
+            }
+
+            if (useKbSize) {
+                height = kbsize - dpToPx(46);
+            } else {
+                height = halfHeight;
+            }
+        }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setStyle(STYLE_NO_FRAME, R.style.DialogDodatkiTheme);
+        setStyle(STYLE_NO_FRAME, R.style.DialogDodatkiTheme);
     }
 
     @Nullable
@@ -83,14 +113,15 @@ public class DialogDodatki extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getDialog().getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int width = displayMetrics.widthPixels;
-        getDialog().getWindow().setLayout(width, displayMetrics.heightPixels / 2);
+        calculateHeight();
+        Window window = getDialog().getWindow();
+        if (window != null) {
+            window.setLayout(width, height);
+        }
     }
 
-    public static DialogDodatki newInstance(int kbsize) {
-        return new DialogDodatki(kbsize);
+    public static DialogDodatki newInstance(LayoutGlownyActivity act) {
+        return new DialogDodatki(act);
     }
 
     public interface AddonSelectedListener {
@@ -105,15 +136,16 @@ public class DialogDodatki extends DialogFragment {
 
     private void setDialogPosition() {
         Window window = getDialog().getWindow();
-        window.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-
-        WindowManager.LayoutParams params = window.getAttributes();
-        params.y = dpToPx(0);
-        window.setAttributes(params);
+        if (window != null) {
+            window.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.y = dpToPx(0);
+            window.setAttributes(params);
+        }
     }
 
     private int dpToPx(int dp) {
-        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
+        DisplayMetrics metrics = mAct.getResources().getDisplayMetrics();
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics);
     }
 
