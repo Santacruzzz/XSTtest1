@@ -2,7 +2,6 @@ package com.example.tomek.shoutbox;
 
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,7 +18,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 
-import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.PagerAdapterTagiEmotki;
 import com.example.tomek.shoutbox.utils.Typy;
 
@@ -31,7 +30,7 @@ public class DialogDodatki extends DialogFragment {
     private int kbsize;
     private AddonSelectedListener listener;
     private boolean useKbSize;
-    private LayoutGlownyActivity mAct;
+    private MainActivity mAct;
 
     public DialogDodatki() {
         halfHeight = 0;
@@ -40,7 +39,7 @@ public class DialogDodatki extends DialogFragment {
         mAct = null;
     }
 
-    public DialogDodatki(LayoutGlownyActivity pAct) {
+    public DialogDodatki(MainActivity pAct) {
         listener = null;
         mAct = pAct;
         SharedPreferences prefs = mAct.getSharedPrefs();
@@ -135,7 +134,7 @@ public class DialogDodatki extends DialogFragment {
         }
     }
 
-    public static DialogDodatki newInstance(LayoutGlownyActivity act) {
+    public static DialogDodatki newInstance(MainActivity act) {
         return new DialogDodatki(act);
     }
 

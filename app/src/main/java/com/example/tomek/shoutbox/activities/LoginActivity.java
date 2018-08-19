@@ -2,7 +2,6 @@ package com.example.tomek.shoutbox.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +45,7 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
     public void onBackPressed() {
         setResult(RESULT_CANCELED);
         finish();
+        super.onBackPressed();
     }
 
     @Override
@@ -65,18 +65,17 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
                     try {
                         String msg = response.getString("message");
                         if (response.getInt("success") == 1) {
-                            SharedPreferences.Editor editor = sharedPrefs.edit();
-
                             JSONObject user = response.getJSONObject("user");
-                            editor.putString(Typy.PREFS_API_KEY, user.getString("keyValue"));
-                            editor.putString(Typy.PREFS_LOGIN, user.getString("username"));
-                            editor.putString(Typy.PREFS_NICNKAME, user.getString("nickname"));
-                            editor.putString(Typy.PREFS_AVATAR, user.getString("avatar"));
-                            editor.commit();
-                            Intent setData = new Intent();
-                            setData.putExtra("msg", msg);
-                            setResult(RESULT_OK, setData);
+                            xstApp.zapiszUstawienie(Typy.PREFS_API_KEY, user.getString("keyValue"));
+                            xstApp.zapiszUstawienie(Typy.PREFS_LOGIN, user.getString("username"));
+                            xstApp.zapiszUstawienie(Typy.PREFS_NICNKAME, user.getString("nickname"));
+                            xstApp.zapiszUstawienie(Typy.PREFS_AVATAR, user.getString("avatar"));
+                            Intent resultData = new Intent();
+                            resultData.putExtra("msg", msg);
+                            setResult(RESULT_OK, resultData);
                             finish();
+                        } else {
+                            Toast.makeText(xstApp, "Nieprawidłowe dane", Toast.LENGTH_LONG).show();
                         }
                     } catch (JSONException ex) {
                         Log.e("xst", "Login PARSE ERROR: " + ex.getMessage());

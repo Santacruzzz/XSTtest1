@@ -6,10 +6,12 @@ package com.example.tomek.shoutbox.utils;
 
 @SuppressWarnings("ALL")
 public class Typy {
-    public static final String URL_PROTOCOL = "http";
-    public static final String URL_API = URL_PROTOCOL + "://xs-team.pl/api/";
-    public static final String URL_AVATAR = URL_PROTOCOL + "://xs-team.pl/images/avatars/";
-    public static final String URL_OBRAZKI = URL_PROTOCOL + "://xs-team.pl/uploads/";
+    public static final String URL_PROTOCOL = "http://";
+    public static final String URL_BASE = "xs-team.pl";
+    public static final String URL_API = URL_PROTOCOL + URL_BASE + "/api/";
+    public static final String URL_AVATAR = URL_PROTOCOL + URL_BASE + "/images/avatars/";
+    public static final String URL_OBRAZKI = URL_PROTOCOL + URL_BASE + "/uploads/";
+    public static final String URL_UPLOAD = URL_PROTOCOL + URL_BASE + "/api/upload";
     public static final String API_MSG_GET = URL_API + "msg/get";
     public static final String API_MSG_SEND = URL_API + "msg/send";
     public static final String API_MSG_LIKE = URL_API + "msg/like";
@@ -47,5 +49,9 @@ public class Typy {
     public static final int REQUEST_ZALOGUJ = 100;
     public static final int APP_NOTIFICATION_ID = 1;
     public static final int REQUEST_PICK_IMAGE = 80;
+    public static final int REQUEST_UPLOAD_IMAGE = 81;
 
+    public static final int PERMISSION_REQUEST_CODE = 555;
+
+    public static final int MAX_IMAGE_DIMENSION = 1200; // px
 }

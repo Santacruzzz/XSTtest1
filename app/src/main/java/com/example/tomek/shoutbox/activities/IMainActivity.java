@@ -2,11 +2,9 @@ package com.example.tomek.shoutbox.activities;
 
 import android.content.Intent;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.ImageLoader;
 import com.example.tomek.shoutbox.fragments.FragmentOnline;
 import com.example.tomek.shoutbox.fragments.FragmentSb;
-import com.example.tomek.shoutbox.OnlineItem;
+import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.Wiadomosc;
 
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ public interface IMainActivity {
     FragmentOnline getFragmentOnline();
     ArrayList<Wiadomosc> getWiadomosci();
     void odswiezWiadomosci();
-    ArrayList<OnlineItem> getOnline();
+    ArrayList<User> getOnline();
     int getThemeColor(int[] arr);
     int getThemeRecourceId(int[] arr);
     void nowe_online(Intent intent);

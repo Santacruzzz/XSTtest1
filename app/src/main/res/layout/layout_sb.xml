@@ -12,7 +12,7 @@
     android:orientation="vertical"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    tools:context="com.example.tomek.shoutbox.activities.LayoutGlownyActivity">
+    tools:context="com.example.tomek.shoutbox.activities.MainActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"

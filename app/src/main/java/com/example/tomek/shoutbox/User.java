@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Created by Tomek on 2017-11-09.
  */
 
-public class OnlineItem {
+public class User {
     private String nick;
     private String avatar;
     private String os;
@@ -17,22 +17,24 @@ public class OnlineItem {
     private String ua;
     private String timeString;
     private boolean online;
-    private int laston;
+    private long laston;
     private int alive;
     private long userid;
+    private String appVersion;
 
-    public OnlineItem(JSONObject item) {
+    public User(JSONObject item) {
         try {
             this.nick = item.getString("nickname");
             this.avatar = item.getString("avatar");
             this.os = item.getString("os_name");
             this.platform = item.getString("platforma");
-            this.laston = item.getInt("laston");
+            this.laston = item.getLong("laston");
             this.alive = item.getInt("alive");
             this.online = item.getBoolean("isOnline");
             this.userid = item.getLong("userID");
             this.ua = item.getString("ua_name");
             this.timeString = item.getString("timeString");
+            this.appVersion = item.getString("app_version");
 
             if (this.avatar.equals("")) {
                 avatar = "noavatar.gif";
@@ -78,7 +80,7 @@ public class OnlineItem {
         this.online = online;
     }
 
-    public int getLaston() {
+    public long getLaston() {
         return laston;
     }
 
@@ -115,10 +117,17 @@ public class OnlineItem {
     }
 
     public String getUa() {
+        if (ua.equals("apka")) {
+            return "XST shoutbox " + appVersion;
+        }
         return ua;
     }
 
     public void setUa(String ua) {
         this.ua = ua;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
     }
 }

@@ -19,6 +19,10 @@
     <attr name="tabBackground" format="reference" />
     <attr name="tagiEmotkiBackgroundColor" format="color"/>
     <attr name="toolbarStyle" format="reference"/>
+    <attr name="darkenBg" format="color"/>
+    <attr name="darkBg" format="color"/>
+    <attr name="lightBg" format="color"/>
+    <attr name="lightenBg" format="color"/>
 
     <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
@@ -59,6 +63,10 @@
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_dark</item>
 
         <item name="toolbarStyle">@style/ToolbarThemeDark</item>
+        <item name="darkenBg">#010101</item>
+        <item name="darkBg">#101010</item>
+        <item name="lightBg">#282828</item>
+        <item name="lightenBg">#303030</item>
     </style>
 
     <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
@@ -100,6 +108,10 @@
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_light</item>
 
         <item name="toolbarStyle">@style/ToolbarThemeLight</item>
+        <item name="darkenBg">#505050</item>
+        <item name="darkBg">#606060</item>
+        <item name="lightBg">#787878</item>
+        <item name="lightenBg">#9c9c9c</item>
     </style>
 
     <style name="SplashTheme" parent="xstThemeDark">

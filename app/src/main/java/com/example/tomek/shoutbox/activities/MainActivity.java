@@ -43,7 +43,7 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.example.tomek.shoutbox.MyBroadcastReceiver;
 import com.example.tomek.shoutbox.NavItem;
 import com.example.tomek.shoutbox.NowaWiadomoscReceiver;
-import com.example.tomek.shoutbox.OnlineItem;
+import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.XstService;
@@ -60,14 +60,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class LayoutGlownyActivity extends XstActivity
+public class MainActivity extends XstActivity
         implements ViewPager.OnPageChangeListener,
                    IMainActivity,
                    View.OnClickListener,
                    SwipeRefreshLayout.OnRefreshListener,
                    CompoundButton.OnCheckedChangeListener {
     ArrayList<Wiadomosc> arrayListWiadomosci;
-    ArrayList<OnlineItem> arrayListOnline;
+    ArrayList<User> arrayListOnline;
     MyBroadcastReceiver broadcastReceiver;
     NowaWiadomoscReceiver nowaWiadomoscReceiver;
 
@@ -204,14 +204,14 @@ public class LayoutGlownyActivity extends XstActivity
     }
 
     @Override
-    public ArrayList<OnlineItem> getOnline() {
+    public ArrayList<User> getOnline() {
         try {
-            String sitems = sharedPrefs.getString(Typy.PREFS_ONLINE, "0");
-            JSONArray items = new JSONArray(sitems);
+            String items = xstApp.getOnline();
+            JSONArray jsonOnline = new JSONArray(items);
             arrayListOnline.clear();
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-                arrayListOnline.add(new OnlineItem(item));
+            for (int i = 0; i < jsonOnline.length(); i++) {
+                JSONObject item = jsonOnline.getJSONObject(i);
+                arrayListOnline.add(new User(item));
             }
         } catch (JSONException ignored) {
 
@@ -308,7 +308,7 @@ public class LayoutGlownyActivity extends XstActivity
 
     @Override
     public Integer getKeyboardSize() {
-        return keyboradSize;
+        return keyboardSize;
     }
 
     @Override
@@ -384,6 +384,10 @@ public class LayoutGlownyActivity extends XstActivity
 
             case Typy.BROADCAST_INTERNET_OK:
                 obsluzPowrotInternetu();
+                break;
+
+            case Typy.BROADCAST_ONLINE:
+                fragmentOnline.odswiezOnline(getOnline());
                 break;
         }
     }
@@ -506,16 +510,16 @@ public class LayoutGlownyActivity extends XstActivity
 
     @SuppressLint("ApplySharedPref")
     @Override
-    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-        if (b) {
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        if (isChecked) {
             themeName = "dark";
         } else {
             themeName = "light";
         }
-        sharedPrefs.edit().putString(Typy.PREFS_THEME, themeName).commit();
+        xstApp.zapiszUstawienie(Typy.PREFS_THEME, themeName);
         if (pozwolNaZmianeStylu) {
             finish();
-            Intent intent = new Intent(this, LayoutGlownyActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
@@ -596,6 +600,7 @@ public class LayoutGlownyActivity extends XstActivity
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_WROCIL));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_LOST));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_ONLINE));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }
@@ -629,12 +634,26 @@ public class LayoutGlownyActivity extends XstActivity
                     finish();
                 }
                 break;
+
             case Typy.REQUEST_PICK_IMAGE:
                 if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                     Uri uri = data.getData();
                     Intent uploadIntent = new Intent(this, UploadActivity.class);
                     uploadIntent.putExtra("imageUri", uri.toString());
-                    startActivity(uploadIntent);
+                    startActivityForResult(uploadIntent, Typy.REQUEST_UPLOAD_IMAGE);
+                }
+                break;
+
+            case Typy.REQUEST_UPLOAD_IMAGE:
+                if (resultCode == RESULT_OK) {
+                    String returnedResult = data.getDataString();
+                    if (returnedResult != null) {
+                        String link = returnedResult.split("\\|")[0];
+                        String ifInsertToMessage = returnedResult.split("\\|")[1];
+                        if (Boolean.parseBoolean(ifInsertToMessage)) {
+                            fragmentSb.wstawLinkObrazka(link);
+                        }
+                    }
                 }
                 break;
         }

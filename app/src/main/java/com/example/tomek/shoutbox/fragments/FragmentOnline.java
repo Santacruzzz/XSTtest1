@@ -11,10 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.tomek.shoutbox.OnlineItem;
+import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.activities.IMainActivity;
-import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.AdapterOnline;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class FragmentOnline extends Fragment {
     private View mView;
     private ListView listViewOnline;
     private AdapterOnline adapterOnline;
-    private ArrayList<OnlineItem> arrayOnline;
+    private ArrayList<User> arrayOnline;
 
     private Activity mAct;
     private IMainActivity mImain;
@@ -40,7 +40,7 @@ public class FragmentOnline extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mAct = (LayoutGlownyActivity) context;
+        mAct = (MainActivity) context;
         mImain = (IMainActivity) mAct;
         adapterOnline = new AdapterOnline(mAct, arrayOnline);
     }
@@ -55,7 +55,7 @@ public class FragmentOnline extends Fragment {
         return mView;
     }
 
-    public void odswiezOnline(ArrayList<OnlineItem> online) {
+    public void odswiezOnline(ArrayList<User> online) {
         Log.i("xst", "ONLINE: odswiezam");
         if (arrayOnline == null) {
             arrayOnline = new ArrayList<>();

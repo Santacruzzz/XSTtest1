@@ -28,7 +28,7 @@ import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.activities.IMainActivity;
-import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
 import com.example.tomek.shoutbox.utils.Typy;
 
@@ -49,7 +49,7 @@ public class FragmentSb extends Fragment implements
     private ImageButton mBtnSend;
     private EditText mWiadomosc;
     private SwipeRefreshLayout mRefreshLayout;
-    private LayoutGlownyActivity mAct;
+    private MainActivity mAct;
     private IMainActivity mImain;
     private Integer keyboradSize;
     private DialogDodatki dodatkiDialog;
@@ -63,7 +63,7 @@ public class FragmentSb extends Fragment implements
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mAct = (LayoutGlownyActivity) context;
+        mAct = (MainActivity) context;
         mImain = (IMainActivity) mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
         keyboradSize = mImain.getKeyboardSize();
@@ -256,6 +256,10 @@ public class FragmentSb extends Fragment implements
     public void pickImageSelected() {
         Intent l_intent = getPickImageIntent();
         mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
+    }
+
+    public void wstawLinkObrazka(String url) {
+        mWiadomosc.setText(String.format("%s[img]%s[/img]", mWiadomosc.getText(), url));
     }
 }
 

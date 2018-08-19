@@ -17,6 +17,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.XstApplication;
 import com.example.tomek.shoutbox.utils.LruBitmapCache;
 import com.example.tomek.shoutbox.utils.Typy;
 
@@ -31,12 +32,14 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected String nickname;
     protected String avatarFileName;
     protected boolean czyZalogowany;
-    protected int keyboradSize;
+    protected int keyboardSize;
+    protected XstApplication xstApp;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
+        xstApp = (XstApplication) getApplicationContext();
         wczytajUstawienia();
         wczytajStyl();
         setKeyboardSizeListener();
@@ -83,23 +86,23 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         Log.i("xst", "Wczytuje styl: " + themeName);
         if (themeName.equals("light")) {
             setTheme(R.style.xstThemeLight);
-            getApplicationContext().setTheme(R.style.xstThemeLight);
+            xstApp.setTheme(R.style.xstThemeLight);
         } else {
             setTheme(R.style.xstThemeDark);
-            getApplicationContext().setTheme(R.style.xstThemeDark);
+            xstApp.setTheme(R.style.xstThemeDark);
         }
     }
 
     protected void wczytajUstawienia() {
-        apiKey = sharedPrefs.getString(Typy.PREFS_API_KEY, "");
-        login = sharedPrefs.getString(Typy.PREFS_LOGIN, "");
-        nickname = sharedPrefs.getString(Typy.PREFS_NICNKAME, "");
-        avatarFileName = sharedPrefs.getString(Typy.PREFS_AVATAR, "");
-        themeName = sharedPrefs.getString(Typy.PREFS_THEME, "dark");
-        keyboradSize = sharedPrefs.getInt(Typy.PREFS_KB_SIZE, 90);
+        apiKey = xstApp.getApiKey();
+        login = xstApp.getLogin();
+        nickname = xstApp.getNickname();
+        avatarFileName = xstApp.getAvatarFileName();
+        themeName = xstApp.getThemeName();
+        keyboardSize = xstApp.getKeyboardSize();
 
         Log.i("xst", String.format("wczytajUstawienia(): apiKey=%s, login=%s, nickname=%s, avatar=%s, theme=%s kbsize=%d",
-                apiKey, login, nickname, avatarFileName, themeName, keyboradSize) );
+                apiKey, login, nickname, avatarFileName, themeName, keyboardSize) );
 
         czyZalogowany = apiKey.length() == 32;
         if (login.isEmpty()) {
@@ -142,12 +145,9 @@ public class XstActivity extends AppCompatActivity implements IVolley {
 
                 Log.i("xst", "---- current keyboardSize=" + heightDifference);
 
-                if (heightDifference > 250 && heightDifference != keyboradSize) {
-                    SharedPreferences.Editor editor = sharedPrefs.edit();
-                    editor.putInt(Typy.PREFS_KB_SIZE, heightDifference);
-                    editor.commit();
-
-                    keyboradSize = sharedPrefs.getInt(Typy.PREFS_KB_SIZE, 249);
+                if (heightDifference > 250 && heightDifference != keyboardSize) {
+                    xstApp.zapiszUstawienie(Typy.PREFS_KB_SIZE, heightDifference);
+                    keyboardSize = heightDifference;
                 }
 
             }
@@ -156,5 +156,9 @@ public class XstActivity extends AppCompatActivity implements IVolley {
 
     public SharedPreferences getSharedPrefs() {
         return sharedPrefs;
+    }
+
+    protected XstApplication getXstApplication() {
+        return (XstApplication) getApplicationContext();
     }
 }

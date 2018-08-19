@@ -32,7 +32,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.tomek.shoutbox.activities.LayoutGlownyActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -62,8 +62,10 @@ public class XstService extends Service {
     private int mAppVersion;
     JobScheduler mJobScheduler;
     private boolean mSprawdzajAktualizacje;
+    private boolean mSprawdzajOnline;
     private boolean mPokazujPowiadomienia;
     private String mAppVersionName;
+    private String currentOnlineList;
 
     public XstService() {
         mJestemOnline = false;
@@ -76,6 +78,7 @@ public class XstService extends Service {
         mShowNotifications = true;
         mKey = "";
         mJsonWiadomosci = new JSONArray();
+        mSprawdzajOnline = false;
     }
 
     @Override
@@ -100,6 +103,7 @@ public class XstService extends Service {
         }
 
         mServiceReady = true;
+        wczytajUstawienia();
 
         if (mHandler == null) {
             mHandler = new Handler();
@@ -135,13 +139,15 @@ public class XstService extends Service {
             Bundle extra = intent.getExtras();
             if (extra != null) {
                 String msg = extra.getString("msg");
-                Log.i("xst", "----- SERVICE: " + msg);
-                assert msg != null;
-
+                Log.i("xst", "SERVICE: " + msg);
+                if (msg == null) {
+                    return super.onStartCommand(intent, flags, startId);
+                }
                 switch (msg) {
                     case "zalogowano":
                         mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
                         mJestemOnline = true;
+                        mSprawdzajOnline = true;
                         zacznijPobieracWiadomosci();
                         break;
 
@@ -153,6 +159,7 @@ public class XstService extends Service {
                         mNewItems = 0;
                         mDelayMillis = 5000;
                         mJestemOnline = true;
+                        mSprawdzajOnline = true;
                         zacznijPobieracWiadomosci();
                         break;
 
@@ -160,6 +167,7 @@ public class XstService extends Service {
                         mShowNotifications = true;
                         mJestemOnline = false;
                         mDelayMillis = 1000 * 30; // 30s
+                        mSprawdzajOnline = false;
                         zacznijPobieracWiadomosci();
                         break;
 
@@ -167,6 +175,7 @@ public class XstService extends Service {
                         cancelRefresh();
                         mShowNotifications = false;
                         mJestemOnline = false;
+                        mSprawdzajOnline = false;
                         break;
 
                     case "wymusOdswiezenie":
@@ -212,8 +221,6 @@ public class XstService extends Service {
     }
 
     private void pobierz_wiadomosc() {
-        Log.i("xst", "Sprawdzam wiadomosci, data: " + mLastDate);
-
         HashMap<String, String> params = new HashMap<>();
         params.put("key", mKey);
         if (mSharedPref.getString(Typy.PREFS_MSGS, "0").length() == 1) {
@@ -225,6 +232,12 @@ public class XstService extends Service {
         if (mJestemOnline) {
             params.put("is_online", "1");
         }
+        if (mSprawdzajOnline) {
+            params.put("get_online", "1");
+        } else {
+            params.put("get_online", "0");
+        }
+
         params.put("android_version", android.os.Build.VERSION.RELEASE);
         params.put("app_version", mAppVersionName);
         Log.i("xst", "--SERVICE: wysylam params: " + params.toString());
@@ -261,12 +274,17 @@ public class XstService extends Service {
 
                     JSONArray online = response.getJSONArray("online");
                     if (online.length() > 0) {
-                        SharedPreferences.Editor editor = mSharedPref.edit();
-                        editor.putString(Typy.PREFS_ONLINE, online.toString());
-                        editor.apply();
+                        if (!currentOnlineList.equals(online.toString())) {
 
-                        if ( ! mShowNotifications) {
-                            // aplikacja włączona
+                            Log.e("xst", "stara: " + currentOnlineList);
+                            Log.e("xst", "nowa: " + online.toString());
+
+                            Log.i("xst", "nowa lista online! wysylam broadcast");
+                            currentOnlineList = online.toString();
+                            SharedPreferences.Editor editor = mSharedPref.edit();
+                            editor.putString(Typy.PREFS_ONLINE, currentOnlineList);
+                            editor.apply();
+
                             Intent i = new Intent();
                             i.putExtra("online", online.toString());
                             i.setAction(Typy.BROADCAST_ONLINE);
@@ -333,7 +351,7 @@ public class XstService extends Service {
         Log.i("xst", "--SERVICE, pokazuje notification: " + typ);
         Intent intent = new Intent();
         if (typ.equals("msg")) {
-             intent = new Intent(this, LayoutGlownyActivity.class);
+             intent = new Intent(this, MainActivity.class);
         } else if (typ.equals("update")) {
              intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://xs-team.pl/android/XST.apk"));
         }
@@ -348,7 +366,6 @@ public class XstService extends Service {
                 .setContentIntent(pIntent)
                 .setLights(Color.WHITE, 500, 2000)
                 .setAutoCancel(true).build();
-
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -375,6 +392,7 @@ public class XstService extends Service {
     private void wczytajUstawienia() {
         mSprawdzajAktualizacje = mSharedPref.getBoolean("automatyczne_aktualizacje", true);
         mPokazujPowiadomienia = mSharedPref.getBoolean("pokazuj_powiadomienia", true);
+        currentOnlineList = mSharedPref.getString(Typy.PREFS_ONLINE, "");
     }
 
     private class VolleyErrorListener implements Response.ErrorListener {

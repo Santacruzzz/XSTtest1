@@ -16,4 +16,5 @@
     <dimen name="toolbar_height">50dp</dimen>
     <dimen name="titleMaringLeft">0dp</dimen>
     <dimen name="nickSize">17sp</dimen>
+    <dimen name="obrazkiSpacing">3dp</dimen>
 </resources>

@@ -13,13 +13,16 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.tomek.shoutbox.activities.IMainActivity;
-import com.example.tomek.shoutbox.OnlineItem;
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.User;
+import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.utils.Typy;
 import com.squareup.picasso.Picasso;
 
+import org.ocpsoft.prettytime.PrettyTime;
+
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Tomek on 2017-11-05.
@@ -27,13 +30,13 @@ import java.util.ArrayList;
 
 public class AdapterOnline extends BaseAdapter {
 
-    private ArrayList<OnlineItem> lista;
+    private ArrayList<User> listaOnline;
     private LayoutInflater inflater;
     private IMainActivity imain;
     private Activity mAct;
 
-    public AdapterOnline(Activity act, ArrayList<OnlineItem> _list) {
-        lista = _list;
+    public AdapterOnline(Activity act, ArrayList<User> _list) {
+        listaOnline = _list;
         Context context = act.getApplicationContext();
         inflater = LayoutInflater.from(context);
         imain = (IMainActivity) act;
@@ -42,21 +45,21 @@ public class AdapterOnline extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return lista.size();
+        return listaOnline.size();
     }
 
     @Override
     public Object getItem(int i) {
-        if (i >= 0 && i < lista.size()) {
-            return lista.get(i);
+        if (i >= 0 && i < listaOnline.size()) {
+            return listaOnline.get(i);
         }
         return null;
     }
 
     @Override
     public long getItemId(int i) {
-        if (i >= 0 && i < lista.size()) {
-            return lista.get(i).getUserid();
+        if (i >= 0 && i < listaOnline.size()) {
+            return listaOnline.get(i).getUserid();
         }
         return i;
     }
@@ -76,20 +79,20 @@ public class AdapterOnline extends BaseAdapter {
         TextView txtPlatforma = row.findViewById(R.id.v_txtPlatforma);
         TextView txtUa = row.findViewById(R.id.v_txtUa);
         ImageView platformaImage = row.findViewById(R.id.v_platforma);
-        OnlineItem mOnlineItem;
+        User mUser;
 
         try {
-            mOnlineItem = lista.get(i);
+            mUser = listaOnline.get(i);
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
 
-        String str_av = Typy.URL_AVATAR + mOnlineItem.getAvatar();
+        String str_av = Typy.URL_AVATAR + mUser.getAvatar();
 
         ImageView avatar = row.findViewById(R.id.v_avatarOnline);
-        Picasso.with(mAct).load(mOnlineItem.getAvatarUrl()).into(avatar);
+        Picasso.with(mAct).load(mUser.getAvatarUrl()).into(avatar);
 
-        nick.setText(mOnlineItem.getNick());
+        nick.setText(mUser.getNick());
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
             Typeface face = Typeface.createFromAsset(mAct.getAssets(),
                     "fonts/nasalization.ttf");
@@ -97,8 +100,6 @@ public class AdapterOnline extends BaseAdapter {
         }
 
         final RelativeLayout layOnline = row.findViewById(R.id.layOnline);
-        status.setText(mOnlineItem.getTimeString());
-
         row.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -109,7 +110,7 @@ public class AdapterOnline extends BaseAdapter {
         });
 
 
-        switch (mOnlineItem.getPlatform()) {
+        switch (mUser.getPlatform()) {
             case "Windows":
                 platformaImage.setImageResource(R.drawable.windows);
                 break;
@@ -123,10 +124,14 @@ public class AdapterOnline extends BaseAdapter {
                 platformaImage.setImageResource(R.drawable.xst);
                 break;
         }
-        txtPlatforma.setText(mOnlineItem.getOs());
-        txtUa.setText(mOnlineItem.getUa());
+        txtPlatforma.setText(mUser.getOs());
+        txtUa.setText(mUser.getUa());
 
-        if (mOnlineItem.isOnline()) {
+        PrettyTime ptime = new PrettyTime();
+        Date lastDate = new Date(mUser.getAlive() * 1000L);
+
+        if (mUser.isOnline()) {
+            status.setText("Online");
             int[] attr_color_nick = {R.attr.nickColor};
             nick.setTextColor(imain.getThemeColor(attr_color_nick));
             int[] attrs = {R.attr.onlineTextColor};
@@ -134,6 +139,7 @@ public class AdapterOnline extends BaseAdapter {
             avatar.setAlpha(1f);
             platformaImage.setAlpha(1f);
         } else {
+            status.setText(ptime.format(lastDate));
             int[] attr_color_nick = {R.attr.offlineNickColor};
             nick.setTextColor(imain.getThemeColor(attr_color_nick));
             int[] attrs = {R.attr.offlineTextColor};
