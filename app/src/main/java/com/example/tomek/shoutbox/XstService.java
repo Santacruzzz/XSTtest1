@@ -1,7 +1,5 @@
 package com.example.tomek.shoutbox;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.job.JobInfo;
@@ -17,6 +15,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -39,6 +39,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -52,33 +53,30 @@ public class XstService extends Service {
     private Handler mHandler;
     private RequestQueue mRequestQueue;
     private Runnable mRunnableWiadomosci;
-    private boolean mShowNotifications;
     private String mKey;
     private JSONArray mJsonWiadomosci;
     private boolean mServiceReady;
     private SharedPreferences mSharedPref;
     private int mDelayMillis;
-    private boolean mJestemOnline;
     private int mAppVersion;
     JobScheduler mJobScheduler;
-    private boolean mSprawdzajAktualizacje;
-    private boolean mSprawdzajOnline;
-    private boolean mPokazujPowiadomienia;
+    private boolean settings_sprawdzajAktualizacje;
+    private boolean settings_pokazujPowiadomienia;
     private String mAppVersionName;
     private String currentOnlineList;
+    private XstApplication xstApp;
+    private NotificationManagerCompat notificationManager;
+    private Typy.ServiceState state;
+    private ArrayList<Integer> activeNotificationsIds;
 
     public XstService() {
-        mJestemOnline = false;
         mDelayMillis = 30000;
         mServiceReady = false;
         mHandler = new Handler();
         mLastDate = -1;
         mAppVersion = 1;
-
-        mShowNotifications = true;
         mKey = "";
         mJsonWiadomosci = new JSONArray();
-        mSprawdzajOnline = false;
     }
 
     @Override
@@ -91,11 +89,14 @@ public class XstService extends Service {
     public void onCreate() {
         super.onCreate();
         mJobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        mSharedPref = getSharedPreferences(Typy.PREFS_NAME, 0);
-        mLastDate = mSharedPref.getInt(Typy.PREFS_LAST_DATE, 0);
-        mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
+
         mAppVersion = 0;
         mAppVersionName = "";
+        xstApp = (XstApplication) getApplicationContext();
+        notificationManager = NotificationManagerCompat.from(this);
+        state = Typy.ServiceState.state_wylogowano;
+        activeNotificationsIds = new ArrayList<>();
+
         PackageInfo appPackageInfo = getAppPackageInfo();
         if (appPackageInfo != null) {
             mAppVersion = appPackageInfo.versionCode;
@@ -109,17 +110,19 @@ public class XstService extends Service {
             mHandler = new Handler();
         }
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(this.getApplicationContext());
+            mRequestQueue = Volley.newRequestQueue(xstApp);
         }
 
         mRunnableWiadomosci = new Runnable() {
-
             @Override
             public void run() {
                 try {
                     if (mServiceReady) {
                         wczytajUstawienia();
                         pobierz_wiadomosc();
+                        Log.i("xst", "Service state: " + state);
+                    } else {
+                        Log.e("xst", "Service not ready");
                     }
                 }
                 catch (Exception e) {
@@ -131,6 +134,10 @@ public class XstService extends Service {
                 }
             }
         };
+
+        if (mKey.length() > 0) {
+            zacznijPobieracWiadomosci();
+        }
     }
 
     @Override
@@ -139,57 +146,54 @@ public class XstService extends Service {
             Bundle extra = intent.getExtras();
             if (extra != null) {
                 String msg = extra.getString("msg");
-                Log.i("xst", "SERVICE: " + msg);
+                Log.i("xst", "Service start command: " + msg);
                 if (msg == null) {
                     return super.onStartCommand(intent, flags, startId);
                 }
                 switch (msg) {
                     case "zalogowano":
-                        mKey = mSharedPref.getString(Typy.PREFS_API_KEY, "");
-                        mJestemOnline = true;
-                        mSprawdzajOnline = true;
+                        state = Typy.ServiceState.state_zalogowano;
+                        mKey = xstApp.getApiKey();
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "onResume":
-                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                        assert notificationManager != null;
-                        notificationManager.cancelAll();
-                        mShowNotifications = false;
+                        state = Typy.ServiceState.state_onResume;
+                        cancelAllNotifications();
                         mNewItems = 0;
                         mDelayMillis = 5000;
-                        mJestemOnline = true;
-                        mSprawdzajOnline = true;
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "onPause":
-                        mShowNotifications = true;
-                        mJestemOnline = false;
+                        state = Typy.ServiceState.state_onPause;
                         mDelayMillis = 1000 * 30; // 30s
-                        mSprawdzajOnline = false;
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "wylogowano":
+                        state = Typy.ServiceState.state_wylogowano;
                         cancelRefresh();
-                        mShowNotifications = false;
-                        mJestemOnline = false;
-                        mSprawdzajOnline = false;
                         break;
 
                     case "wymusOdswiezenie":
+                        state = Typy.ServiceState.state_wymusOdswiezenie;
                         mLastDate = 0;
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "odswiez":
+                        state = Typy.ServiceState.state_odswiez;
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "like":
                         int msgId = extra.getInt("value");
                         lajkujWiadomosc(msgId);
+                        break;
+
+                    case "testPowiadomienia":
+                        showNotification("test", "msg");
                         break;
                 }
             }
@@ -200,6 +204,11 @@ public class XstService extends Service {
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void cancelAllNotifications() {
+        activeNotificationsIds.clear();
+        notificationManager.cancelAll();
     }
 
     private void zacznijPobieracWiadomosci() {
@@ -223,24 +232,25 @@ public class XstService extends Service {
     private void pobierz_wiadomosc() {
         HashMap<String, String> params = new HashMap<>();
         params.put("key", mKey);
-        if (mSharedPref.getString(Typy.PREFS_MSGS, "0").length() == 1) {
+        if (xstApp.getMsgJsonString().length() == 1) {
             mLastDate = 0;
         }
         if (mLastDate > 0) {
             params.put("last_date", Integer.valueOf(mLastDate).toString());
         }
-        if (mJestemOnline) {
+        if (state == Typy.ServiceState.state_onResume) {
             params.put("is_online", "1");
-        }
-        if (mSprawdzajOnline) {
             params.put("get_online", "1");
         } else {
+            params.put("is_online", "0");
             params.put("get_online", "0");
         }
 
         params.put("android_version", android.os.Build.VERSION.RELEASE);
         params.put("app_version", mAppVersionName);
-        Log.i("xst", "--SERVICE: wysylam params: " + params.toString());
+
+
+        Log.i("xst", "Service: wysylam getMsg: " + params.toString());
         JSONObject request = new JSONObject(params);
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, request, new Response.Listener<JSONObject>() {
             @Override
@@ -250,40 +260,32 @@ public class XstService extends Service {
                     mLastDate = response.getInt("last_date");
                     int receivedAppVersion = response.getInt("version");
 
-                    if (receivedAppVersion > mAppVersion && mSprawdzajAktualizacje) {
+                    if (receivedAppVersion > mAppVersion && settings_sprawdzajAktualizacje) {
                         showNotification("Jest nowa wersja aplikacji!", "update");
                     }
 
                     JSONArray items = response.getJSONArray("items");
                     int new_items = items.length();
                     if (new_items > 0) {
-                        if (mShowNotifications && mPokazujPowiadomienia) {
+                        if (state == Typy.ServiceState.state_onPause && settings_pokazujPowiadomienia) {
                             showNotification("Nowe wiadomości", "msg");
                         }
-                        SharedPreferences.Editor editor = mSharedPref.edit();
-                        editor.putString(Typy.PREFS_MSGS, items.toString());
-                        editor.putInt(Typy.PREFS_LAST_DATE, mLastDate);
-                        editor.apply();
+                        xstApp.zapiszUstawienie(Typy.PREFS_MSGS, items.toString());
+                        xstApp.zapiszUstawienie(Typy.PREFS_LAST_DATE, mLastDate);
 
                         Intent i = new Intent();
                         i.putExtra("items", items.toString());
                         i.setAction(Typy.BROADCAST_NEW_MSG);
-                        Log.i("xst", "--- SERVICE: wysyłam broadcast nowe wiadomosci!!!");
+                        Log.i("xst", "Service: wysyłam broadcast nowe wiadomosci!!!");
                         sendBroadcast(i);
                     }
 
                     JSONArray online = response.getJSONArray("online");
                     if (online.length() > 0) {
                         if (!currentOnlineList.equals(online.toString())) {
-
-                            Log.e("xst", "stara: " + currentOnlineList);
-                            Log.e("xst", "nowa: " + online.toString());
-
-                            Log.i("xst", "nowa lista online! wysylam broadcast");
+                            Log.i("xst", "Service: nowa lista online! wysylam broadcast");
                             currentOnlineList = online.toString();
-                            SharedPreferences.Editor editor = mSharedPref.edit();
-                            editor.putString(Typy.PREFS_ONLINE, currentOnlineList);
-                            editor.apply();
+                            xstApp.zapiszUstawienie(Typy.PREFS_ONLINE, currentOnlineList);
 
                             Intent i = new Intent();
                             i.putExtra("online", online.toString());
@@ -301,13 +303,17 @@ public class XstService extends Service {
     }
 
     private void broadcastInternetOk() {
+        if (state == Typy.ServiceState.state_wylogowano) {
+            state = Typy.ServiceState.state_onPause;
+        }
         Intent i = new Intent();
         i.setAction(Typy.BROADCAST_INTERNET_OK);
-        Log.i("xst", "--- SERVICE: wysyłam broadcast internet ok");
+        Log.i("xst", "Service: wysyłam broadcast internet ok");
         sendBroadcast(i);
     }
 
     private void broadcastConnectionError() {
+        state = Typy.ServiceState.state_wylogowano;
         Intent i = new Intent();
         i.setAction(Typy.BROADCAST_INTERNET_LOST);
         sendBroadcast(i);
@@ -334,7 +340,7 @@ public class XstService extends Service {
                         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException ignored) {
-                    Log.e("xst", "service: Blad lajkowania");
+                    Log.e("xst", "Service: Blad lajkowania");
                 }
             }
         }, new VolleyErrorListener());
@@ -348,29 +354,41 @@ public class XstService extends Service {
     }
 
     private void showNotification(String txt, String typ) {
-        Log.i("xst", "--SERVICE, pokazuje notification: " + typ);
+        Log.i("xst", "Service: pokazuje notification: " + typ);
         Intent intent = new Intent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        String channel = Typy.NOTIF_CHANNEL_MSG_ID;
+        int notifId = 0;
         if (typ.equals("msg")) {
              intent = new Intent(this, MainActivity.class);
+             channel = Typy.NOTIF_CHANNEL_MSG_ID;
+             notifId = Typy.MSG_NOTIFICATION_ID;
         } else if (typ.equals("update")) {
-             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://xs-team.pl/android/XST.apk"));
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://xs-team.pl/android/XST.apk"));
+            channel = Typy.NOTIF_CHANNEL_UPDT_ID;
+            notifId = Typy.UPDT_NOTIFICATION_ID;
+            if (notificationAlreadyShown(notifId)) {
+                Log.i("xst", "Service: powiadomienie już pokazane, olewam");
+                return;
+            } else {
+                activeNotificationsIds.add(notifId);
+            }
         }
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        // build notification
-        // the addAction re-use the same intent to keep the example short
-        Notification notification  = new Notification.Builder(this)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channel)
+                .setSmallIcon(R.drawable.xst_text)
                 .setContentTitle("XST Shoutbox")
                 .setContentText(txt)
-                .setSmallIcon(R.drawable.xst_text)
                 .setContentIntent(pIntent)
-                .setLights(Color.WHITE, 500, 2000)
-                .setAutoCancel(true).build();
+                .setLights(Color.RED, 500, 900)
+                .setAutoCancel(true);
 
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(notifId, mBuilder.build());
+    }
 
-        assert notificationManager != null;
-        notificationManager.notify(Typy.APP_NOTIFICATION_ID, notification);
+    private boolean notificationAlreadyShown(int notifId) {
+        return activeNotificationsIds.contains(notifId);
     }
 
     private void startJobSchedulerInternetOK() {
@@ -390,9 +408,15 @@ public class XstService extends Service {
     }
 
     private void wczytajUstawienia() {
-        mSprawdzajAktualizacje = mSharedPref.getBoolean("automatyczne_aktualizacje", true);
-        mPokazujPowiadomienia = mSharedPref.getBoolean("pokazuj_powiadomienia", true);
-        currentOnlineList = mSharedPref.getString(Typy.PREFS_ONLINE, "");
+        settings_sprawdzajAktualizacje = xstApp.isAutomatyczneAktualizacje();
+        settings_pokazujPowiadomienia = xstApp.isPokazujPowiadomienia();
+
+        mLastDate = xstApp.getLastDate();
+        mKey = xstApp.getApiKey();
+
+        currentOnlineList = xstApp.getOnline();
+
+        Log.i("xst", "Service: pobralem ustawienia: " + mKey);
     }
 
     private class VolleyErrorListener implements Response.ErrorListener {

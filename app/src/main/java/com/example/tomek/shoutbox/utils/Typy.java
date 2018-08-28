@@ -12,46 +12,66 @@ public class Typy {
     public static final String URL_AVATAR = URL_PROTOCOL + URL_BASE + "/images/avatars/";
     public static final String URL_OBRAZKI = URL_PROTOCOL + URL_BASE + "/uploads/";
     public static final String URL_UPLOAD = URL_PROTOCOL + URL_BASE + "/api/upload";
+
+    public static final String API_ZALOGUJ = URL_API + "user/login";
     public static final String API_MSG_GET = URL_API + "msg/get";
     public static final String API_MSG_SEND = URL_API + "msg/send";
     public static final String API_MSG_LIKE = URL_API + "msg/like";
     public static final String API_GET_OBRAZKI = URL_API + "msg/getObrazki";
+    public static final String API_DEL_OBRAZKI = URL_API + "msg/delObrazki";
+
     public static final String TAG_GET_MSG = "getmsg";
     public static final String TAG_SEND_MSG = "sendmsg";
     public static final String TAG_LIKE_MSG = "likemsg";
+    public static final Object TAG_ZALOGUJ = "zaloguj";
+
     public static final String BROADCAST_INTERNET_WROCIL = "wrocil_net";
     public static final String BROADCAST_INTERNET_OK = "jest_net";
     public static final String BROADCAST_ONLINE = "online_change";
     public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
     public static final String BROADCAST_LIKE_MSG = "nowy_like";
     public static final String BROADCAST_INTERNET_LOST = "error";
+
     public static final String PREFS_NAME = "xstprefs";
     public static final String PREFS_API_KEY = "pak";
     public static final String PREFS_LOGIN = "pl";
     public static final String PREFS_NICNKAME = "pn";
-    public static final String API_ZALOGUJ = URL_API + "user/login";
-    public static final Object TAG_ZALOGUJ = "zaloguj";
     public static final String PREFS_AVATAR = "avatar";
     public static final String PREFS_LAST_DATE = "lastdate";
     public static final String PREFS_MSGS = "msgs";
     public static final String PREFS_ONLINE = "onlineitems";
+    public static final String PREFS_OBRAZKI = "obrazki";
     public static final String PREFS_KB_SIZE = "kbsize";
     public static final String PREFS_USE_KB_SIZE = "useKbsize";
     public static final String PREFS_HIDE_KB_AFTER_SEND = "hideKbAfterSend";
-
+    public static final String PREFS_OBRAZKI_LAST_DATE = "obrazki_last_date";
     public static final String PREFS_THEME = "theme";
+
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";
     public static final String FRAGMENT_USTAWIENIA = "ustawienia";
     public static final String FRAGMENT_ZALOGUJ = "Zaloguj";
     public static final String FRAGMENT_MOJE_OBRAZKI = "obrazki";
 
-    public static final String STATE_MSG = "state_msg";
+    public static final int MSG_NOTIFICATION_ID = 69;
+    public static final int UPDT_NOTIFICATION_ID = 70;
     public static final int REQUEST_ZALOGUJ = 100;
-    public static final int APP_NOTIFICATION_ID = 1;
     public static final int REQUEST_PICK_IMAGE = 80;
     public static final int REQUEST_UPLOAD_IMAGE = 81;
-
     public static final int PERMISSION_REQUEST_CODE = 555;
-
     public static final int MAX_IMAGE_DIMENSION = 1200; // px
+
+    public static final String STATE_MSG = "state_msg";
+    public static final int STATE_ONLINE = 1;
+    public static final int STATE_OFFLINE = 2;
+    public static final String NOTIF_CHANNEL_MSG_ID = "xstmsgchannel";
+    public static final String NOTIF_CHANNEL_UPDT_ID = "xstupdtchannel";
+
+    public enum ServiceState {
+        state_zalogowano,
+        state_onResume,
+        state_onPause,
+        state_wylogowano,
+        state_wymusOdswiezenie,
+        state_odswiez
+    }
 }

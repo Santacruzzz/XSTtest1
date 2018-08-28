@@ -5,15 +5,11 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -110,12 +106,13 @@ public class UploadActivity extends XstActivity
         btnPrawo.setOnClickListener(this);
         btnUploadOk.setOnClickListener(this);
         btnCopy.setOnClickListener(this);
+
+        setReadyForUpload();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        checkPermission();
     }
 
     private void loadFile() {
@@ -237,45 +234,6 @@ public class UploadActivity extends XstActivity
         isFileUploaded = true;
         layoutUpload.setVisibility(View.GONE);
         layoutComplete.setVisibility(View.VISIBLE);
-    }
-
-    private void checkPermission() {
-        int result = ContextCompat.checkSelfPermission(UploadActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (result == PackageManager.PERMISSION_GRANTED)
-        {
-            setReadyForUpload();
-        } else {
-            setNotReadyForUpload();
-            requestPermission();
-        }
-    }
-
-    private void requestPermission() {
-        Log.i("xst", "request permission");
-        if (ActivityCompat.shouldShowRequestPermissionRationale(UploadActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            setNotReadyForUpload();
-        } else {
-            ActivityCompat.requestPermissions(UploadActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, Typy.PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Typy.PERMISSION_REQUEST_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setReadyForUpload();
-                } else {
-                    setNotReadyForUpload();
-                    Toast.makeText(getApplicationContext(), "Zezwól na dostęp do pamięci aby wysłać plik.", Toast.LENGTH_LONG).show();
-                }
-                break;
-        }
-    }
-
-    private void setNotReadyForUpload() {
-        layoutPrzyciskiWyslania.setVisibility(View.GONE);
-        textUprawnienia.setVisibility(View.VISIBLE);
     }
 
     // FileFromBitmap.FileFromBitmapListener

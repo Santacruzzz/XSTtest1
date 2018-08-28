@@ -91,4 +91,8 @@
     <string name="nick">Nick</string>
     <string name="status_online">Online</string>
     <string name="platforma">Platforma</string>
+    <string name="channel_name">Wiadomości</string>
+    <string name="channel_description">Powiadomienia o nowych wiadomościach</string>
+    <string name="channel_updt_name">Aktualizacje</string>
+    <string name="channel_updt_description">Informacje o aktualizacjach aplikacji</string>
 </resources>

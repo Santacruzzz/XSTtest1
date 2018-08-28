@@ -34,6 +34,7 @@ public class AdapterOnline extends BaseAdapter {
     private LayoutInflater inflater;
     private IMainActivity imain;
     private Activity mAct;
+    private PrettyTime ptime;
 
     public AdapterOnline(Activity act, ArrayList<User> _list) {
         listaOnline = _list;
@@ -41,6 +42,7 @@ public class AdapterOnline extends BaseAdapter {
         inflater = LayoutInflater.from(context);
         imain = (IMainActivity) act;
         mAct = act;
+        ptime = new PrettyTime();
     }
 
     @Override
@@ -87,8 +89,6 @@ public class AdapterOnline extends BaseAdapter {
             return null;
         }
 
-        String str_av = Typy.URL_AVATAR + mUser.getAvatar();
-
         ImageView avatar = row.findViewById(R.id.v_avatarOnline);
         Picasso.with(mAct).load(mUser.getAvatarUrl()).into(avatar);
 
@@ -109,7 +109,6 @@ public class AdapterOnline extends BaseAdapter {
             }
         });
 
-
         switch (mUser.getPlatform()) {
             case "Windows":
                 platformaImage.setImageResource(R.drawable.windows);
@@ -127,11 +126,13 @@ public class AdapterOnline extends BaseAdapter {
         txtPlatforma.setText(mUser.getOs());
         txtUa.setText(mUser.getUa());
 
-        PrettyTime ptime = new PrettyTime();
         Date lastDate = new Date(mUser.getAlive() * 1000L);
-
         if (mUser.isOnline()) {
-            status.setText("Online");
+            if (imain.getState() == Typy.STATE_ONLINE) {
+                status.setText("Online");
+            } else {
+                status.setText("Brak połączenia");
+            }
             int[] attr_color_nick = {R.attr.nickColor};
             nick.setTextColor(imain.getThemeColor(attr_color_nick));
             int[] attrs = {R.attr.onlineTextColor};

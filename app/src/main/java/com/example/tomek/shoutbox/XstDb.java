@@ -8,14 +8,15 @@ import java.util.ArrayList;
  * Created by Tomek on 2018-02-26.
  */
 
-public class BazaDanych {
+public class XstDb {
     private Activity activity;
     private ArrayList<Wiadomosc> listaWiadomosci;
     private ArrayList<User> listaOnline;
+    private ArrayList<MojObrazek> listaObrazkow;
     private int lastDate = 0;
     private int iloscPobranych = 0;
 
-    public BazaDanych() {
+    public XstDb() {
         setLastDate(getLastDate() + 1);
     }
 

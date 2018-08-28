@@ -28,6 +28,7 @@ import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.activities.IMainActivity;
+import com.example.tomek.shoutbox.activities.IPermission;
 import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
 import com.example.tomek.shoutbox.utils.Typy;
@@ -53,6 +54,7 @@ public class FragmentSb extends Fragment implements
     private IMainActivity mImain;
     private Integer keyboradSize;
     private DialogDodatki dodatkiDialog;
+    private IPermission iPermission;
 
     public FragmentSb() {
         arrayWiadomosci = new ArrayList<>();
@@ -64,7 +66,8 @@ public class FragmentSb extends Fragment implements
     public void onAttach(Context context) {
         super.onAttach(context);
         mAct = (MainActivity) context;
-        mImain = (IMainActivity) mAct;
+        mImain = mAct;
+        iPermission = mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
         keyboradSize = mImain.getKeyboardSize();
     }
@@ -254,12 +257,20 @@ public class FragmentSb extends Fragment implements
 
     @Override
     public void pickImageSelected() {
-        Intent l_intent = getPickImageIntent();
-        mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
+        if (iPermission.haveWritePermission()) {
+            Intent l_intent = getPickImageIntent();
+            mAct.startActivityForResult(Intent.createChooser(l_intent, "Wybierz obraz"), Typy.REQUEST_PICK_IMAGE);
+        } else {
+            iPermission.requestPermission();
+        }
     }
 
     public void wstawLinkObrazka(String url) {
         mWiadomosc.setText(String.format("%s[img]%s[/img]", mWiadomosc.getText(), url));
+    }
+
+    public void przyznanoUprawnieniaZapisu() {
+        pickImageSelected();
     }
 }
 

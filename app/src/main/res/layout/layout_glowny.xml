@@ -13,23 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-
-            android:contentInsetLeft="10dp"
-            android:contentInsetRight="10dp"
-            android:contentInsetStart="10dp"
-            android:padding="0dp"
-            app:contentInsetLeft="10dp"
-            app:contentInsetRight="10dp"
-            app:contentInsetStart="10dp"
-
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:maxHeight="@dimen/toolbar_height"
-            android:theme="?attr/toolbarStyle"
-            app:titleTextAppearance="@style/XstToolbarTitleStyle"
-             />
+        <include layout="@layout/toolbar"/>
 
         <TextView
             android:id="@+id/textConnectionError"

@@ -3,16 +3,16 @@ package com.example.tomek.shoutbox.activities;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.example.tomek.shoutbox.R;
+import com.jsibbold.zoomage.ZoomageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 public class PokazObrazekActivity extends XstActivity implements Callback {
 
-    private ImageView photoView;
+    private ZoomageView photoView;
     private ProgressBar progressBar;
 
     @Override
@@ -35,7 +35,6 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
 
         photoView = findViewById(R.id.obrazek);
         progressBar = findViewById(R.id.progressBar);
-
         Picasso.with(this)
                 .load(url)
                 .into(photoView, this);

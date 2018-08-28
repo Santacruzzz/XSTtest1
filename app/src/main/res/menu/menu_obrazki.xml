@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_obrazki_kopiuj"
+        android:icon="?android:attr/actionModeCopyDrawable"
+        android:title="Kopiuj link"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_obrazki_usun"
+        android:title="Usuń"
+        android:icon="@android:drawable/ic_menu_delete"/>
+</menu>

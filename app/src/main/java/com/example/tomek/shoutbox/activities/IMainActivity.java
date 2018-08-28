@@ -29,4 +29,5 @@ public interface IMainActivity {
     void polajkowanoWiadomosc(int msgid);
     void lajkujWiadomosc(int id, int position);
     Integer getKeyboardSize();
+    int getState();
 }

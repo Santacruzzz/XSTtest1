@@ -23,11 +23,14 @@
     <attr name="darkBg" format="color"/>
     <attr name="lightBg" format="color"/>
     <attr name="lightenBg" format="color"/>
+    <attr name="toolbarBg" format="color"/>
 
     <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
+        <item name="windowActionModeOverlay">true</item>
+        <item name="windowActionBar">false</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="android:colorPrimary">@color/colorPrimary_dark</item>
-        <item name="colorPrimary">@color/colorPrimary_dark</item>
+        <item name="android:colorPrimary">@color/toolbarBgColor_dark</item>
+        <item name="colorPrimary">@color/toolbarBgColor_dark</item>
         <item name="android:colorPrimaryDark">@color/colorPrimaryDark_dark</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark_dark</item>
         <item name="android:colorAccent">@color/colorAccent_dark</item>
@@ -67,12 +70,15 @@
         <item name="darkBg">#101010</item>
         <item name="lightBg">#282828</item>
         <item name="lightenBg">#303030</item>
+        <item name="toolbarBg">@color/toolbarBgColor_dark</item>
     </style>
 
     <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionModeOverlay">true</item>
+        <item name="windowActionBar">false</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
-        <item name="android:colorPrimary">@color/colorPrimary_light</item>
-        <item name="colorPrimary">@color/colorPrimary_light</item>
+        <item name="android:colorPrimary">@color/toolbarBgColor_light</item>
+        <item name="colorPrimary">@color/toolbarBgColor_light</item>
         <item name="android:colorPrimaryDark">@color/colorPrimaryDark_light</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark_light</item>
         <item name="android:colorAccent">@color/colorAccent_light</item>
@@ -112,6 +118,8 @@
         <item name="darkBg">#606060</item>
         <item name="lightBg">#787878</item>
         <item name="lightenBg">#9c9c9c</item>
+        <item name="toolbarBg">@color/toolbarBgColor_light</item>
+
     </style>
 
     <style name="SplashTheme" parent="xstThemeDark">
@@ -129,14 +137,22 @@
 
     <!-- TOOLBAR -->
 
-    <style name="ToolbarThemeDark" parent="">
-        <item name="android:background">#181818</item>
+    <style name="ToolbarThemeDark" parent="Theme.AppCompat">
+        <item name="android:colorPrimary">@color/toolbarBgColor_dark</item>
         <item name="android:colorControlNormal">#fff</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:actionModeBackground">@color/actionBarBgColor_dark</item>
+        <item name="android:fontFamily">@font/nasalization</item>
+        <!--<item name="android:textColorSecondary">@android:color/white</item>-->
     </style>
 
-    <style name="ToolbarThemeLight" parent="">
-        <item name="android:background">#eee</item>
+    <style name="ToolbarThemeLight" parent="Theme.AppCompat.Light">
+        <item name="android:colorPrimary">@color/toolbarBgColor_light</item>
         <item name="android:colorControlNormal">#000</item>
+        <item name="android:textColorPrimary">#000</item>
+        <item name="android:actionModeBackground">@color/actionBarBgColor_light</item>
+        <item name="android:fontFamily">@font/nasalization</item>
+        <!--<item name="android:textColorSecondary">#000</item>-->
     </style>
 
     <style name="XstToolbarTitleStyle" parent="">

@@ -1,15 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/lightBg">
+
 
     <com.example.tomek.shoutbox.SquareImageView
         android:id="@+id/imageObrazek"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:src="@drawable/xst_big"
         android:contentDescription="@string/avatar" />
 
-</FrameLayout>
+    <com.example.tomek.shoutbox.SquareImageView
+        android:id="@+id/imgOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:adjustViewBounds="false"
+        android:alpha="0.8"
+        android:background="#C0000000"
+        android:scaleType="center"
+        android:src="@drawable/check_icon"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/textDataObrazka"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageObrazek"
+        android:layout_centerHorizontal="true"
+        android:background="#C0000000"
+        android:gravity="center"
+        android:padding="5dp"
+        android:text="21.08.2018"
+        android:textSize="12sp" />
+
+</RelativeLayout>

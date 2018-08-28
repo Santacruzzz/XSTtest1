@@ -5,7 +5,9 @@
     android:background="?attr/darkenBg"
     tools:context="com.example.tomek.shoutbox.activities.PokazObrazekActivity">
 
-    <com.github.chrisbanes.photoview.PhotoView
+    <include layout="@layout/toolbar"/>
+
+    <com.jsibbold.zoomage.ZoomageView
         android:id="@+id/obrazek"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

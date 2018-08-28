@@ -33,7 +33,9 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected String avatarFileName;
     protected boolean czyZalogowany;
     protected int keyboardSize;
+    protected long obrazkiLastDate;
     protected XstApplication xstApp;
+    private ActionBar toolbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected void ustawToolbar() {
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
-        ActionBar toolbar = getSupportActionBar();
+        toolbar = getSupportActionBar();
         if (toolbar != null) {
             toolbar.setDisplayShowHomeEnabled(true);
         }
@@ -83,7 +85,6 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     }
 
     protected void wczytajStyl() {
-        Log.i("xst", "Wczytuje styl: " + themeName);
         if (themeName.equals("light")) {
             setTheme(R.style.xstThemeLight);
             xstApp.setTheme(R.style.xstThemeLight);
@@ -100,6 +101,7 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         avatarFileName = xstApp.getAvatarFileName();
         themeName = xstApp.getThemeName();
         keyboardSize = xstApp.getKeyboardSize();
+        obrazkiLastDate = xstApp.getObrazkiLastDate();
 
         Log.i("xst", String.format("wczytajUstawienia(): apiKey=%s, login=%s, nickname=%s, avatar=%s, theme=%s kbsize=%d",
                 apiKey, login, nickname, avatarFileName, themeName, keyboardSize) );
@@ -158,7 +160,14 @@ public class XstActivity extends AppCompatActivity implements IVolley {
         return sharedPrefs;
     }
 
-    protected XstApplication getXstApplication() {
-        return (XstApplication) getApplicationContext();
+    protected void setHomeMenuIcon() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            if (themeName.equals("dark")) {
+                actionBar.setHomeAsUpIndicator(R.drawable.hamb_small);
+            } else {
+                actionBar.setHomeAsUpIndicator(R.drawable.hamb_small_black);
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.example.tomek.shoutbox.activities;
 
-import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -10,10 +10,15 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -43,8 +48,8 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.example.tomek.shoutbox.MyBroadcastReceiver;
 import com.example.tomek.shoutbox.NavItem;
 import com.example.tomek.shoutbox.NowaWiadomoscReceiver;
-import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.XstService;
 import com.example.tomek.shoutbox.adapters.DrawerListAdapter;
@@ -65,7 +70,8 @@ public class MainActivity extends XstActivity
                    IMainActivity,
                    View.OnClickListener,
                    SwipeRefreshLayout.OnRefreshListener,
-                   CompoundButton.OnCheckedChangeListener {
+                   CompoundButton.OnCheckedChangeListener,
+                   IPermission {
     ArrayList<Wiadomosc> arrayListWiadomosci;
     ArrayList<User> arrayListOnline;
     MyBroadcastReceiver broadcastReceiver;
@@ -99,6 +105,8 @@ public class MainActivity extends XstActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         zaladujWidokPodstawowy();
+        enableBackButtonInActionBar();
+        setHomeMenuIcon();
 
         if (czyZalogowany) {
             zalogowano();
@@ -157,6 +165,7 @@ public class MainActivity extends XstActivity
     }
 
     private void zaladujWidokNiezalogowany() {
+        buttonWyloguj.setVisibility(View.GONE);
         startActivityForResult(new Intent(this, LoginActivity.class), Typy.REQUEST_ZALOGUJ);
     }
 
@@ -184,6 +193,9 @@ public class MainActivity extends XstActivity
                 break;
             case R.id.menu_ustawienia:
                 uruchomUstawienia();
+                break;
+            case R.id.menu_test:
+                mStartService("testPowiadomienia");
                 break;
         }
         return true;
@@ -312,14 +324,15 @@ public class MainActivity extends XstActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.i("xst", "====main ON SAVE");
+    public int getState() {
+        if (czyJestInternet) {
+            return Typy.STATE_ONLINE;
+        }
+        return Typy.STATE_OFFLINE;
     }
 
     @Override
     protected void onPause() {
-        Log.i("xst", "====main ON PAUSE");
         super.onPause();
         wyrejestrujReceivery();
         if (czyZalogowany) {
@@ -508,7 +521,6 @@ public class MainActivity extends XstActivity
         }
     }
 
-    @SuppressLint("ApplySharedPref")
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
         if (isChecked) {
@@ -529,6 +541,74 @@ public class MainActivity extends XstActivity
     @Override
     public void onRefresh() {
 
+    }
+
+    @Override
+    public boolean haveWritePermission() {
+        int result = ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void requestPermission() {
+        Log.i("xst", "request permission");
+        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            pokazDialog("Wejdź w ustawienia aplikacji i przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Nie mogę wykonać akcji");
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                                              new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                              Typy.PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case Typy.PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (fragmentSb != null) {
+                        fragmentSb.przyznanoUprawnieniaZapisu();
+                    }
+                } else {
+                    pokazDialog("Wejdź w ustawienia aplikacji i przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Nie mogę wykonać akcji");
+                }
+                break;
+        }
+    }
+
+    private void pokazDialog(String message) {
+        pokazDialog(message, "");
+    }
+
+    private void pokazDialog(String message, String title) {
+        AlertDialog.Builder builder;
+        builder = new AlertDialog.Builder(MainActivity.this);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+//        } else {
+//            builder = new AlertDialog.Builder(MainActivity.this);
+//        }
+        if (title.length() > 0) {
+            builder.setTitle(title);
+        }
+        builder.setMessage(message);
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                });
+        builder.create();
+        builder.show();
     }
 
     private class DrawerItemClickListener implements android.widget.AdapterView.OnItemClickListener {
@@ -580,7 +660,6 @@ public class MainActivity extends XstActivity
 
         wyrejestrujReceivery();
 
-        buttonWyloguj.setVisibility(View.GONE);
         mStartService("wylogowano");
         zaladujWidokNiezalogowany();
     }
@@ -658,4 +737,5 @@ public class MainActivity extends XstActivity
                 break;
         }
     }
+
 }
