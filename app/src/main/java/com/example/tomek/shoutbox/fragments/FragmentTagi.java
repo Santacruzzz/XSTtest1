@@ -1,6 +1,5 @@
 package com.example.tomek.shoutbox.fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -8,22 +7,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.ListView;
 
 import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.AdapterTagi;
-import com.example.tomek.shoutbox.fragments.FragmentSb;
 
-@SuppressLint("ValidFragment")
 public class FragmentTagi extends Fragment implements AdapterView.OnItemClickListener {
     private DialogDodatki.AddonSelectedListener listener;
     private AdapterTagi mAdapter;
 
     public FragmentTagi() {}
 
-    public FragmentTagi(DialogDodatki.AddonSelectedListener listener) {
+    public void setListener(DialogDodatki.AddonSelectedListener listener) {
         this.listener = listener;
     }
 

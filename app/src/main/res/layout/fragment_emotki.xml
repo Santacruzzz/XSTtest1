@@ -7,5 +7,15 @@
         android:id="@+id/gridEmotki"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:numColumns="6" />
+
+        android:columnWidth="40dp"
+        android:drawSelectorOnTop="true"
+        android:fadeScrollbars="false"
+        android:focusable="true"
+        android:gravity="center"
+        android:horizontalSpacing="@dimen/obrazkiSpacing"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/obrazkiSpacing"
+        />
 </LinearLayout>

@@ -18,6 +18,7 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ustawToolbar();
         enableBackButtonInActionBar();
         setContentView(R.layout.activity_pokaz_obrazek);
 

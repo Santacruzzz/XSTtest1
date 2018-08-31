@@ -1,6 +1,8 @@
 package com.example.tomek.shoutbox;
 
-import android.app.Activity;
+import android.content.SharedPreferences;
+
+import com.example.tomek.shoutbox.utils.Typy;
 
 import java.util.ArrayList;
 
@@ -9,36 +11,33 @@ import java.util.ArrayList;
  */
 
 public class XstDb {
-    private Activity activity;
     private ArrayList<Wiadomosc> listaWiadomosci;
     private ArrayList<User> listaOnline;
     private ArrayList<MojObrazek> listaObrazkow;
+    private ArrayList<String> listaObrazkowZdysku;
     private int lastDate = 0;
     private int iloscPobranych = 0;
+    private SharedPreferences sharedPreferences;
 
     public XstDb() {
-        setLastDate(getLastDate() + 1);
+        listaWiadomosci = new ArrayList<>();
+        listaOnline = new ArrayList<>();
+        listaObrazkow = new ArrayList<>();
+        listaObrazkowZdysku = new ArrayList<>();
     }
 
     public void odswiezWiadomosci() {
 
     }
 
-    public void pobierzStarsze() {
-
-    }
-
     public void initialize(XstApplication xstApplication) {
-
+        sharedPreferences = xstApplication.getSharedPreferences(Typy.PREFS_NAME, 0);
     }
 
     public ArrayList<Wiadomosc> getListaWiadomosci() {
         return listaWiadomosci;
     }
 
-    public void setListaWiadomosci(ArrayList<Wiadomosc> listaWiadomosci) {
-        this.listaWiadomosci = listaWiadomosci;
-    }
 
     public ArrayList<User> getListaOnline() {
         return listaOnline;
@@ -62,5 +61,12 @@ public class XstDb {
 
     public void setIloscPobranych(int iloscPobranych) {
         this.iloscPobranych = iloscPobranych;
+    }
+
+    public void dodajObrazekZdysku(String url) {
+        if (listaObrazkowZdysku.contains(url)) {
+            return;
+        }
+        listaObrazkowZdysku.add(url);
     }
 }

@@ -8,6 +8,7 @@
         android:title="Ustawienia">
     </item>
     <item
+        android:visible="false"
         android:id="@+id/menu_test"
         android:icon="@android:drawable/ic_menu_view"
         android:title="Test"

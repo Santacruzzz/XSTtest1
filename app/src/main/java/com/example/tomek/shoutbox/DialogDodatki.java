@@ -21,9 +21,13 @@ import android.widget.ImageButton;
 import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.PagerAdapterTagiEmotki;
 import com.example.tomek.shoutbox.utils.Typy;
+import com.example.tomek.shoutbox.utils.Utils;
+
+import java.util.ArrayList;
 
 @SuppressLint("ValidFragment")
 public class DialogDodatki extends DialogFragment {
+    private SharedPreferences prefs;
     private int halfHeight;
     private int width;
     private int height;
@@ -31,20 +35,35 @@ public class DialogDodatki extends DialogFragment {
     private AddonSelectedListener listener;
     private boolean useKbSize;
     private MainActivity mAct;
+    private ArrayList<String> listaObrazkowZdysku;
+    private boolean listLoaded;
+    private PagerAdapterTagiEmotki pagerAdapterTagiEmotki;
+    private DialogListener dialogListeer;
+
+    public interface DialogListener {
+        void dialogDismissed();
+    }
 
     public DialogDodatki() {
         halfHeight = 0;
         width = 0;
         height = 0;
         mAct = null;
+        listLoaded = false;
     }
 
     public DialogDodatki(MainActivity pAct) {
+        listLoaded = false;
         listener = null;
         mAct = pAct;
-        SharedPreferences prefs = mAct.getSharedPrefs();
+        prefs = mAct.getSharedPrefs();
         useKbSize = prefs.getBoolean(Typy.PREFS_USE_KB_SIZE,false);
         kbsize = prefs.getInt(Typy.PREFS_KB_SIZE, 200);
+        listaObrazkowZdysku = Utils.getArrayList(mAct.getSharedPrefs(), Typy.PREFS_OBRAZKI_Z_DYSKU);
+    }
+
+    public void setDialogListeer(DialogListener listener) {
+        dialogListeer = listener;
     }
 
     private int getSoftButtonsBarHeight() {
@@ -109,11 +128,9 @@ public class DialogDodatki extends DialogFragment {
         });
         ViewPager pagerTagiEmotki = view.findViewById(R.id.viewPagerTagiEmotki);
         TabLayout mTabsTagiEmotki = view.findViewById(R.id.tabsTagiEmotki);
-        PagerAdapterTagiEmotki pagerAdapterTagiEmotki = new PagerAdapterTagiEmotki(getChildFragmentManager(), listener);
+        pagerAdapterTagiEmotki = new PagerAdapterTagiEmotki(getChildFragmentManager(), listener, listaObrazkowZdysku);
         mTabsTagiEmotki.setupWithViewPager(pagerTagiEmotki);
         pagerTagiEmotki.setAdapter(pagerAdapterTagiEmotki);
-        mTabsTagiEmotki.getTabAt(0).setIcon(android.R.drawable.ic_menu_more);
-        mTabsTagiEmotki.getTabAt(1).setIcon(R.drawable.smile1);
 
         Window window = getDialog().getWindow();
         if (window != null) {
@@ -138,14 +155,35 @@ public class DialogDodatki extends DialogFragment {
         return new DialogDodatki(act);
     }
 
+    public void imagesFound(ArrayList<String> lista) {
+        if (pagerAdapterTagiEmotki != null) {
+            pagerAdapterTagiEmotki.setLista(lista);
+        } else {
+            listaObrazkowZdysku = lista;
+        }
+    }
+
     public interface AddonSelectedListener {
-        public void smileySelected(String smiley);
-        public void tagSelected(String tag);
-        public void pickImageSelected();
+        void smileySelected(String smiley);
+        void tagSelected(String tag);
+        void pickImageSelected();
+        void imageSelected(String path);
     }
 
     public void setAddonSelectedListener(AddonSelectedListener listener) {
         this.listener = listener;
+    }
+
+    @Override
+    public void onDestroy() {
+        dialogListeer.dialogDismissed();
+        super.onDestroy();
+    }
+
+    @Override
+    public void dismiss() {
+        dialogListeer.dialogDismissed();
+        super.dismiss();
     }
 
     private void setDialogPosition() {

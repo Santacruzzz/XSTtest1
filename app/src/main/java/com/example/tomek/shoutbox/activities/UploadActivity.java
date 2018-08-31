@@ -234,6 +234,11 @@ public class UploadActivity extends XstActivity
         isFileUploaded = true;
         layoutUpload.setVisibility(View.GONE);
         layoutComplete.setVisibility(View.VISIBLE);
+        if (fileToUpload.getName().equals("temporary_file.jpg")) {
+            if (fileToUpload.delete()) {
+                Log.i("xst", "UploadActivity: usunięto tymczasowy plik");
+            }
+        }
     }
 
     // FileFromBitmap.FileFromBitmapListener

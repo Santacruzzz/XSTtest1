@@ -9,6 +9,7 @@ import android.widget.ImageView;
 
 import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class EmotkiAdapter extends BaseAdapter {
         }
 
         ImageView emotka = row.findViewById(R.id.imageEmotka);
-        emotka.setImageResource(mListaEmotekResId.get(position));
+        Picasso.with(cntx).load(mListaEmotekResId.get(position)).into(emotka);
 
         return row;
     }

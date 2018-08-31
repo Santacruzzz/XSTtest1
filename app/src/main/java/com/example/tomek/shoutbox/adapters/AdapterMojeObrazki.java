@@ -95,7 +95,7 @@ public class AdapterMojeObrazki extends BaseAdapter {
         } else {
             imageOverlay.setVisibility(View.INVISIBLE);
         }
-        Picasso.with(activity).load(obrazek.getObrazekUrl()).into(imageView);
+        Picasso.with(activity).load(obrazek.getObrazekUrl()).fit().centerCrop().into(imageView);
         row.setTag(obrazek.id);
         return row;
     }

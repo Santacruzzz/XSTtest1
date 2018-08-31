@@ -18,6 +18,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.XstApplication;
+import com.example.tomek.shoutbox.XstDb;
 import com.example.tomek.shoutbox.utils.LruBitmapCache;
 import com.example.tomek.shoutbox.utils.Typy;
 
@@ -35,13 +36,15 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected int keyboardSize;
     protected long obrazkiLastDate;
     protected XstApplication xstApp;
+    protected XstDb bazaDanych;
     private ActionBar toolbar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        xstApp = (XstApplication) getApplicationContext();
         super.onCreate(savedInstanceState);
         sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
-        xstApp = (XstApplication) getApplicationContext();
+        bazaDanych = xstApp.getBazaDanych();
         wczytajUstawienia();
         wczytajStyl();
         setKeyboardSizeListener();

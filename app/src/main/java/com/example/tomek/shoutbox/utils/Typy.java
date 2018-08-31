@@ -46,6 +46,7 @@ public class Typy {
     public static final String PREFS_HIDE_KB_AFTER_SEND = "hideKbAfterSend";
     public static final String PREFS_OBRAZKI_LAST_DATE = "obrazki_last_date";
     public static final String PREFS_THEME = "theme";
+    public static final String PREFS_OBRAZKI_Z_DYSKU = "obrazki_z_dysku";
 
     public static final String FRAGMENT_SHOUTBOX = "shoutbox";
     public static final String FRAGMENT_USTAWIENIA = "ustawienia";

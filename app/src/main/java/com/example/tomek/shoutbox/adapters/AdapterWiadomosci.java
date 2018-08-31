@@ -128,7 +128,8 @@ public class AdapterWiadomosci extends BaseAdapter {
             autor.setTypeface(face);
         }
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
-        Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString);
+        int txtViewHeight = wiadomosc.getLineHeight();
+        Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString, txtViewHeight);
 
         if (mWiadomosc.getObrazki().size() > 0) {
             int numer_obrazka = 1;

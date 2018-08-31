@@ -7,8 +7,8 @@ android {
         applicationId "com.example.tomek.xstshoutbox"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 14
-        versionName "1.6.2 dev"
+        versionCode 15
+        versionName "1.6.2"
     }
     buildTypes {
         release {
@@ -31,6 +31,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'org.ocpsoft.prettytime:prettytime:4.0.1.Final'
     implementation 'com.jsibbold:zoomage:1.2.0-SNAPSHOT'
     implementation 'com.android.support:appcompat-v7:27.1.1'

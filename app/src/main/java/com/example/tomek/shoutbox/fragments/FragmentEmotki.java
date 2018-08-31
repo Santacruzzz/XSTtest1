@@ -1,6 +1,5 @@
 package com.example.tomek.shoutbox.fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,14 +13,13 @@ import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.EmotkiAdapter;
 
-@SuppressLint("ValidFragment")
 public class FragmentEmotki extends Fragment implements AdapterView.OnItemClickListener {
     private DialogDodatki.AddonSelectedListener listener;
     private EmotkiAdapter mAdapter;
 
     public FragmentEmotki() {}
 
-    public FragmentEmotki(DialogDodatki.AddonSelectedListener listener) {
+    public void setListener(DialogDodatki.AddonSelectedListener listener) {
         this.listener = listener;
     }
 

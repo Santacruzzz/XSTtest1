@@ -113,12 +113,13 @@ public class XstService extends Service {
             mRequestQueue = Volley.newRequestQueue(xstApp);
         }
 
+        Log.e("xst", "Service: restarted");
+
         mRunnableWiadomosci = new Runnable() {
             @Override
             public void run() {
                 try {
                     if (mServiceReady) {
-                        wczytajUstawienia();
                         pobierz_wiadomosc();
                         Log.i("xst", "Service state: " + state);
                     } else {
@@ -148,12 +149,11 @@ public class XstService extends Service {
                 String msg = extra.getString("msg");
                 Log.i("xst", "Service start command: " + msg);
                 if (msg == null) {
-                    return super.onStartCommand(intent, flags, startId);
+                    msg = "onPause";
                 }
                 switch (msg) {
                     case "zalogowano":
-                        state = Typy.ServiceState.state_zalogowano;
-                        mKey = xstApp.getApiKey();
+                        wczytajUstawienia();
                         zacznijPobieracWiadomosci();
                         break;
 
@@ -177,13 +177,11 @@ public class XstService extends Service {
                         break;
 
                     case "wymusOdswiezenie":
-                        state = Typy.ServiceState.state_wymusOdswiezenie;
                         mLastDate = 0;
                         zacznijPobieracWiadomosci();
                         break;
 
                     case "odswiez":
-                        state = Typy.ServiceState.state_odswiez;
                         zacznijPobieracWiadomosci();
                         break;
 

@@ -62,6 +62,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -331,6 +332,7 @@ public class MainActivity extends XstActivity
         return Typy.STATE_OFFLINE;
     }
 
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -553,7 +555,7 @@ public class MainActivity extends XstActivity
     public void requestPermission() {
         Log.i("xst", "request permission");
         if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            pokazDialog("Wejdź w ustawienia aplikacji i przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Nie mogę wykonać akcji");
+            pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików");
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
                                               new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -567,10 +569,10 @@ public class MainActivity extends XstActivity
             case Typy.PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (fragmentSb != null) {
-                        fragmentSb.przyznanoUprawnieniaZapisu();
+                        fragmentSb.pokazDialogDodatki();
                     }
                 } else {
-                    pokazDialog("Wejdź w ustawienia aplikacji i przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Nie mogę wykonać akcji");
+                    pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików");
                 }
                 break;
         }
@@ -609,6 +611,10 @@ public class MainActivity extends XstActivity
                 });
         builder.create();
         builder.show();
+    }
+
+    public void imageSelectedToUpload(String path) {
+        startActivityUploadImage(Uri.fromFile(new File(path)));
     }
 
     private class DrawerItemClickListener implements android.widget.AdapterView.OnItemClickListener {
@@ -716,10 +722,7 @@ public class MainActivity extends XstActivity
 
             case Typy.REQUEST_PICK_IMAGE:
                 if (resultCode == RESULT_OK && data != null && data.getData() != null) {
-                    Uri uri = data.getData();
-                    Intent uploadIntent = new Intent(this, UploadActivity.class);
-                    uploadIntent.putExtra("imageUri", uri.toString());
-                    startActivityForResult(uploadIntent, Typy.REQUEST_UPLOAD_IMAGE);
+                    startActivityUploadImage(data.getData());
                 }
                 break;
 
@@ -736,6 +739,12 @@ public class MainActivity extends XstActivity
                 }
                 break;
         }
+    }
+
+    private void startActivityUploadImage(Uri uri) {
+        Intent uploadIntent = new Intent(this, UploadActivity.class);
+        uploadIntent.putExtra("imageUri", uri.toString());
+        startActivityForResult(uploadIntent, Typy.REQUEST_UPLOAD_IMAGE);
     }
 
 }

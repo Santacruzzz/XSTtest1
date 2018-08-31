@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.tomek.shoutbox.DialogDodatki;
 import com.example.tomek.shoutbox.R;
@@ -31,7 +32,9 @@ import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.IPermission;
 import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
+import com.example.tomek.shoutbox.utils.ImagesFromGallery;
 import com.example.tomek.shoutbox.utils.Typy;
+import com.example.tomek.shoutbox.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -42,7 +45,9 @@ import java.util.ArrayList;
 public class FragmentSb extends Fragment implements
         View.OnClickListener,
         SwipeRefreshLayout.OnRefreshListener,
-        DialogDodatki.AddonSelectedListener {
+        DialogDodatki.AddonSelectedListener,
+        ImagesFromGallery.ImageFoundListener,
+        DialogDodatki.DialogListener {
 
     private ListView listViewWiadomosci;
     private ArrayList<Wiadomosc> arrayWiadomosci;
@@ -55,11 +60,13 @@ public class FragmentSb extends Fragment implements
     private Integer keyboradSize;
     private DialogDodatki dodatkiDialog;
     private IPermission iPermission;
+    private boolean isDialogShown;
 
     public FragmentSb() {
         arrayWiadomosci = new ArrayList<>();
         keyboradSize = 0;
         dodatkiDialog = null;
+        isDialogShown = false;
     }
 
     @Override
@@ -70,6 +77,7 @@ public class FragmentSb extends Fragment implements
         iPermission = mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
         keyboradSize = mImain.getKeyboardSize();
+        isDialogShown = false;
     }
 
     @Nullable
@@ -142,13 +150,30 @@ public class FragmentSb extends Fragment implements
         }
     }
 
-    private void pokazDialogDodatki() {
-        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+    public void pokazDialogDodatki() {
+        if (isDialogShown) {
+            return;
+        }
 
-        // Create and show the dialog.
+        if (mAct.haveWritePermission()) {
+            Log.i("xst", "FragmentSb: Mam prawa do plikow");
+            wczytajObrazkiZdysku();
+        } else {
+            mAct.requestPermission();
+            return;
+        }
+
+        FragmentTransaction ft = getChildFragmentManager().beginTransaction();
         dodatkiDialog = DialogDodatki.newInstance(mAct);
         dodatkiDialog.setAddonSelectedListener(this);
+        dodatkiDialog.setDialogListeer(this);
         dodatkiDialog.show(ft, "dialog");
+        isDialogShown = true;
+    }
+
+    private void wczytajObrazkiZdysku() {
+        ImagesFromGallery imagesFromGallery = new ImagesFromGallery(this);
+        imagesFromGallery.execute(mAct.getApplicationContext());
     }
 
     @Override
@@ -161,7 +186,7 @@ public class FragmentSb extends Fragment implements
             menu.setHeaderTitle("Wybierz akcję");
 
             menu.add(0, 99, 0, "Lubię to!"); //groupId, itemId, order, title
-
+            //TODO więcej?
         }
     }
 
@@ -265,12 +290,34 @@ public class FragmentSb extends Fragment implements
         }
     }
 
-    public void wstawLinkObrazka(String url) {
-        mWiadomosc.setText(String.format("%s[img]%s[/img]", mWiadomosc.getText(), url));
+    @Override
+    public void imageSelected(String path) {
+        mAct.imageSelectedToUpload(path);
     }
 
-    public void przyznanoUprawnieniaZapisu() {
-        pickImageSelected();
+    public void wstawLinkObrazka(String url) {
+        mWiadomosc.setText(String.format("%s [img]%s[/img]", mWiadomosc.getText(), url));
+    }
+
+    @Override
+    public void imagesFound(ArrayList<String> lista) {
+        Utils.saveArrayList(mAct.getSharedPrefs(), lista, Typy.PREFS_OBRAZKI_Z_DYSKU);
+        dodatkiDialog.imagesFound(lista);
+    }
+
+    @Override
+    public void noImages() {
+        mAct.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(mAct.getApplicationContext(), "Brak obrazków do załadowania", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void dialogDismissed() {
+        isDialogShown = false;
     }
 }
 
