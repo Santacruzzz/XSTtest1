@@ -257,6 +257,7 @@ public class FragmentSb extends Fragment implements
     }
 
     public void anulujOdswiezanie() {
+        Log.i("xst", "FragmentSb: anuluje odsiwezanie");
         mRefreshLayout.setRefreshing(false);
     }
 

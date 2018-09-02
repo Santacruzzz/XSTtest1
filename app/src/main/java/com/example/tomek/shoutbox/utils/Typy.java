@@ -31,6 +31,7 @@ public class Typy {
     public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
     public static final String BROADCAST_LIKE_MSG = "nowy_like";
     public static final String BROADCAST_INTERNET_LOST = "error";
+    public static final String BROADCAST_KONIEC_ODSWIEZANIA = "odswiezono";
 
     public static final String PREFS_NAME = "xstprefs";
     public static final String PREFS_API_KEY = "pak";
@@ -73,6 +74,14 @@ public class Typy {
         state_onPause,
         state_wylogowano,
         state_wymusOdswiezenie,
-        state_odswiez
+        state_odswiez,
+        state_blad_polaczenia;
+    }
+
+    public enum ServiceRequest {
+        request_wymusOdswiezanie,
+        request_lajkuj,
+        request_wyslijWiadomosc,
+        request_none
     }
 }

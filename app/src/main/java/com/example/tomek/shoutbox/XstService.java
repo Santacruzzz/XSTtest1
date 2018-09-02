@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,7 +69,10 @@ public class XstService extends Service {
     private XstApplication xstApp;
     private NotificationManagerCompat notificationManager;
     private Typy.ServiceState state;
+    private Typy.ServiceRequest request;
     private ArrayList<Integer> activeNotificationsIds;
+    private Context context;
+    private ConnectivityManager connectivityManager;
 
     public XstService() {
         mDelayMillis = 30000;
@@ -95,7 +100,10 @@ public class XstService extends Service {
         xstApp = (XstApplication) getApplicationContext();
         notificationManager = NotificationManagerCompat.from(this);
         state = Typy.ServiceState.state_wylogowano;
+        request = Typy.ServiceRequest.request_none;
         activeNotificationsIds = new ArrayList<>();
+        context = getApplicationContext();
+        connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         PackageInfo appPackageInfo = getAppPackageInfo();
         if (appPackageInfo != null) {
@@ -122,6 +130,7 @@ public class XstService extends Service {
                     if (mServiceReady) {
                         pobierz_wiadomosc();
                         Log.i("xst", "Service state: " + state);
+                        Log.i("xst", "Service request: " + request);
                     } else {
                         Log.e("xst", "Service not ready");
                     }
@@ -139,6 +148,11 @@ public class XstService extends Service {
         if (mKey.length() > 0) {
             zacznijPobieracWiadomosci();
         }
+    }
+
+    private boolean isConnected() {
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     @Override
@@ -178,6 +192,7 @@ public class XstService extends Service {
 
                     case "wymusOdswiezenie":
                         mLastDate = 0;
+                        request = Typy.ServiceRequest.request_wymusOdswiezanie;
                         zacznijPobieracWiadomosci();
                         break;
 
@@ -192,6 +207,10 @@ public class XstService extends Service {
 
                     case "testPowiadomienia":
                         showNotification("test", "msg");
+                        break;
+
+                    case "internetWrocil":
+
                         break;
                 }
             }
@@ -247,18 +266,28 @@ public class XstService extends Service {
         params.put("android_version", android.os.Build.VERSION.RELEASE);
         params.put("app_version", mAppVersionName);
 
-
         Log.i("xst", "Service: wysylam getMsg: " + params.toString());
-        JSONObject request = new JSONObject(params);
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, request, new Response.Listener<JSONObject>() {
+        final JSONObject requestJson = new JSONObject(params);
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, requestJson, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                broadcastInternetOk();
+                if (request == Typy.ServiceRequest.request_wymusOdswiezanie) {
+                    request = Typy.ServiceRequest.request_none;
+                    broadcastMessage(Typy.BROADCAST_KONIEC_ODSWIEZANIA);
+                }
+                if (state == Typy.ServiceState.state_blad_polaczenia) {
+                    state = Typy.ServiceState.state_onPause;
+                    broadcastMessage(Typy.BROADCAST_INTERNET_WROCIL);
+                }
                 try {
+                    if (response.getInt("success") == 0) {
+                        return;
+                    }
+
                     mLastDate = response.getInt("last_date");
                     int receivedAppVersion = response.getInt("version");
 
-                    if (receivedAppVersion > mAppVersion && settings_sprawdzajAktualizacje) {
+                    if ((receivedAppVersion > mAppVersion) && settings_sprawdzajAktualizacje) {
                         showNotification("Jest nowa wersja aplikacji!", "update");
                     }
 
@@ -274,7 +303,6 @@ public class XstService extends Service {
                         Intent i = new Intent();
                         i.putExtra("items", items.toString());
                         i.setAction(Typy.BROADCAST_NEW_MSG);
-                        Log.i("xst", "Service: wysyłam broadcast nowe wiadomosci!!!");
                         sendBroadcast(i);
                     }
 
@@ -300,21 +328,16 @@ public class XstService extends Service {
         getRequestQueue().add(req);
     }
 
-    private void broadcastInternetOk() {
-        if (state == Typy.ServiceState.state_wylogowano) {
-            state = Typy.ServiceState.state_onPause;
-        }
+    private void broadcastMessage(String msg) {
         Intent i = new Intent();
-        i.setAction(Typy.BROADCAST_INTERNET_OK);
-        Log.i("xst", "Service: wysyłam broadcast internet ok");
+        i.setAction(msg);
+        Log.i("xst", "Service is broadcasting msg: " + msg);
         sendBroadcast(i);
     }
 
     private void broadcastConnectionError() {
-        state = Typy.ServiceState.state_wylogowano;
-        Intent i = new Intent();
-        i.setAction(Typy.BROADCAST_INTERNET_LOST);
-        sendBroadcast(i);
+        broadcastMessage(Typy.BROADCAST_KONIEC_ODSWIEZANIA);
+        broadcastMessage(Typy.BROADCAST_INTERNET_LOST);
     }
 
     private void lajkujWiadomosc(final int msgId) {
@@ -420,10 +443,13 @@ public class XstService extends Service {
     private class VolleyErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
+            request = Typy.ServiceRequest.request_none;
             if (error instanceof TimeoutError || error instanceof NoConnectionError) {
                 cancelRefresh();
-                startJobSchedulerInternetOK();
                 broadcastConnectionError();
+                if (!isConnected()) {
+                    startJobSchedulerInternetOK();
+                }
             } else if (error instanceof AuthFailureError) {
                 Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
             } else if (error instanceof ServerError) {

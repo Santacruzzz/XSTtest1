@@ -148,8 +148,6 @@ public class XstActivity extends AppCompatActivity implements IVolley {
                     heightDifference -= getResources().getDimensionPixelSize(resourceId);
                 }
 
-                Log.i("xst", "---- current keyboardSize=" + heightDifference);
-
                 if (heightDifference > 250 && heightDifference != keyboardSize) {
                     xstApp.zapiszUstawienie(Typy.PREFS_KB_SIZE, heightDifference);
                     keyboardSize = heightDifference;

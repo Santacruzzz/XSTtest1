@@ -12,7 +12,6 @@ import com.example.tomek.shoutbox.activities.MainActivity;
  */
 
 public class MyBroadcastReceiver extends BroadcastReceiver {
-
     private IMainActivity mAct;
 
     public MyBroadcastReceiver(MainActivity mainActivity) {

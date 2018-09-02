@@ -90,7 +90,7 @@ public class MainActivity extends XstActivity
     private Button buttonWyloguj;
     private Button buttonZaloguj;
 
-    private boolean czyJestInternet = true;
+    private boolean czyJestPolaczenie = true;
     private boolean wyswietlilemBladInternetu = false;
     private boolean pozwolNaZmianeStylu = true;
 
@@ -109,9 +109,7 @@ public class MainActivity extends XstActivity
         enableBackButtonInActionBar();
         setHomeMenuIcon();
 
-        if (czyZalogowany) {
-            zalogowano();
-        } else {
+        if (!czyZalogowany) {
             zaladujWidokNiezalogowany();
         }
 
@@ -326,7 +324,7 @@ public class MainActivity extends XstActivity
 
     @Override
     public int getState() {
-        if (czyJestInternet) {
+        if (czyJestPolaczenie) {
             return Typy.STATE_ONLINE;
         }
         return Typy.STATE_OFFLINE;
@@ -345,7 +343,7 @@ public class MainActivity extends XstActivity
     @Override
     protected void onResume() {
         super.onResume();
-        if (czyJestInternet) {
+        if (czyJestPolaczenie) {
             obsluzPowrotInternetu();
         } else {
             obsluzBrakInternetu();
@@ -386,15 +384,15 @@ public class MainActivity extends XstActivity
 
     @Override
     public void broadcastReceived(String intent) {
+        Log.i("xst", "MainActivity received msg: " + intent);
         switch (intent) {
             case Typy.BROADCAST_INTERNET_WROCIL:
-                mStartService("odswiez");
+                mStartService("onResume");
                 obsluzPowrotInternetu();
                 break;
 
             case Typy.BROADCAST_INTERNET_LOST:
                 obsluzBrakInternetu();
-                fragmentSb.anulujOdswiezanie();
                 break;
 
             case Typy.BROADCAST_INTERNET_OK:
@@ -404,11 +402,14 @@ public class MainActivity extends XstActivity
             case Typy.BROADCAST_ONLINE:
                 fragmentOnline.odswiezOnline(getOnline());
                 break;
+            case Typy.BROADCAST_KONIEC_ODSWIEZANIA:
+                fragmentSb.anulujOdswiezanie();
+                break;
         }
     }
 
     private void obsluzPowrotInternetu() {
-        czyJestInternet = true;
+        czyJestPolaczenie = true;
         if (wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = false;
             Toast.makeText(this, "Połączenie przywrócone", Toast.LENGTH_SHORT).show();
@@ -424,10 +425,10 @@ public class MainActivity extends XstActivity
     }
 
     private void obsluzBrakInternetu() {
-        czyJestInternet = false;
+        czyJestPolaczenie = false;
         if (! wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = true;
-            Toast.makeText(this, "Brak połączenia", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(this, "Brak połączenia", Toast.LENGTH_SHORT).show();
         }
         ustawWidokStanuPolaczenia("Offline", Color.RED, android.R.drawable.presence_offline, View.VISIBLE);
     }
@@ -454,12 +455,6 @@ public class MainActivity extends XstActivity
     public void zalogowano() {
         czyZalogowany = true;
         ustawWidokZalogowania();
-
-        broadcastReceiver = new MyBroadcastReceiver(this);
-        nowaWiadomoscReceiver = new NowaWiadomoscReceiver(this);
-
-        zarejestrujReceivery();
-
         mStartService("zalogowano");
         wczytajWiadomosci(null);
     }
@@ -682,9 +677,13 @@ public class MainActivity extends XstActivity
     }
 
     private void zarejestrujReceivery() {
+        broadcastReceiver = new MyBroadcastReceiver(this);
+        nowaWiadomoscReceiver = new NowaWiadomoscReceiver(this);
+
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_WROCIL));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_LOST));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_KONIEC_ODSWIEZANIA));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_ONLINE));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));

@@ -3,7 +3,6 @@ package com.example.tomek.shoutbox;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Intent;
-import android.util.Log;
 
 import com.example.tomek.shoutbox.utils.Typy;
 
@@ -14,7 +13,7 @@ import com.example.tomek.shoutbox.utils.Typy;
 public class JobServiceInternetOK extends JobService {
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        Log.e("xst", "INTERNET OK, rozsyłam info");
+
         Intent intent = new Intent();
         intent.setAction(Typy.BROADCAST_INTERNET_WROCIL);
         sendBroadcast(intent);
