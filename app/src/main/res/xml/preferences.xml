@@ -48,5 +48,22 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="Debugowanie">
+
+        <CheckBoxPreference
+            android:key="serviceVibrateOn"
+            android:title="Wibracja w serwisie"
+            android:defaultValue="false"
+            android:summary="Wibruj przy pobieraniu danych"/>
+
+        <CheckBoxPreference
+            android:key="serviceShowSendParams"
+            android:title="Pokazuj wysyłane dane"
+            android:defaultValue="false"
+            android:summary="Pokaż dymek z parmetrami wysyłanymi do serwera"/>
+
+
+    </PreferenceCategory>
 
 </PreferenceScreen>

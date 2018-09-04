@@ -119,6 +119,10 @@ public class XstApplication extends Application {
         wczytajUstawienia();
     }
 
+    public boolean getSettingBool(String key) {
+        return sharedPrefs.getBoolean(key, false);
+    }
+
     public String getOnline() {
         return onlineJsonString;
     }

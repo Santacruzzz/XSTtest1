@@ -88,7 +88,6 @@ public class MainActivity extends XstActivity
 
     private Switch checkBoxDarkTheme;
     private Button buttonWyloguj;
-    private Button buttonZaloguj;
 
     private boolean czyJestPolaczenie = true;
     private boolean wyswietlilemBladInternetu = false;
@@ -111,6 +110,8 @@ public class MainActivity extends XstActivity
 
         if (!czyZalogowany) {
             zaladujWidokNiezalogowany();
+        } else {
+            ustawWidokZalogowania();
         }
 
         checkBoxDarkTheme.setOnCheckedChangeListener(this);
@@ -146,9 +147,7 @@ public class MainActivity extends XstActivity
 
         checkBoxDarkTheme = findViewById(R.id.checkBoxTheme);
         buttonWyloguj = findViewById(R.id.buttonWyloguj);
-        buttonZaloguj = findViewById(R.id.buttonZaloguj);
         buttonWyloguj.setOnClickListener(this);
-        buttonZaloguj.setOnClickListener(this);
         likedMsgPosition = 0;
         relativeLayoutProfileBox.setVisibility(View.VISIBLE);
         pozwolNaZmianeStylu = false;
@@ -164,7 +163,6 @@ public class MainActivity extends XstActivity
     }
 
     private void zaladujWidokNiezalogowany() {
-        buttonWyloguj.setVisibility(View.GONE);
         startActivityForResult(new Intent(this, LoginActivity.class), Typy.REQUEST_ZALOGUJ);
     }
 
@@ -409,7 +407,12 @@ public class MainActivity extends XstActivity
     }
 
     private void obsluzPowrotInternetu() {
+        if (czyJestPolaczenie) {
+            return;
+        }
         czyJestPolaczenie = true;
+
+        fragmentOnline.odswiezOnline(null);
         if (wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = false;
             Toast.makeText(this, "Połączenie przywrócone", Toast.LENGTH_SHORT).show();
@@ -426,6 +429,8 @@ public class MainActivity extends XstActivity
 
     private void obsluzBrakInternetu() {
         czyJestPolaczenie = false;
+
+        fragmentOnline.odswiezOnline(null);
         if (! wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = true;
 //            Toast.makeText(this, "Brak połączenia", Toast.LENGTH_SHORT).show();
@@ -462,17 +467,7 @@ public class MainActivity extends XstActivity
     private void ustawWidokZalogowania() {
         userAvatar.setImageUrl(Typy.URL_AVATAR + avatarFileName, getImageLoader());
         userNick.setText(nickname);
-        relativeLayoutProfileBox.setVisibility(View.VISIBLE);
-        buttonWyloguj.setVisibility(View.VISIBLE);
-        buttonZaloguj.setVisibility(View.INVISIBLE);
         drawerLayout.closeDrawers();
-    }
-
-    private void ustawWidokWylogowania() {
-        relativeLayoutProfileBox.setVisibility(View.GONE);
-        buttonZaloguj.setVisibility(View.VISIBLE);
-        buttonWyloguj.setVisibility(View.INVISIBLE);
-        showDrawerMenu();
     }
 
     private void wczytajWiadomosci(Intent intent) {
@@ -511,9 +506,6 @@ public class MainActivity extends XstActivity
             case R.id.buttonWyloguj:
                 wyloguj();
                 drawerLayout.closeDrawers();
-                break;
-            case R.id.buttonZaloguj:
-                zaladujWidokNiezalogowany();
                 break;
         }
     }
@@ -580,11 +572,6 @@ public class MainActivity extends XstActivity
     private void pokazDialog(String message, String title) {
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(MainActivity.this);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-//        } else {
-//            builder = new AlertDialog.Builder(MainActivity.this);
-//        }
         if (title.length() > 0) {
             builder.setTitle(title);
         }
@@ -634,17 +621,17 @@ public class MainActivity extends XstActivity
         //args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
         //fragment.setArguments(args);
 
-        drawerLayout.closeDrawers();
+        //drawerLayout.closeDrawers();
     }
 
     private void uruchomMojeObrazki() {
         Intent intent = new Intent(this, MojeObrazki.class);
-        startActivity(intent);
+        startActivityForResult(intent, Typy.REQUEST_MOJE_OBRAZKI);
     }
 
     private void uruchomUstawienia() {
         Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, Typy.REQUEST_USTAWIENIA);
     }
 
     private void wyloguj() {
@@ -736,6 +723,11 @@ public class MainActivity extends XstActivity
                         }
                     }
                 }
+                break;
+
+            case Typy.REQUEST_MOJE_OBRAZKI:
+            case Typy.REQUEST_USTAWIENIA:
+                    drawerLayout.closeDrawers();
                 break;
         }
     }

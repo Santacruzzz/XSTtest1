@@ -59,6 +59,8 @@ public class Typy {
     public static final int REQUEST_ZALOGUJ = 100;
     public static final int REQUEST_PICK_IMAGE = 80;
     public static final int REQUEST_UPLOAD_IMAGE = 81;
+    public static final int REQUEST_USTAWIENIA = 82;
+    public static final int REQUEST_MOJE_OBRAZKI = 83;
     public static final int PERMISSION_REQUEST_CODE = 555;
     public static final int MAX_IMAGE_DIMENSION = 1200; // px
 

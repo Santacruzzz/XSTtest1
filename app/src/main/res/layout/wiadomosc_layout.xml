@@ -38,6 +38,7 @@
     <TextView
         android:id="@+id/v_wiadomosc"
         android:textColor="?attr/msgColor"
+        android:maxLines="20"
         android:textSize="14sp"
         android:paddingHorizontal="5sp"
         android:paddingVertical="3sp"

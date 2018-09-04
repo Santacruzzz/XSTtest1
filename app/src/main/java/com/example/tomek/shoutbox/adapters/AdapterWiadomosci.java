@@ -114,7 +114,7 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         TextView autor = row.findViewById(R.id.v_nick);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
-        TextView data = row.findViewById(R.id.v_data);
+        TextView date = row.findViewById(R.id.v_data);
         TextView lajki = row.findViewById(R.id.v_lajki);
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
 
@@ -145,7 +145,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         wiadomosc.setText(l_spanableWiadomosc);
         wiadomosc.setMovementMethod(LinkMovementMethod.getInstance());
 
-        data.setText(mWiadomosc.getData());
+        date.setText(mWiadomosc.getDate());
         lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
         if (mWiadomosc.getLajki() < 1) {
             img_like.setVisibility(View.INVISIBLE);

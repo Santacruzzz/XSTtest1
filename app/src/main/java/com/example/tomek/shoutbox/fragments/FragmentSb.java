@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import com.example.tomek.shoutbox.utils.Typy;
 import com.example.tomek.shoutbox.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Created by Tomek on 2017-10-25.
@@ -54,6 +57,7 @@ public class FragmentSb extends Fragment implements
     private AdapterWiadomosci adapterWiadomosci;
     private ImageButton mBtnSend;
     private EditText mWiadomosc;
+    private TextView textMessageCount;
     private SwipeRefreshLayout mRefreshLayout;
     private MainActivity mAct;
     private IMainActivity mImain;
@@ -91,6 +95,29 @@ public class FragmentSb extends Fragment implements
         ImageButton btnDodatki = mView.findViewById(R.id.btnDodatki);
         mWiadomosc = mView.findViewById(R.id.editWyslij);
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
+        textMessageCount = mView.findViewById(R.id.textMessageCount);
+
+        mWiadomosc.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                if(mWiadomosc.getLineCount() > 1) {
+                    textMessageCount.setVisibility(View.VISIBLE);
+                    textMessageCount.setText(String.format(Locale.ENGLISH, "%d/500", s.length()));
+                } else {
+                    textMessageCount.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
 
         registerForContextMenu(listViewWiadomosci);
 
@@ -253,11 +280,11 @@ public class FragmentSb extends Fragment implements
     @Override
     public void onRefresh() {
         mImain.odswiezWiadomosci();
-        Log.i("xst", "--- Fragment SB: Odświeżam wiadomosci");
+        Log.i("xst", "ragmentSb: Odświeżam wiadomosci");
     }
 
     public void anulujOdswiezanie() {
-        Log.i("xst", "FragmentSb: anuluje odsiwezanie");
+        Log.i("xst", "FragmentSb: Anuluje odświeżanie");
         mRefreshLayout.setRefreshing(false);
     }
 

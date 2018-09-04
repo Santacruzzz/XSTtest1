@@ -7,8 +7,8 @@ android {
         applicationId "com.example.tomek.xstshoutbox"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 16
-        versionName "1.6.3"
+        versionCode 17
+        versionName "1.6.4"
     }
     buildTypes {
         release {

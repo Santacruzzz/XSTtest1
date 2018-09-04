@@ -18,12 +18,14 @@ public class XstDb {
     private int lastDate = 0;
     private int iloscPobranych = 0;
     private SharedPreferences sharedPreferences;
+    private XstApplication xstApp;
 
     public XstDb() {
         listaWiadomosci = new ArrayList<>();
         listaOnline = new ArrayList<>();
         listaObrazkow = new ArrayList<>();
         listaObrazkowZdysku = new ArrayList<>();
+        xstApp = null;
     }
 
     public void odswiezWiadomosci() {
@@ -31,6 +33,7 @@ public class XstDb {
     }
 
     public void initialize(XstApplication xstApplication) {
+        xstApp = xstApplication;
         sharedPreferences = xstApplication.getSharedPreferences(Typy.PREFS_NAME, 0);
     }
 

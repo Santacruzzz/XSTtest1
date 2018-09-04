@@ -23,9 +23,16 @@ public class Wiadomosc {
     private int id, autorid, lajki = 0;
     ArrayList<String> obrazki, linki;
 
+    private SimpleDateFormat format_data;
+    private SimpleDateFormat format_godziny;
+    private SimpleDateFormat format_daty;
+
     public Wiadomosc(JSONObject obj) {
         obrazki = new ArrayList<>();
         linki = new ArrayList<>();
+        format_data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        format_godziny = new SimpleDateFormat("HH:mm");
+        format_daty = new SimpleDateFormat("dd.MM HH:mm");
         try {
             setAutor(obj.getString("nickname"));
             setAutorId(obj.getInt("userID"));
@@ -102,12 +109,10 @@ public class Wiadomosc {
         this.wiadomosc = wiadomosc;
     }
 
-    public String getData() {
+    public String getDate() {
         Date date;
         String ret = data;
-        SimpleDateFormat format_data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        SimpleDateFormat format_godziny = new SimpleDateFormat("HH:mm");
-        SimpleDateFormat format_daty = new SimpleDateFormat("dd.MM HH:mm");
+
         try {
             date = format_data.parse(data);
 

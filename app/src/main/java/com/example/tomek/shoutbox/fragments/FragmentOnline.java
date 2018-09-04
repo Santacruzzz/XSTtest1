@@ -56,7 +56,12 @@ public class FragmentOnline extends Fragment {
     }
 
     public void odswiezOnline(ArrayList<User> online) {
-        Log.i("xst", "ONLINE: odswiezam");
+        Log.i("xst", "FragmentOnline: odswiezam");
+        if (online == null) {
+            adapterOnline.notifyDataSetChanged();
+            return;
+        }
+
         if (arrayOnline == null) {
             arrayOnline = new ArrayList<>();
         } else {

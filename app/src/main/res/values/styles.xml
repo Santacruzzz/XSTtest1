@@ -24,6 +24,7 @@
     <attr name="lightBg" format="color"/>
     <attr name="lightenBg" format="color"/>
     <attr name="toolbarBg" format="color"/>
+    <attr name="textColorSecondary" format="color"/>
 
     <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
         <item name="windowActionModeOverlay">true</item>
@@ -71,6 +72,7 @@
         <item name="lightBg">#282828</item>
         <item name="lightenBg">#303030</item>
         <item name="toolbarBg">@color/toolbarBgColor_dark</item>
+        <item name="textColorSecondary">#909099</item>
     </style>
 
     <style name="xstThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
@@ -119,7 +121,7 @@
         <item name="lightBg">#787878</item>
         <item name="lightenBg">#9c9c9c</item>
         <item name="toolbarBg">@color/toolbarBgColor_light</item>
-
+        <item name="textColorSecondary">#202030</item>
     </style>
 
     <style name="SplashTheme" parent="xstThemeDark">

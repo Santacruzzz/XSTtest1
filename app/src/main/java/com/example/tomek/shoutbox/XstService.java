@@ -7,6 +7,7 @@ import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -35,6 +37,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.tomek.shoutbox.activities.MainActivity;
+import com.example.tomek.shoutbox.utils.ScreenOnOffReceiver;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -73,6 +76,7 @@ public class XstService extends Service {
     private ArrayList<Integer> activeNotificationsIds;
     private Context context;
     private ConnectivityManager connectivityManager;
+    private ScreenOnOffReceiver mReceiver;
 
     public XstService() {
         mDelayMillis = 30000;
@@ -121,32 +125,64 @@ public class XstService extends Service {
             mRequestQueue = Volley.newRequestQueue(xstApp);
         }
 
-        Log.e("xst", "Service: restarted");
+        Log.e("xst", "Service: started");
+        registerScreenReceiver();
 
         mRunnableWiadomosci = new Runnable() {
             @Override
             public void run() {
                 try {
+                    if (xstApp.getSettingBool("serviceVibrateOn")) {
+                        vibrate();
+                    }
+
                     if (mServiceReady) {
                         pobierz_wiadomosc();
                         Log.i("xst", "Service state: " + state);
                         Log.i("xst", "Service request: " + request);
+                        Log.i("xst", "Service refresh: " + mDelayMillis / 1000 + " s");
                     } else {
                         Log.e("xst", "Service not ready");
                     }
                 }
                 catch (Exception e) {
                     // TODO: handle exception
+                    zacznijPobieracWiadomosci();
                 }
                 finally {
                     //also call the same runnable to call it at regular interval
-                    mHandler.postDelayed(this, mDelayMillis);
+                    boolean succ = mHandler.postDelayed(this, mDelayMillis);
+                    Log.i("xst", "Service: Run handler result: " + succ);
                 }
             }
         };
 
         if (mKey.length() > 0) {
+            state = Typy.ServiceState.state_onPause;
             zacznijPobieracWiadomosci();
+        }
+    }
+
+    private void registerScreenReceiver() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        mReceiver = new ScreenOnOffReceiver();
+        registerReceiver(mReceiver, filter);
+    }
+
+    private void vibrate() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        // Start without a delay
+        // Vibrate for 100 milliseconds
+        // Sleep for 1000 milliseconds
+        long[] pattern = {0, 100, 1000};
+
+        // The '0' here means to repeat indefinitely
+        // '0' is actually the index at which the pattern keeps repeating from (the start)
+        // To repeat the pattern from any other point, you could increase the index, e.g. '1'
+        if (v != null) {
+            v.vibrate(pattern, -1);
         }
     }
 
@@ -209,8 +245,8 @@ public class XstService extends Service {
                         showNotification("test", "msg");
                         break;
 
-                    case "internetWrocil":
-
+                    case "screenOff":
+                        cancelRefresh();
                         break;
                 }
             }
@@ -235,8 +271,13 @@ public class XstService extends Service {
 
     @Override
     public void onDestroy() {
+        if (mReceiver != null) {
+            unregisterReceiver(mReceiver);
+        }
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mRunnableWiadomosci);
+        }
         super.onDestroy();
-        mHandler.removeCallbacks(mRunnableWiadomosci);
     }
 
     public RequestQueue getRequestQueue() {
@@ -263,6 +304,10 @@ public class XstService extends Service {
             params.put("get_online", "0");
         }
 
+        if (xstApp.getSettingBool("serviceShowSendParams")) {
+            Toast.makeText(xstApp, "Params: " + params.toString(), Toast.LENGTH_SHORT).show();
+        }
+
         params.put("android_version", android.os.Build.VERSION.RELEASE);
         params.put("app_version", mAppVersionName);
 
@@ -279,6 +324,7 @@ public class XstService extends Service {
                     state = Typy.ServiceState.state_onPause;
                     broadcastMessage(Typy.BROADCAST_INTERNET_WROCIL);
                 }
+                broadcastMessage(Typy.BROADCAST_INTERNET_OK);
                 try {
                     if (response.getInt("success") == 0) {
                         return;
