@@ -228,6 +228,7 @@ public class XstService extends Service {
 
                     case "wymusOdswiezenie":
                         mLastDate = 0;
+                        state = Typy.ServiceState.state_onResume;
                         request = Typy.ServiceRequest.request_wymusOdswiezanie;
                         zacznijPobieracWiadomosci();
                         break;
