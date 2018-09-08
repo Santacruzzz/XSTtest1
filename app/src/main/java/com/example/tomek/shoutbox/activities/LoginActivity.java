@@ -43,7 +43,9 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
 
     @Override
     public void onBackPressed() {
-        setResult(RESULT_CANCELED);
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("success", false);
+        setResult(RESULT_OK, resultIntent);
         finish();
         super.onBackPressed();
     }
@@ -72,6 +74,7 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
                             xstApp.zapiszUstawienie(Typy.PREFS_AVATAR, user.getString("avatar"));
                             Intent resultData = new Intent();
                             resultData.putExtra("msg", msg);
+                            resultData.putExtra("success", true);
                             setResult(RESULT_OK, resultData);
                             finish();
                         } else {
@@ -100,5 +103,11 @@ public class LoginActivity extends XstActivity implements View.OnClickListener {
             req.setTag(Typy.TAG_ZALOGUJ);
             Volley.newRequestQueue(getApplicationContext()).add(req);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("xst", "LoginActivity: onResume");
     }
 }

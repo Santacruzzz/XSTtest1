@@ -109,12 +109,6 @@ public class XstService extends Service {
         context = getApplicationContext();
         connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        PackageInfo appPackageInfo = getAppPackageInfo();
-        if (appPackageInfo != null) {
-            mAppVersion = appPackageInfo.versionCode;
-            mAppVersionName = appPackageInfo.versionName;
-        }
-
         mServiceReady = true;
         wczytajUstawienia();
 
@@ -132,10 +126,6 @@ public class XstService extends Service {
             @Override
             public void run() {
                 try {
-                    if (xstApp.getSettingBool("serviceVibrateOn")) {
-                        vibrate();
-                    }
-
                     if (mServiceReady) {
                         pobierz_wiadomosc();
                         Log.i("xst", "Service state: " + state);
@@ -160,6 +150,14 @@ public class XstService extends Service {
         if (mKey.length() > 0) {
             state = Typy.ServiceState.state_onPause;
             zacznijPobieracWiadomosci();
+        }
+    }
+
+    private void wczytajWersjeAplikacji() {
+        PackageInfo appPackageInfo = getAppPackageInfo();
+        if (appPackageInfo != null) {
+            mAppVersion = appPackageInfo.versionCode;
+            mAppVersionName = appPackageInfo.versionName;
         }
     }
 
@@ -208,21 +206,15 @@ public class XstService extends Service {
                         break;
 
                     case "onResume":
-                        state = Typy.ServiceState.state_onResume;
-                        cancelAllNotifications();
-                        mNewItems = 0;
-                        mDelayMillis = 5000;
-                        zacznijPobieracWiadomosci();
+                        setStateOnResume();
                         break;
 
                     case "onPause":
-                        state = Typy.ServiceState.state_onPause;
-                        mDelayMillis = 1000 * 30; // 30s
-                        zacznijPobieracWiadomosci();
+                        setStateOnPause();
                         break;
 
                     case "wylogowano":
-                        state = Typy.ServiceState.state_wylogowano;
+                        wyloguj();
                         cancelRefresh();
                         break;
 
@@ -247,7 +239,14 @@ public class XstService extends Service {
                         break;
 
                     case "screenOff":
+                        state = Typy.ServiceState.state_inactive;
                         cancelRefresh();
+                        break;
+
+                    case "screenOn":
+                        if (state == Typy.ServiceState.state_inactive) {
+                            setStateOnPause();
+                        }
                         break;
                 }
             }
@@ -258,6 +257,28 @@ public class XstService extends Service {
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void wyloguj() {
+        state = Typy.ServiceState.state_wylogowano;
+        request = Typy.ServiceRequest.request_none;
+        mLastDate = -1;
+        mAppVersion = 1;
+        mKey = "";
+    }
+
+    private void setStateOnResume() {
+        state = Typy.ServiceState.state_onResume;
+        cancelAllNotifications();
+        mNewItems = 0;
+        mDelayMillis = 5000;
+        zacznijPobieracWiadomosci();
+    }
+
+    private void setStateOnPause() {
+        state = Typy.ServiceState.state_onPause;
+        mDelayMillis = 1000 * 30; // 30s
+        zacznijPobieracWiadomosci();
     }
 
     private void cancelAllNotifications() {
@@ -305,10 +326,6 @@ public class XstService extends Service {
             params.put("get_online", "0");
         }
 
-        if (xstApp.getSettingBool("serviceShowSendParams")) {
-            Toast.makeText(xstApp, "Params: " + params.toString(), Toast.LENGTH_SHORT).show();
-        }
-
         params.put("android_version", android.os.Build.VERSION.RELEASE);
         params.put("app_version", mAppVersionName);
 
@@ -344,13 +361,11 @@ public class XstService extends Service {
                         if (state == Typy.ServiceState.state_onPause && settings_pokazujPowiadomienia) {
                             showNotification("Nowe wiadomości", "msg");
                         }
-                        xstApp.zapiszUstawienie(Typy.PREFS_MSGS, items.toString());
+
+                        xstApp.getBazaDanych().setJsonListaWiadomosci(items);
                         xstApp.zapiszUstawienie(Typy.PREFS_LAST_DATE, mLastDate);
 
-                        Intent i = new Intent();
-                        i.putExtra("items", items.toString());
-                        i.setAction(Typy.BROADCAST_NEW_MSG);
-                        sendBroadcast(i);
+                        broadcastMessage(Typy.BROADCAST_NEW_MSG);
                     }
 
                     JSONArray online = response.getJSONArray("online");
@@ -485,6 +500,7 @@ public class XstService extends Service {
         currentOnlineList = xstApp.getOnline();
 
         Log.i("xst", "Service: pobralem ustawienia: " + mKey);
+        wczytajWersjeAplikacji();
     }
 
     private class VolleyErrorListener implements Response.ErrorListener {

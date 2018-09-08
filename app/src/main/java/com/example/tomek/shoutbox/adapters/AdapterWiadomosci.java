@@ -1,6 +1,5 @@
 package com.example.tomek.shoutbox.adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -20,11 +19,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.tomek.shoutbox.utils.EmoticonsParser;
-import com.example.tomek.shoutbox.activities.IMainActivity;
-import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
+import com.example.tomek.shoutbox.activities.IMainActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
+import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
+import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -38,21 +38,21 @@ import java.util.regex.Pattern;
 public class AdapterWiadomosci extends BaseAdapter {
     private ArrayList<Wiadomosc> lista;
     private LayoutInflater inflater;
-    private Activity mAct;
+    private MainActivity mAct;
     private EmoticonsParser m_parserEmotek;
 
     private int mBgResourceID_even = 0;
     private int mBgResourceID_odd = 0;
     private boolean isReused = true;
 
-    public AdapterWiadomosci(Activity act, ArrayList<Wiadomosc> P_list) {
-        lista = P_list;
+    public AdapterWiadomosci(MainActivity act) {
         inflater = LayoutInflater.from(act.getApplicationContext());
-        IMainActivity imain = (IMainActivity) act;
+        IMainActivity imain = act;
         mAct = act;
         m_parserEmotek = new EmoticonsParser(mAct.getApplicationContext());
         mBgResourceID_even = imain.getThemeRecourceId(new int[]{R.attr.msgBackground});
         mBgResourceID_odd = imain.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
+        lista = mAct.getXstDatabase().getListaWiadomosci();
     }
 
     @Override

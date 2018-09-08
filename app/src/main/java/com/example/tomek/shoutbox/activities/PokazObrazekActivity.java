@@ -1,9 +1,14 @@
 package com.example.tomek.shoutbox.activities;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.tomek.shoutbox.R;
 import com.jsibbold.zoomage.ZoomageView;
@@ -14,16 +19,18 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
 
     private ZoomageView photoView;
     private ProgressBar progressBar;
+    private String url;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ustawToolbar();
-        enableBackButtonInActionBar();
         setContentView(R.layout.activity_pokaz_obrazek);
 
+        ustawToolbar();
+        enableBackButtonInActionBar();
+
         Bundle extras = getIntent().getExtras();
-        String url = "";
+        url = "";
 
         if (extras != null) {
             url = extras.getString("image_url");
@@ -42,6 +49,30 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_obrazki, menu);
+        menu.getItem(1).setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_obrazki_kopiuj:
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("xst", url);
+                if (clipboard != null) {
+                    clipboard.setPrimaryClip(clip);
+                    Toast.makeText(getApplicationContext(), "Skopiowano link", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case android.R.id.home:
+                finish();
+        }
+        return true;
+    }
+
+    @Override
     public void onSuccess()
     {
         // hide the loader and show the imageview
@@ -55,5 +86,6 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
         // hide the loader and show the imageview which shows the error icon already
         progressBar.setVisibility(View.GONE);
         photoView.setVisibility(View.VISIBLE);
+        Toast.makeText(xstApp,"Błąd sieci", Toast.LENGTH_SHORT).show();
     }
 }

@@ -71,7 +71,7 @@ public class Typy {
     public static final String NOTIF_CHANNEL_UPDT_ID = "xstupdtchannel";
 
     public enum ServiceState {
-        state_zalogowano,
+        state_inactive,
         state_onResume,
         state_onPause,
         state_wylogowano,

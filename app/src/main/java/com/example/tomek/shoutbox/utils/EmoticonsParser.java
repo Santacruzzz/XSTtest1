@@ -71,7 +71,7 @@ public class EmoticonsParser {
         addPattern(":yds:", R.drawable.yds);
         addPattern(":coold:", R.drawable.coold);
         addPattern(":cool:", R.drawable.cool);
-        addPattern("::x:", R.drawable.x);
+        addPattern(":x", R.drawable.x);
         addPattern(":dayz:", R.drawable.dayz);
         addPattern(":mumble:", R.drawable.mumble);
         addPattern(":cmok:", R.drawable.cmok);

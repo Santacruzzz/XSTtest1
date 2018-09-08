@@ -176,4 +176,8 @@ public class XstApplication extends Application {
     public String getMsgJsonString() {
         return msgJsonString;
     }
+
+    public void polajkowanoWiadomosc(int likedMsgPosition) {
+        bazaDanych.polajkowanoWiadomosc(likedMsgPosition);
+    }
 }

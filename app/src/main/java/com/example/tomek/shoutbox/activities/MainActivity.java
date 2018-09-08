@@ -51,6 +51,7 @@ import com.example.tomek.shoutbox.NowaWiadomoscReceiver;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.Wiadomosc;
+import com.example.tomek.shoutbox.XstDb;
 import com.example.tomek.shoutbox.XstService;
 import com.example.tomek.shoutbox.adapters.DrawerListAdapter;
 import com.example.tomek.shoutbox.adapters.ScreenSlidePagerAdapter;
@@ -100,6 +101,7 @@ public class MainActivity extends XstActivity
     private ListView drawerList;
     private ViewPager mPager;
     private SwipeRefreshLayout mRefreshLayout;
+    private boolean isThreadConnectionErrorRun;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +117,7 @@ public class MainActivity extends XstActivity
         }
 
         checkBoxDarkTheme.setOnCheckedChangeListener(this);
+        Log.i("xst", "MainActivity: onCreate");
     }
 
     private void zaladujWidokPodstawowy() {
@@ -149,6 +152,7 @@ public class MainActivity extends XstActivity
         buttonWyloguj = findViewById(R.id.buttonWyloguj);
         buttonWyloguj.setOnClickListener(this);
         likedMsgPosition = 0;
+        isThreadConnectionErrorRun = false;
         relativeLayoutProfileBox.setVisibility(View.VISIBLE);
         pozwolNaZmianeStylu = false;
         if (themeName.equals("dark")) {
@@ -163,6 +167,7 @@ public class MainActivity extends XstActivity
     }
 
     private void zaladujWidokNiezalogowany() {
+        Log.i("xst", "MainActivity: zaladujWidokNiezalogowany");
         startActivityForResult(new Intent(this, LoginActivity.class), Typy.REQUEST_ZALOGUJ);
     }
 
@@ -192,7 +197,11 @@ public class MainActivity extends XstActivity
                 uruchomUstawienia();
                 break;
             case R.id.menu_test:
-                mStartService("testPowiadomienia");
+                if (czyJestPolaczenie) {
+                    obsluzBrakInternetu();
+                } else {
+                    obsluzPowrotInternetu();
+                }
                 break;
         }
         return true;
@@ -306,6 +315,7 @@ public class MainActivity extends XstActivity
 
     @Override
     public void polajkowanoWiadomosc(int msgid) {
+        bazaDanych.polajkowanoWiadomosc(likedMsgPosition);
         getFragmentSb().polajkowanoWiadomosc(msgid, likedMsgPosition);
     }
 
@@ -332,8 +342,8 @@ public class MainActivity extends XstActivity
     @Override
     protected void onPause() {
         super.onPause();
-        wyrejestrujReceivery();
         if (czyZalogowany) {
+            wyrejestrujReceivery();
             mStartService("onPause");
         }
     }
@@ -346,14 +356,13 @@ public class MainActivity extends XstActivity
         } else {
             obsluzBrakInternetu();
         }
-        zarejestrujReceivery();
         if (czyZalogowany) {
+            zarejestrujReceivery();
             mStartService("onResume");
-        } else {
-            mStartService("wylogowano");
+            wczytajWiadomosci(null);
+            odswiezTytul();
         }
-        wczytajWiadomosci(null);
-        odswiezTytul();
+        Log.i("xst", "MainActivity: onResume, zalogowany: " + czyZalogowany);
     }
 
     @Override
@@ -406,36 +415,67 @@ public class MainActivity extends XstActivity
         }
     }
 
+    private void obsluzBrakInternetu() {
+        if (!czyJestPolaczenie || isThreadConnectionErrorRun) {
+            return;
+        }
+        czyJestPolaczenie = false;
+
+        if (! wyswietlilemBladInternetu) {
+            wyswietlilemBladInternetu = true;
+            fragmentOnline.odswiezOnline(null);
+            pokazTextConnectionError();
+            ustawWidokStanuPolaczenia("Offline", Color.RED, android.R.drawable.presence_offline);
+        }
+    }
+
+    private void pokazTextConnectionError() {
+        if (isThreadConnectionErrorRun) {
+            return;
+        }
+        textConnectionError.setVisibility(View.VISIBLE);
+        textConnectionError.setBackgroundColor(Color.RED);
+        textConnectionError.setText("Brak połączenia");
+    }
+
     private void obsluzPowrotInternetu() {
         if (czyJestPolaczenie) {
             return;
         }
         czyJestPolaczenie = true;
 
-        fragmentOnline.odswiezOnline(null);
-        if (wyswietlilemBladInternetu) {
-            wyswietlilemBladInternetu = false;
-            Toast.makeText(this, "Połączenie przywrócone", Toast.LENGTH_SHORT).show();
+        if (wyswietlilemBladInternetu && !isThreadConnectionErrorRun) {
+            fragmentOnline.odswiezOnline(null);
+            textConnectionError.setBackgroundColor(Color.rgb(0, 200, 0));
+            textConnectionError.setText("Połączenie przywrócone");
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        isThreadConnectionErrorRun = true;
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            isThreadConnectionErrorRun = false;
+                            textConnectionError.setVisibility(View.GONE);
+                            wyswietlilemBladInternetu = false;
+                        }
+                    });
+                }
+            };
+            thread.start(); //start the thread
+            ustawWidokStanuPolaczenia("Online", Color.GREEN, android.R.drawable.presence_online);
         }
-        ustawWidokStanuPolaczenia("Online", Color.GREEN, android.R.drawable.presence_online, View.GONE);
     }
 
-    private void ustawWidokStanuPolaczenia(String statusName, int statusTextColor, int presenceIcon, int infoTextViewVisibility) {
+    private void ustawWidokStanuPolaczenia(String statusName, int statusTextColor, int presenceIcon) {
         textOnline.setText(statusName);
         textOnline.setTextColor(statusTextColor);
         presenceImage.setImageResource(presenceIcon);
-        textConnectionError.setVisibility(infoTextViewVisibility);
-    }
-
-    private void obsluzBrakInternetu() {
-        czyJestPolaczenie = false;
-
-        fragmentOnline.odswiezOnline(null);
-        if (! wyswietlilemBladInternetu) {
-            wyswietlilemBladInternetu = true;
-//            Toast.makeText(this, "Brak połączenia", Toast.LENGTH_SHORT).show();
-        }
-        ustawWidokStanuPolaczenia("Offline", Color.RED, android.R.drawable.presence_offline, View.VISIBLE);
     }
 
     @Override
@@ -471,19 +511,8 @@ public class MainActivity extends XstActivity
     }
 
     private void wczytajWiadomosci(Intent intent) {
-        try {
-            String sitems = sharedPrefs.getString(Typy.PREFS_MSGS, "0");
-            JSONArray items = new JSONArray(sitems);
-            arrayListWiadomosci.clear();
-            for (int i = 0; i < items.length(); i++) {
-                JSONObject item = items.getJSONObject(i);
-                arrayListWiadomosci.add(new Wiadomosc(item));
-            }
-            if (fragmentSb != null) {
-                fragmentSb.odswiezWiadomosci(this.arrayListWiadomosci);
-            }
-        } catch (JSONException ignored) {
-
+        if (fragmentSb != null) {
+            fragmentSb.odswiezWiadomosci(bazaDanych.getListaWiadomosci());
         }
     }
 
@@ -636,16 +665,10 @@ public class MainActivity extends XstActivity
 
     private void wyloguj() {
         SharedPreferences.Editor editor = getSharedPreferences(Typy.PREFS_NAME, 0).edit();
-        editor.remove(Typy.PREFS_NICNKAME);
-        editor.remove(Typy.PREFS_LOGIN);
-        editor.remove(Typy.PREFS_API_KEY);
-        editor.remove(Typy.PREFS_AVATAR);
-        editor.remove(Typy.PREFS_MSGS);
-        editor.remove(Typy.PREFS_ONLINE);
-        editor.remove(Typy.PREFS_LAST_DATE);
-        editor.commit();
+        editor.clear();
+        editor.apply();
         czyZalogowany = false;
-
+        bazaDanych.clearAll();
         wyrejestrujReceivery();
 
         mStartService("wylogowano");
@@ -694,15 +717,20 @@ public class MainActivity extends XstActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.i("xst", "MainActivity: onActivityResult, code: " + requestCode + " resultCode:" + resultCode);
         switch (requestCode) {
             case Typy.REQUEST_ZALOGUJ:
                 if (resultCode == RESULT_OK) {
-                    wczytajUstawienia();
-                    zalogowano();
-                    String msg = data.getStringExtra("msg");
-                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                    if (data.getBooleanExtra("success", false)) {
+                        wczytajUstawienia();
+                        zalogowano();
+                        String msg = data.getStringExtra("msg");
+                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                    } else {
+                        finish();
+                    }
                 } else {
-                    finish();
+                    zaladujWidokNiezalogowany();
                 }
                 break;
 
@@ -738,4 +766,7 @@ public class MainActivity extends XstActivity
         startActivityForResult(uploadIntent, Typy.REQUEST_UPLOAD_IMAGE);
     }
 
+    public XstDb getXstDatabase() {
+        return xstApp.getBazaDanych();
+    }
 }

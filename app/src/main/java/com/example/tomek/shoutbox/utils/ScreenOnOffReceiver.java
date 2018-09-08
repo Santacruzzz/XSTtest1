@@ -25,7 +25,7 @@ public class ScreenOnOffReceiver extends BroadcastReceiver {
         if (screenOff) {
             i.putExtra("msg", "screenOff");
         } else {
-            i.putExtra("msg", "onPause");
+            i.putExtra("msg", "screenOn");
         }
         context.startService(i);
     }

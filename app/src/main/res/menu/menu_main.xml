@@ -12,7 +12,8 @@
         android:id="@+id/menu_test"
         android:icon="@android:drawable/ic_menu_view"
         android:title="Test"
-        app:showAsAction="ifRoom"></item>
+        app:showAsAction="ifRoom">
+    </item>
     <!--<item-->
         <!--android:id="@+id/miProfile"-->
         <!--android:icon="@drawable/ic_profile"-->

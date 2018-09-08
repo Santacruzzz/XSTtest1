@@ -79,7 +79,7 @@ public class FragmentSb extends Fragment implements
         mAct = (MainActivity) context;
         mImain = mAct;
         iPermission = mAct;
-        adapterWiadomosci = new AdapterWiadomosci(mAct, arrayWiadomosci);
+        adapterWiadomosci = new AdapterWiadomosci(mAct);
         keyboradSize = mImain.getKeyboardSize();
         isDialogShown = false;
     }
@@ -142,8 +142,8 @@ public class FragmentSb extends Fragment implements
     }
 
     public void odswiezWiadomosci(ArrayList<Wiadomosc> nowe) {
-            arrayWiadomosci.clear();
-            arrayWiadomosci.addAll(nowe);
+        arrayWiadomosci.clear();
+        arrayWiadomosci.addAll(nowe);
         if (adapterWiadomosci != null) {
             this.adapterWiadomosci.notifyDataSetChanged();
             mRefreshLayout.setRefreshing(false);
