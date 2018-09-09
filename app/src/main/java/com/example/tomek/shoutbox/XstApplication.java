@@ -3,6 +3,7 @@ package com.example.tomek.shoutbox;
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -41,7 +42,7 @@ public class XstApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
+        sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, Context.MODE_PRIVATE);
 
         wczytajUstawienia();
         bazaDanych = new XstDb();
@@ -227,5 +228,24 @@ public class XstApplication extends Application {
 
     public void polajkowanoWiadomosc(int likedMsgPosition) {
         bazaDanych.polajkowanoWiadomosc(likedMsgPosition);
+    }
+
+    public SharedPreferences getSharedPrefs() {
+        return sharedPrefs;
+    }
+
+    public void wyloguj() {
+        sharedPrefs.edit().clear().apply();
+        apiKey = null;
+        login = null;
+        nickname = null;
+        avatarFileName = null;
+        themeName = null;
+        keyboardSize = 0;
+        obrazkiLastDate = null;
+        automatyczneAktualizacje = false;
+        pokazujPowiadomienia = false;
+        lastDate = 0;
+        onlineJsonString = null;
     }
 }

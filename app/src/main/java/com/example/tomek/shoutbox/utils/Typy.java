@@ -32,6 +32,7 @@ public class Typy {
     public static final String BROADCAST_LIKE_MSG = "nowy_like";
     public static final String BROADCAST_INTERNET_LOST = "error";
     public static final String BROADCAST_KONIEC_ODSWIEZANIA = "odswiezono";
+    public static final String BROADCAST_UPDATE_AVAILABLE = "aktualizacja";
 
     public static final String PREFS_NAME = "xstprefs";
     public static final String PREFS_API_KEY = "pak";

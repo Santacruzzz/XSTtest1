@@ -43,7 +43,7 @@ public class XstActivity extends AppCompatActivity implements IVolley {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         xstApp = (XstApplication) getApplicationContext();
         super.onCreate(savedInstanceState);
-        sharedPrefs = getSharedPreferences(Typy.PREFS_NAME, 0);
+        sharedPrefs = xstApp.getSharedPrefs();
         bazaDanych = xstApp.getBazaDanych();
         wczytajUstawienia();
         wczytajStyl();

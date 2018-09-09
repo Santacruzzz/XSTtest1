@@ -8,13 +8,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -61,7 +59,6 @@ public class XstService extends Service {
     private String mKey;
     private JSONArray mJsonWiadomosci;
     private boolean mServiceReady;
-    private SharedPreferences mSharedPref;
     private int mDelayMillis;
     private int mAppVersion;
     JobScheduler mJobScheduler;
@@ -77,6 +74,7 @@ public class XstService extends Service {
     private Context context;
     private ConnectivityManager connectivityManager;
     private ScreenOnOffReceiver mReceiver;
+    private boolean czyPokazalemAktualizacje;
 
     public XstService() {
         mDelayMillis = 30000;
@@ -86,6 +84,7 @@ public class XstService extends Service {
         mAppVersion = 1;
         mKey = "";
         mJsonWiadomosci = new JSONArray();
+        czyPokazalemAktualizacje = false;
     }
 
     @Override
@@ -219,6 +218,7 @@ public class XstService extends Service {
                         break;
 
                     case "wymusOdswiezenie":
+                        czyPokazalemAktualizacje = false;
                         mLastDate = 0;
                         state = Typy.ServiceState.state_onResume;
                         request = Typy.ServiceRequest.request_wymusOdswiezanie;
@@ -352,7 +352,7 @@ public class XstService extends Service {
                     int receivedAppVersion = response.getInt("version");
 
                     if ((receivedAppVersion > mAppVersion) && settings_sprawdzajAktualizacje) {
-                        showNotification("Jest nowa wersja aplikacji!", "update");
+                        poinformujOAktualizacji();
                     }
 
                     JSONArray items = response.getJSONArray("items");
@@ -387,6 +387,18 @@ public class XstService extends Service {
         }, new VolleyErrorListener());
         req.setTag(Typy.TAG_GET_MSG);
         getRequestQueue().add(req);
+    }
+
+    private void poinformujOAktualizacji() {
+        if (czyPokazalemAktualizacje) {
+            return;
+        }
+        czyPokazalemAktualizacje = true;
+        if (state == Typy.ServiceState.state_onPause) {
+            showNotification("Jest nowa wersja aplikacji!", "update");
+        } else {
+            broadcastMessage(Typy.BROADCAST_UPDATE_AVAILABLE);
+        }
     }
 
     private void broadcastMessage(String msg) {
@@ -437,16 +449,15 @@ public class XstService extends Service {
 
     private void showNotification(String txt, String typ) {
         Log.i("xst", "Service: pokazuje notification: " + typ);
-        Intent intent = new Intent();
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("type", typ);
         String channel = Typy.NOTIF_CHANNEL_MSG_ID;
         int notifId = 0;
         if (typ.equals("msg")) {
-             intent = new Intent(this, MainActivity.class);
-             channel = Typy.NOTIF_CHANNEL_MSG_ID;
-             notifId = Typy.MSG_NOTIFICATION_ID;
+            channel = Typy.NOTIF_CHANNEL_MSG_ID;
+            notifId = Typy.MSG_NOTIFICATION_ID;
         } else if (typ.equals("update")) {
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://xs-team.pl/android/XST.apk"));
             channel = Typy.NOTIF_CHANNEL_UPDT_ID;
             notifId = Typy.UPDT_NOTIFICATION_ID;
             if (notificationAlreadyShown(notifId)) {
@@ -523,4 +534,5 @@ public class XstService extends Service {
             }
         }
     }
+
 }

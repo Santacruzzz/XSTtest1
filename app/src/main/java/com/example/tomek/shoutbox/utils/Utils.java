@@ -12,12 +12,14 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.text.ParseException;
@@ -172,11 +174,16 @@ public abstract class Utils {
         editor.apply();
     }
 
-    public static ArrayList<String> getArrayList(SharedPreferences prefs, String key){
+    public static ArrayList<String> getArrayList(SharedPreferences prefs, String key) {
         Gson gson = new Gson();
         String json = prefs.getString(key, null);
-        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        Type type = new TypeToken<ArrayList<String>>() {
+        }.getType();
         return gson.fromJson(json, type);
     }
 
+    public static Uri getFileUri(Context context, File file) {
+        return FileProvider.getUriForFile(
+                context, context.getApplicationContext().getPackageName() + ".provider", file);
+    }
 }

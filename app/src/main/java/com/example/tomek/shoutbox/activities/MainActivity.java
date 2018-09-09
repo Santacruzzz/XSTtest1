@@ -1,15 +1,19 @@
 package com.example.tomek.shoutbox.activities;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -56,6 +60,7 @@ import com.example.tomek.shoutbox.XstService;
 import com.example.tomek.shoutbox.adapters.DrawerListAdapter;
 import com.example.tomek.shoutbox.adapters.ScreenSlidePagerAdapter;
 import com.example.tomek.shoutbox.utils.Typy;
+import com.example.tomek.shoutbox.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,6 +98,9 @@ public class MainActivity extends XstActivity
     private boolean isThreadConnectionErrorRun;
     private SbListener listenerSb;
     private OnlineListener listenerOnline;
+    private Uri downloadedApkUri;
+    private long downloadedApkId;
+    private DownloadReceiver downloadReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,10 +109,40 @@ public class MainActivity extends XstActivity
         enableBackButtonInActionBar();
         setHomeMenuIcon();
 
+        Log.i("xst", "MainActivity: onCreate, zalogowany: " + czyZalogowany);
+
         if (!czyZalogowany) {
             zaladujWidokNiezalogowany();
         } else {
             ustawWidokZalogowania();
+        }
+
+        wczytajIntent();
+    }
+
+    private void wczytajIntent() {
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            String type = bundle.getString("type");
+            if (type != null) {
+                Log.i("xst", "MainActivity: intent-type = " + type);
+                if (type.equals("update")) {
+                    zapytajCzyPobracAktualizacje();
+                }
+            }
+        }
+    }
+
+    private void zapytajCzyPobracAktualizacje() {
+        if (haveWritePermission()) {
+            pokazDialog("Pobrać i zainstalować teraz?", "Jest nowa wersja aplikacji!", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    downloadAndInstallUpdate();
+                }
+            });
+        } else {
+            requestPermissionAndDoUpdate();
         }
     }
 
@@ -191,11 +229,7 @@ public class MainActivity extends XstActivity
                 uruchomUstawienia();
                 break;
             case R.id.menu_test:
-                if (czyJestPolaczenie) {
-                    obsluzBrakInternetu();
-                } else {
-                    obsluzPowrotInternetu();
-                }
+                downloadAndInstallUpdate();
                 break;
         }
         return true;
@@ -207,7 +241,7 @@ public class MainActivity extends XstActivity
 
     @Override
     public void odswiezWiadomosci() {
-        mStartService("wymusOdswiezenie");
+        runServiceCommand("wymusOdswiezenie");
     }
 
     @Override
@@ -256,7 +290,7 @@ public class MainActivity extends XstActivity
                         if (listenerSb != null) {
                             listenerSb.wyslano_wiadomosc(true);
                         }
-                        mStartService("odswiez");
+                        runServiceCommand("odswiez");
                     } else {
                         if (listenerSb != null) {
                             listenerSb.wyslano_wiadomosc(false);
@@ -297,7 +331,7 @@ public class MainActivity extends XstActivity
     @Override
     public void lajkujWiadomosc(int id, int position) {
         likedMsgPosition = position;
-        mStartService("like", id);
+        runServiceCommand("like", id);
     }
 
     @Override
@@ -319,7 +353,7 @@ public class MainActivity extends XstActivity
         super.onPause();
         if (czyZalogowany) {
             wyrejestrujReceivery();
-            mStartService("onPause");
+            runServiceCommand("onPause");
         }
     }
 
@@ -334,7 +368,7 @@ public class MainActivity extends XstActivity
         }
         if (czyZalogowany) {
             zarejestrujReceivery();
-            mStartService("onResume");
+            runServiceCommand("onResume");
             wczytajWiadomosci(null);
             odswiezTytul();
         }
@@ -372,7 +406,7 @@ public class MainActivity extends XstActivity
         Log.i("xst", "MainActivity received msg: " + intent);
         switch (intent) {
             case Typy.BROADCAST_INTERNET_WROCIL:
-                mStartService("onResume");
+                runServiceCommand("onResume");
                 obsluzPowrotInternetu();
                 break;
 
@@ -393,6 +427,9 @@ public class MainActivity extends XstActivity
                 if (listenerSb != null) {
                     listenerSb.anulujOdswiezanie();
                 }
+                break;
+            case Typy.BROADCAST_UPDATE_AVAILABLE:
+                zapytajCzyPobracAktualizacje();
                 break;
         }
     }
@@ -472,7 +509,7 @@ public class MainActivity extends XstActivity
     public void zalogowano() {
         czyZalogowany = true;
         ustawWidokZalogowania();
-        mStartService("zalogowano");
+        runServiceCommand("zalogowano");
         wczytajWiadomosci(null);
     }
 
@@ -488,13 +525,13 @@ public class MainActivity extends XstActivity
         }
     }
 
-    private void mStartService(String msg) {
+    private void runServiceCommand(String msg) {
         Intent intentStartService = new Intent(this, XstService.class);
         intentStartService.putExtra("msg", msg);
         startService(intentStartService);
     }
 
-    private void mStartService(String msg, int value) {
+    private void runServiceCommand(String msg, int value) {
         Intent intentStartService = new Intent(this, XstService.class);
         intentStartService.putExtra("msg", msg);
         intentStartService.putExtra("value", value);
@@ -543,12 +580,35 @@ public class MainActivity extends XstActivity
     public void requestPermission() {
         Log.i("xst", "request permission");
         if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików");
+            zapytajCzyPrzejscDoUstawienUprawnien();
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
                                               new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                               Typy.PERMISSION_REQUEST_CODE);
         }
+    }
+
+    public void requestPermissionAndDoUpdate() {
+        Log.i("xst", "request permission");
+        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            zapytajCzyPobracAktualizacje();
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Typy.PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void zapytajCzyPrzejscDoUstawienUprawnien() {
+        pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -560,13 +620,13 @@ public class MainActivity extends XstActivity
                         listenerSb.pokazDialogDodatki();
                     }
                 } else {
-                    pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików");
+                    zapytajCzyPrzejscDoUstawienUprawnien();
                 }
                 break;
         }
     }
 
-    private void pokazDialog(String message, String title) {
+    private void pokazDialog(String message, String title, DialogInterface.OnClickListener yesListener) {
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(MainActivity.this);
         if (title.length() > 0) {
@@ -574,15 +634,7 @@ public class MainActivity extends XstActivity
         }
         builder.setMessage(message);
         builder.setIcon(android.R.drawable.ic_dialog_alert);
-        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent();
-                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-            }
-        });
+        builder.setPositiveButton(android.R.string.yes, yesListener);
         builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         // do nothing
@@ -632,14 +684,12 @@ public class MainActivity extends XstActivity
     }
 
     private void wyloguj() {
-        SharedPreferences.Editor editor = getSharedPreferences(Typy.PREFS_NAME, 0).edit();
-        editor.clear();
-        editor.apply();
+        xstApp.wyloguj();
         czyZalogowany = false;
         bazaDanych.clearAll();
         wyrejestrujReceivery();
 
-        mStartService("wylogowano");
+        runServiceCommand("wylogowano");
         zaladujWidokNiezalogowany();
     }
 
@@ -657,12 +707,14 @@ public class MainActivity extends XstActivity
     private void zarejestrujReceivery() {
         broadcastReceiver = new MyBroadcastReceiver(this);
         nowaWiadomoscReceiver = new NowaWiadomoscReceiver(this);
+        downloadReceiver = new DownloadReceiver();
 
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_WROCIL));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_LOST));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_OK));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_KONIEC_ODSWIEZANIA));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_ONLINE));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_UPDATE_AVAILABLE));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }
@@ -746,5 +798,52 @@ public class MainActivity extends XstActivity
 
     public void setOnlineListener(OnlineListener listener) {
         listenerOnline = listener;
+    }
+
+
+    public void downloadAndInstallUpdate() {
+        String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
+        String fileName = "XST_Shoutbox.apk";
+        destination += fileName;
+
+        File file = new File(destination);
+        if (file.exists()) {
+            //file.delete() - test this, I think sometimes it doesnt work
+            file.delete();
+        }
+
+        downloadedApkUri = Uri.parse("file://" + destination);
+
+        String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/android/app-debug.apk";
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setDescription("Pobieranie aktualizacji");
+        request.setTitle("XST Shoutbox");
+        request.setDestinationUri(downloadedApkUri);
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        downloadedApkId = manager.enqueue(request);
+        registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+    }
+
+    private class DownloadReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
+            String fileName = "XST_Shoutbox.apk";
+            destination += fileName;
+
+            Intent install = new Intent(Intent.ACTION_VIEW);
+            install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (Build.VERSION.SDK_INT >= 24) {
+                install.setDataAndType(Utils.getFileUri(xstApp, new File(destination)), "application/vnd.android.package-archive");
+                install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } else {
+                install.setDataAndType(Uri.parse("file://" + destination), "application/vnd.android.package-archive");
+            }
+            startActivity(install);
+            finish();
+
+            Toast.makeText(xstApp, "Pobrano", Toast.LENGTH_SHORT).show();
+            unregisterReceiver(this);
+        }
     }
 }
