@@ -6,8 +6,17 @@ import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Environment;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.example.tomek.shoutbox.utils.Typy;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 public class XstApplication extends Application {
 
@@ -19,7 +28,6 @@ public class XstApplication extends Application {
     protected String nickname;
     protected String avatarFileName;
     protected String onlineJsonString;
-    protected String msgJsonString;
     protected Long obrazkiLastDate;
     protected int keyboardSize;
     protected boolean pokazujPowiadomienia;
@@ -39,8 +47,53 @@ public class XstApplication extends Application {
         bazaDanych = new XstDb();
         bazaDanych.initialize(this);
 
+        // Setup handler for uncaught exceptions.
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable e) {
+                handleUncaughtException(thread, e);
+            }
+        });
         createNotificationMsgChannel();
         createNotificationUpdtChannel();
+    }
+
+    public void handleUncaughtException (Thread thread, Throwable e)
+    {
+        e.printStackTrace(); // not all Android versions will print the stack trace automatically
+
+        ToFile((Exception) e);
+
+        System.exit(1); // kill off the crashed app
+    }
+
+    private static final String DIRECTORY_SEPARATOR = System.getProperty("file.separator");
+
+    public void ToFile(Exception exception) {
+        String timestamp = new SimpleDateFormat("yyyy_MM_dd_HH-mm-ss").format(System
+                .currentTimeMillis());
+        File dirFile = new File(Environment.getExternalStorageDirectory()
+                + DIRECTORY_SEPARATOR + "XST_LOG" + DIRECTORY_SEPARATOR);
+        dirFile.mkdirs();
+        File file = new File(dirFile, "xstTrace_" + timestamp + ".txt");
+        FileOutputStream fileOutputStream = null;
+        try {
+            String stackString = Log.getStackTraceString(exception);
+            if (stackString.length() > 0) {
+                file.createNewFile();
+                fileOutputStream = new FileOutputStream(file);
+                fileOutputStream.write(stackString.getBytes());
+                fileOutputStream.write(exception.toString().getBytes());
+                fileOutputStream.flush();
+                fileOutputStream.close();
+                Toast.makeText(this, "zapisano: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            }
+        } catch (FileNotFoundException fileNotFoundException) {
+            Log.e("TAG", "File not found!", fileNotFoundException);
+        } catch (IOException ioException) {
+            Log.e("TAG", "Unable to write to file!", ioException);
+        }
+        System.exit(1);
     }
 
     private void wczytajUstawienia() {
@@ -55,7 +108,6 @@ public class XstApplication extends Application {
         pokazujPowiadomienia = sharedPrefs.getBoolean("pokazuj_powiadomienia", true);
         lastDate = sharedPrefs.getInt(Typy.PREFS_LAST_DATE, 0);
         onlineJsonString = sharedPrefs.getString(Typy.PREFS_ONLINE, "");
-        msgJsonString = sharedPrefs.getString(Typy.PREFS_MSGS, "");
     }
 
     // Called by the system when the device configuration changes while your component is running.
@@ -171,10 +223,6 @@ public class XstApplication extends Application {
 
     public int getLastDate() {
         return lastDate;
-    }
-
-    public String getMsgJsonString() {
-        return msgJsonString;
     }
 
     public void polajkowanoWiadomosc(int likedMsgPosition) {

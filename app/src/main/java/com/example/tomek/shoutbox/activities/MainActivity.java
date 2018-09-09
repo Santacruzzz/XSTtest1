@@ -55,11 +55,8 @@ import com.example.tomek.shoutbox.XstDb;
 import com.example.tomek.shoutbox.XstService;
 import com.example.tomek.shoutbox.adapters.DrawerListAdapter;
 import com.example.tomek.shoutbox.adapters.ScreenSlidePagerAdapter;
-import com.example.tomek.shoutbox.fragments.FragmentOnline;
-import com.example.tomek.shoutbox.fragments.FragmentSb;
 import com.example.tomek.shoutbox.utils.Typy;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -80,28 +77,22 @@ public class MainActivity extends XstActivity
     NowaWiadomoscReceiver nowaWiadomoscReceiver;
 
     private DrawerLayout drawerLayout;
-    private RelativeLayout relativeLayoutProfileBox;
     private NetworkImageView userAvatar;
     private TextView userNick;
     private ImageView presenceImage;
     private TextView textOnline;
     private TextView textConnectionError;
 
-    private Switch checkBoxDarkTheme;
-    private Button buttonWyloguj;
-
     private boolean czyJestPolaczenie = true;
     private boolean wyswietlilemBladInternetu = false;
     private boolean pozwolNaZmianeStylu = true;
 
-    private FragmentSb fragmentSb;
-    private FragmentOnline fragmentOnline;
     private ArrayList<NavItem> navItemsList;
     private int likedMsgPosition;
-    private ListView drawerList;
     private ViewPager mPager;
-    private SwipeRefreshLayout mRefreshLayout;
     private boolean isThreadConnectionErrorRun;
+    private SbListener listenerSb;
+    private OnlineListener listenerOnline;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,51 +106,54 @@ public class MainActivity extends XstActivity
         } else {
             ustawWidokZalogowania();
         }
-
-        checkBoxDarkTheme.setOnCheckedChangeListener(this);
-        Log.i("xst", "MainActivity: onCreate");
     }
 
     private void zaladujWidokPodstawowy() {
         setContentView(R.layout.layout_glowny);
 
-        relativeLayoutProfileBox = findViewById(R.id.profileBox);
+        navItemsList = new ArrayList<>();
+        navItemsList.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, android.R.drawable.ic_menu_preferences));
+        navItemsList.add(new NavItem(Typy.FRAGMENT_MOJE_OBRAZKI, android.R.drawable.ic_menu_gallery));
+
+        RelativeLayout relativeLayoutProfileBox = findViewById(R.id.profileBox);
+        relativeLayoutProfileBox.setVisibility(View.VISIBLE);
+
         userAvatar = findViewById(R.id.userAvatar);
         userNick = findViewById(R.id.userName);
         arrayListWiadomosci = new ArrayList<>();
         arrayListOnline = new ArrayList<>();
-        navItemsList = new ArrayList<>();
-        navItemsList.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, android.R.drawable.ic_menu_preferences));
-        navItemsList.add(new NavItem(Typy.FRAGMENT_MOJE_OBRAZKI, android.R.drawable.ic_menu_gallery));
-        drawerLayout = findViewById(R.id.drawer_layout);
+
         presenceImage = findViewById(R.id.preseceImage);
         textOnline = findViewById(R.id.textOnline);
         textConnectionError = findViewById(R.id.textConnectionError);
-        drawerList = findViewById(R.id.left_drawer);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        ListView drawerList = findViewById(R.id.left_drawer);
         drawerList.setAdapter(new DrawerListAdapter(this, navItemsList));
         drawerList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         mPager = findViewById(R.id.sb_pager);
         mPager.addOnPageChangeListener(this);
-        ScreenSlidePagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), this);
-        mPager.setAdapter(mPagerAdapter);
+        ScreenSlidePagerAdapter sbAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), this);
+        mPager.setAdapter(sbAdapter);
 
-//        TabLayout tabLayout = findViewById(R.id.tabs);
-//        tabLayout.setupWithViewPager(mPager);
-
-        checkBoxDarkTheme = findViewById(R.id.checkBoxTheme);
-        buttonWyloguj = findViewById(R.id.buttonWyloguj);
+        Button buttonWyloguj = findViewById(R.id.buttonWyloguj);
         buttonWyloguj.setOnClickListener(this);
+
         likedMsgPosition = 0;
         isThreadConnectionErrorRun = false;
-        relativeLayoutProfileBox.setVisibility(View.VISIBLE);
         pozwolNaZmianeStylu = false;
+
+        Switch checkBoxDarkTheme = findViewById(R.id.checkBoxTheme);
+        checkBoxDarkTheme.setOnCheckedChangeListener(this);
+
         if (themeName.equals("dark")) {
             checkBoxDarkTheme.setChecked(true);
         } else {
             checkBoxDarkTheme.setChecked(false);
         }
+
         pozwolNaZmianeStylu = true;
         userNick.setText(nickname);
 
@@ -212,30 +206,10 @@ public class MainActivity extends XstActivity
     }
 
     @Override
-    public ArrayList<Wiadomosc> getWiadomosci() {
-        return arrayListWiadomosci;
-    }
-
-    @Override
     public void odswiezWiadomosci() {
         mStartService("wymusOdswiezenie");
     }
 
-    @Override
-    public ArrayList<User> getOnline() {
-        try {
-            String items = xstApp.getOnline();
-            JSONArray jsonOnline = new JSONArray(items);
-            arrayListOnline.clear();
-            for (int i = 0; i < jsonOnline.length(); i++) {
-                JSONObject item = jsonOnline.getJSONObject(i);
-                arrayListOnline.add(new User(item));
-            }
-        } catch (JSONException ignored) {
-
-        }
-        return arrayListOnline;
-    }
     @Override
     public int getThemeRecourceId(int[] attrs) {
         int themeId;
@@ -267,11 +241,6 @@ public class MainActivity extends XstActivity
     }
 
     @Override
-    public void nowe_online(Intent intent) {
-        getFragmentOnline().odswiezOnline(getOnline());
-    }
-
-    @Override
     public void wyslij_wiadomosc(String wiadomosc) {
         HashMap<String, String> params = new HashMap<>();
         params.put("key", apiKey);
@@ -284,10 +253,14 @@ public class MainActivity extends XstActivity
             public void onResponse(JSONObject response) {
                 try {
                     if (response.getInt("success") == 1) {
-                        getFragmentSb().wyslano_wiadomosc(true);
+                        if (listenerSb != null) {
+                            listenerSb.wyslano_wiadomosc(true);
+                        }
                         mStartService("odswiez");
                     } else {
-                        getFragmentSb().wyslano_wiadomosc(false);
+                        if (listenerSb != null) {
+                            listenerSb.wyslano_wiadomosc(false);
+                        }
                     }
                 } catch (JSONException ignored) {
 
@@ -316,7 +289,9 @@ public class MainActivity extends XstActivity
     @Override
     public void polajkowanoWiadomosc(int msgid) {
         bazaDanych.polajkowanoWiadomosc(likedMsgPosition);
-        getFragmentSb().polajkowanoWiadomosc(msgid, likedMsgPosition);
+        if (listenerSb != null) {
+            listenerSb.polajkowanoWiadomosc(msgid, likedMsgPosition);
+        }
     }
 
     @Override
@@ -351,6 +326,7 @@ public class MainActivity extends XstActivity
     @Override
     protected void onResume() {
         super.onResume();
+
         if (czyJestPolaczenie) {
             obsluzPowrotInternetu();
         } else {
@@ -368,7 +344,9 @@ public class MainActivity extends XstActivity
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        fragmentSb.dismissDialog();
+        if (listenerSb != null) {
+            listenerSb.dismissDialog();
+        }
     }
 
     private void odswiezTytul() {
@@ -407,10 +385,14 @@ public class MainActivity extends XstActivity
                 break;
 
             case Typy.BROADCAST_ONLINE:
-                fragmentOnline.odswiezOnline(getOnline());
+                if (listenerOnline != null) {
+                    listenerOnline.odswiezOnline();
+                }
                 break;
             case Typy.BROADCAST_KONIEC_ODSWIEZANIA:
-                fragmentSb.anulujOdswiezanie();
+                if (listenerSb != null) {
+                    listenerSb.anulujOdswiezanie();
+                }
                 break;
         }
     }
@@ -423,7 +405,9 @@ public class MainActivity extends XstActivity
 
         if (! wyswietlilemBladInternetu) {
             wyswietlilemBladInternetu = true;
-            fragmentOnline.odswiezOnline(null);
+            if (listenerOnline != null) {
+                listenerOnline.odswiezOnline();
+            }
             pokazTextConnectionError();
             ustawWidokStanuPolaczenia("Offline", Color.RED, android.R.drawable.presence_offline);
         }
@@ -445,7 +429,9 @@ public class MainActivity extends XstActivity
         czyJestPolaczenie = true;
 
         if (wyswietlilemBladInternetu && !isThreadConnectionErrorRun) {
-            fragmentOnline.odswiezOnline(null);
+            if (listenerOnline != null) {
+                listenerOnline.odswiezOnline();
+            }
             textConnectionError.setBackgroundColor(Color.rgb(0, 200, 0));
             textConnectionError.setText("Połączenie przywrócone");
             Thread thread = new Thread() {
@@ -483,20 +469,6 @@ public class MainActivity extends XstActivity
         wczytajWiadomosci(i);
     }
 
-    public FragmentSb getFragmentSb() {
-        if (fragmentSb == null) {
-            fragmentSb = new FragmentSb();
-        }
-        return fragmentSb;
-    }
-
-    public FragmentOnline getFragmentOnline() {
-        if (fragmentOnline == null) {
-            fragmentOnline = new FragmentOnline();
-        }
-        return fragmentOnline;
-    }
-
     public void zalogowano() {
         czyZalogowany = true;
         ustawWidokZalogowania();
@@ -511,8 +483,8 @@ public class MainActivity extends XstActivity
     }
 
     private void wczytajWiadomosci(Intent intent) {
-        if (fragmentSb != null) {
-            fragmentSb.odswiezWiadomosci(bazaDanych.getListaWiadomosci());
+        if (listenerSb != null) {
+            listenerSb.odswiezWiadomosci();
         }
     }
 
@@ -584,18 +556,14 @@ public class MainActivity extends XstActivity
         switch (requestCode) {
             case Typy.PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (fragmentSb != null) {
-                        fragmentSb.pokazDialogDodatki();
+                    if (listenerSb != null) {
+                        listenerSb.pokazDialogDodatki();
                     }
                 } else {
                     pokazDialog("Aby wysyłać obrazki przyznaj uprawnienia dostępu do pamięci.\nOtworzyć ustawienia?", "Dostęp do plików");
                 }
                 break;
         }
-    }
-
-    private void pokazDialog(String message) {
-        pokazDialog(message, "");
     }
 
     private void pokazDialog(String message, String title) {
@@ -747,7 +715,9 @@ public class MainActivity extends XstActivity
                         String link = returnedResult.split("\\|")[0];
                         String ifInsertToMessage = returnedResult.split("\\|")[1];
                         if (Boolean.parseBoolean(ifInsertToMessage)) {
-                            fragmentSb.wstawLinkObrazka(link);
+                            if (listenerSb != null) {
+                                listenerSb.wstawLinkObrazka(link);
+                            }
                         }
                     }
                 }
@@ -768,5 +738,13 @@ public class MainActivity extends XstActivity
 
     public XstDb getXstDatabase() {
         return xstApp.getBazaDanych();
+    }
+
+    public void setSbListener(SbListener listener) {
+        listenerSb = listener;
+    }
+
+    public void setOnlineListener(OnlineListener listener) {
+        listenerOnline = listener;
     }
 }

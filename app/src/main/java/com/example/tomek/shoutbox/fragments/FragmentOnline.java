@@ -1,20 +1,19 @@
 package com.example.tomek.shoutbox.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.MainActivity;
+import com.example.tomek.shoutbox.activities.OnlineListener;
 import com.example.tomek.shoutbox.adapters.AdapterOnline;
 
 import java.util.ArrayList;
@@ -23,14 +22,14 @@ import java.util.ArrayList;
  * Created by Tomek on 2017-11-05.
  */
 
-public class FragmentOnline extends Fragment {
+public class FragmentOnline extends Fragment implements OnlineListener {
 
     private View mView;
     private ListView listViewOnline;
     private AdapterOnline adapterOnline;
     private ArrayList<User> arrayOnline;
 
-    private Activity mAct;
+    private MainActivity mAct;
     private IMainActivity mImain;
 
     public FragmentOnline() {
@@ -41,8 +40,9 @@ public class FragmentOnline extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         mAct = (MainActivity) context;
-        mImain = (IMainActivity) mAct;
-        adapterOnline = new AdapterOnline(mAct, arrayOnline);
+        mImain = mAct;
+        adapterOnline = new AdapterOnline(mAct, mAct.getXstDatabase().getListaOnline());
+        mAct.setOnlineListener(this);
     }
 
     @Nullable
@@ -55,27 +55,14 @@ public class FragmentOnline extends Fragment {
         return mView;
     }
 
-    public void odswiezOnline(ArrayList<User> online) {
-        Log.i("xst", "FragmentOnline: odswiezam");
-        if (online == null) {
-            adapterOnline.notifyDataSetChanged();
-            return;
-        }
-
-        if (arrayOnline == null) {
-            arrayOnline = new ArrayList<>();
-        } else {
-            arrayOnline.clear();
-        }
-        arrayOnline.addAll(online);
-        if (adapterOnline != null) {
-            adapterOnline.notifyDataSetChanged();
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
-        odswiezOnline(mImain.getOnline());
+        odswiezOnline();
+    }
+
+    @Override
+    public void odswiezOnline() {
+        adapterOnline.odswiezOnline();
     }
 }

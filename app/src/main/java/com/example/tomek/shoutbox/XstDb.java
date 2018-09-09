@@ -2,6 +2,8 @@ package com.example.tomek.shoutbox;
 
 import android.content.SharedPreferences;
 
+import com.example.tomek.shoutbox.activities.OnlineListener;
+import com.example.tomek.shoutbox.activities.SbListener;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -20,21 +22,24 @@ public class XstDb {
     private ArrayList<MojObrazek> listaObrazkow;
     private ArrayList<String> listaObrazkowZdysku;
     private JSONArray jsonListaWiadomosci;
+    private JSONArray jsonListaOnline;
+    private JSONArray jsonListaObrazkow;
     private int lastDate = 0;
     private int iloscPobranych = 0;
     private SharedPreferences sharedPreferences;
     private XstApplication xstApp;
+    private SbListener listenerSb;
+    private OnlineListener listenerOnline;
 
     public XstDb() {
         listaWiadomosci = new ArrayList<>();
         listaOnline = new ArrayList<>();
         listaObrazkow = new ArrayList<>();
         listaObrazkowZdysku = new ArrayList<>();
+        jsonListaWiadomosci = new JSONArray();
+        jsonListaOnline = new JSONArray();
+        jsonListaObrazkow = new JSONArray();
         xstApp = null;
-    }
-
-    public void odswiezWiadomosci() {
-
     }
 
     public void initialize(XstApplication xstApplication) {
@@ -45,13 +50,17 @@ public class XstDb {
     }
 
     private void wczytajListeWiadomosci() {
-        String sitems = sharedPreferences.getString(Typy.PREFS_MSGS, "0");
-        wypelnijListeWiadomosci(sitems);
-    }
-
-    private void wypelnijListeWiadomosci(String items) {
+        String items = sharedPreferences.getString(Typy.PREFS_MSGS, "0");
         try {
             jsonListaWiadomosci = new JSONArray(items);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        wypelnijListeWiadomosci();
+    }
+
+    private void wypelnijListeWiadomosci() {
+        try {
             listaWiadomosci.clear();
             for (int i = 0; i < jsonListaWiadomosci.length(); i++) {
                 JSONObject item = jsonListaWiadomosci.getJSONObject(i);
@@ -99,14 +108,12 @@ public class XstDb {
     }
 
     public void polajkowanoWiadomosc(int likedMsgPosition) {
-        if (listaWiadomosci == null) {
-            return;
-        }
         try {
             if (jsonListaWiadomosci.length() > likedMsgPosition) {
                 JSONObject item = jsonListaWiadomosci.getJSONObject(likedMsgPosition);
                 item.put("likes", item.getInt("likes") + 1);
                 jsonListaWiadomosci.put(likedMsgPosition, item);
+                listaWiadomosci.get(likedMsgPosition).addLike();
                 zapiszJsonListeWiadomosci();
             }
         } catch (JSONException e) {
@@ -116,6 +123,17 @@ public class XstDb {
 
     private void zapiszJsonListeWiadomosci() {
         xstApp.zapiszUstawienie(Typy.PREFS_MSGS, jsonListaWiadomosci.toString());
+        if (listenerSb != null) {
+            listenerSb.odswiezWiadomosci();
+        }
+    }
+
+    private void zapiszJsonListeOnline() {
+        xstApp.zapiszUstawienie(Typy.PREFS_ONLINE, jsonListaOnline.toString());
+        if (listenerOnline != null) {
+            listenerOnline.odswiezOnline();
+        }
+
     }
 
     public JSONArray getJsonListaWiadomosci() {
@@ -124,7 +142,7 @@ public class XstDb {
 
     public void setJsonListaWiadomosci(JSONArray lista) {
         jsonListaWiadomosci = lista;
-        wypelnijListeWiadomosci(lista.toString());
+        wypelnijListeWiadomosci();
         zapiszJsonListeWiadomosci();
     }
 
@@ -134,6 +152,37 @@ public class XstDb {
         listaObrazkow.clear();
         listaOnline.clear();
         jsonListaWiadomosci = new JSONArray();
+        jsonListaOnline = new JSONArray();
+        jsonListaObrazkow = new JSONArray();
+    }
 
+    public void setJsonListaOnline(JSONArray jsonListaOnline) {
+        this.jsonListaOnline = jsonListaOnline;
+        wypelnijListeOnline();
+        zapiszJsonListeOnline();
+    }
+
+    private void wypelnijListeOnline() {
+        try {
+            listaOnline.clear();
+            for (int i = 0; i < jsonListaOnline.length(); i++) {
+                JSONObject item = jsonListaOnline.getJSONObject(i);
+                listaOnline.add(new User(item));
+            }
+        } catch (JSONException ignored) {
+
+        }
+    }
+
+    public JSONArray getJsonListaOnline() {
+        return jsonListaOnline;
+    }
+
+    public void setSbListener(SbListener listener) {
+        listenerSb = listener;
+    }
+
+    public void setOnlineListener(OnlineListener listener) {
+        listenerOnline = listener;
     }
 }

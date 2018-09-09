@@ -3,10 +3,8 @@ package com.example.tomek.shoutbox.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -33,6 +31,7 @@ import com.example.tomek.shoutbox.Wiadomosc;
 import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.IPermission;
 import com.example.tomek.shoutbox.activities.MainActivity;
+import com.example.tomek.shoutbox.activities.SbListener;
 import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
 import com.example.tomek.shoutbox.utils.ImagesFromGallery;
 import com.example.tomek.shoutbox.utils.Typy;
@@ -50,10 +49,10 @@ public class FragmentSb extends Fragment implements
         SwipeRefreshLayout.OnRefreshListener,
         DialogDodatki.AddonSelectedListener,
         ImagesFromGallery.ImageFoundListener,
-        DialogDodatki.DialogListener {
+        DialogDodatki.DialogListener,
+        SbListener {
 
     private ListView listViewWiadomosci;
-    private ArrayList<Wiadomosc> arrayWiadomosci;
     private AdapterWiadomosci adapterWiadomosci;
     private ImageButton mBtnSend;
     private EditText mWiadomosc;
@@ -67,7 +66,6 @@ public class FragmentSb extends Fragment implements
     private boolean isDialogShown;
 
     public FragmentSb() {
-        arrayWiadomosci = new ArrayList<>();
         keyboradSize = 0;
         dodatkiDialog = null;
         isDialogShown = false;
@@ -82,11 +80,12 @@ public class FragmentSb extends Fragment implements
         adapterWiadomosci = new AdapterWiadomosci(mAct);
         keyboradSize = mImain.getKeyboardSize();
         isDialogShown = false;
+        mAct.setSbListener(this);
     }
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.w("xst", "FragmentSb: onCreateView");
         final View mView = inflater.inflate(R.layout.layout_sb, container, false);
         listViewWiadomosci = mView.findViewById(R.id.listaWiadomosci);
         listViewWiadomosci.setAdapter(adapterWiadomosci);
@@ -141,23 +140,6 @@ public class FragmentSb extends Fragment implements
         outState.putString(Typy.STATE_MSG, mWiadomosc.getText().toString());
     }
 
-    public void odswiezWiadomosci(ArrayList<Wiadomosc> nowe) {
-        arrayWiadomosci.clear();
-        arrayWiadomosci.addAll(nowe);
-        if (adapterWiadomosci != null) {
-            this.adapterWiadomosci.notifyDataSetChanged();
-            mRefreshLayout.setRefreshing(false);
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (arrayWiadomosci.size() == 0) {
-            odswiezWiadomosci(mImain.getWiadomosci());
-        }
-    }
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -171,12 +153,14 @@ public class FragmentSb extends Fragment implements
         }
     }
 
+    @Override
     public void dismissDialog() {
         if (dodatkiDialog != null) {
             dodatkiDialog.dismiss();
         }
     }
 
+    @Override
     public void pokazDialogDodatki() {
         if (isDialogShown) {
             return;
@@ -208,6 +192,8 @@ public class FragmentSb extends Fragment implements
         if (v.getId() == R.id.listaWiadomosci) {
             ListView lv = (ListView) v;
             AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
+            Log.i("xst", "FragmentSb: onCreateContextMenu - acmi.position: " + acmi.position + "  arrayWiadomosci.size():" +  arrayWiadomosci.size());
             Wiadomosc obj = arrayWiadomosci.get(acmi.position);
 
             menu.setHeaderTitle("Wybierz akcję");
@@ -220,26 +206,16 @@ public class FragmentSb extends Fragment implements
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
         Wiadomosc obj = arrayWiadomosci.get(info.position);
         int l_id = item.getItemId();
         if (l_id == 99) {
             mImain.lajkujWiadomosc(obj.getId(), info.position);
-        } else {
-            ArrayList<String> l_linki = obj.getLinki();
-            if (l_linki.size() > 0) {
-                if (l_id <= l_linki.size()) {
-                    String l_url = l_linki.get(l_id);
-                    if (!l_url.startsWith("http")) {
-                        l_url = "http://" + l_url;
-                    }
-                    Intent l_intent = new Intent(Intent.ACTION_VIEW, Uri.parse(l_url));
-                    startActivity(l_intent);
-                }
-            }
         }
         return true;
     }
 
+    @Override
     public void wyslano_wiadomosc(boolean success) {
         mBtnSend.setEnabled(true);
         if (success) {
@@ -258,10 +234,11 @@ public class FragmentSb extends Fragment implements
         }
     }
 
+    @Override
     public void polajkowanoWiadomosc(int msgid, int position) {
         int firstPosition = listViewWiadomosci.getFirstVisiblePosition() - listViewWiadomosci.getHeaderViewsCount();
+        ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
         Wiadomosc w = arrayWiadomosci.get(position);
-        w.addLike();
         View row = listViewWiadomosci.getChildAt(position - firstPosition);
         if (row == null) {
             return;
@@ -283,9 +260,14 @@ public class FragmentSb extends Fragment implements
         Log.i("xst", "ragmentSb: Odświeżam wiadomosci");
     }
 
+    @Override
     public void anulujOdswiezanie() {
         Log.i("xst", "FragmentSb: Anuluje odświeżanie");
-        mRefreshLayout.setRefreshing(false);
+        if (mRefreshLayout != null) {
+            mRefreshLayout.setRefreshing(false);
+        } else {
+            Log.e("xst", "FragmentSb: refreszLajout jest pust!");
+        }
     }
 
     public static void hideKeyboard(Activity activity) {
@@ -346,6 +328,11 @@ public class FragmentSb extends Fragment implements
     @Override
     public void dialogDismissed() {
         isDialogShown = false;
+    }
+
+    @Override
+    public void odswiezWiadomosci() {
+        adapterWiadomosci.notifyDataSetChanged();
     }
 }
 

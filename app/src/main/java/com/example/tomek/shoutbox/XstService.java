@@ -312,7 +312,7 @@ public class XstService extends Service {
     private void pobierz_wiadomosc() {
         HashMap<String, String> params = new HashMap<>();
         params.put("key", mKey);
-        if (xstApp.getMsgJsonString().length() == 1) {
+        if (xstApp.getBazaDanych().getJsonListaWiadomosci().length() == 0) {
             mLastDate = 0;
         }
         if (mLastDate > 0) {
@@ -373,10 +373,9 @@ public class XstService extends Service {
                         if (!currentOnlineList.equals(online.toString())) {
                             Log.i("xst", "Service: nowa lista online! wysylam broadcast");
                             currentOnlineList = online.toString();
-                            xstApp.zapiszUstawienie(Typy.PREFS_ONLINE, currentOnlineList);
+                            xstApp.getBazaDanych().setJsonListaOnline(online);
 
                             Intent i = new Intent();
-                            i.putExtra("online", online.toString());
                             i.setAction(Typy.BROADCAST_ONLINE);
                             sendBroadcast(i);
                         }
@@ -497,7 +496,7 @@ public class XstService extends Service {
         mLastDate = xstApp.getLastDate();
         mKey = xstApp.getApiKey();
 
-        currentOnlineList = xstApp.getOnline();
+        currentOnlineList = xstApp.getBazaDanych().getJsonListaOnline().toString();
 
         Log.i("xst", "Service: pobralem ustawienia: " + mKey);
         wczytajWersjeAplikacji();

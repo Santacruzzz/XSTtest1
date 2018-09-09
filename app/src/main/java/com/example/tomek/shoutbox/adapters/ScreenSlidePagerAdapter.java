@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import com.example.tomek.shoutbox.activities.IMainActivity;
+import com.example.tomek.shoutbox.fragments.FragmentOnline;
+import com.example.tomek.shoutbox.fragments.FragmentSb;
 
 public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
 
@@ -20,9 +22,11 @@ public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         // Log.i("xst", "++++ getItem: " + position);
         if (position == 0) {
-            return imain.getFragmentSb();
+//            return imain.getFragmentSb();
+            return new FragmentSb();
         } else {
-            return imain.getFragmentOnline();
+//            return imain.getFragmentOnline();
+            return new FragmentOnline();
         }
     }
 

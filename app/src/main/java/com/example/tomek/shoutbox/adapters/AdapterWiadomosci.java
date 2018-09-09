@@ -160,6 +160,10 @@ public class AdapterWiadomosci extends BaseAdapter {
         lista.clear();
     }
 
+    public ArrayList<Wiadomosc> getWiadomosci() {
+        return lista;
+    }
+
     private class SpanOnClickListener extends ClickableSpan  {
         String url;
         String author;

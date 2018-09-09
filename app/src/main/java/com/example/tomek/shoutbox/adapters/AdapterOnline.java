@@ -1,6 +1,5 @@
 package com.example.tomek.shoutbox.adapters;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.User;
 import com.example.tomek.shoutbox.activities.IMainActivity;
+import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.utils.Typy;
 import com.squareup.picasso.Picasso;
 
@@ -33,10 +33,10 @@ public class AdapterOnline extends BaseAdapter {
     private ArrayList<User> listaOnline;
     private LayoutInflater inflater;
     private IMainActivity imain;
-    private Activity mAct;
+    private MainActivity mAct;
     private PrettyTime ptime;
 
-    public AdapterOnline(Activity act, ArrayList<User> _list) {
+    public AdapterOnline(MainActivity act, ArrayList<User> _list) {
         listaOnline = _list;
         Context context = act.getApplicationContext();
         inflater = LayoutInflater.from(context);
@@ -150,5 +150,10 @@ public class AdapterOnline extends BaseAdapter {
         }
 
         return row;
+    }
+
+    public void odswiezOnline() {
+        listaOnline = mAct.getXstDatabase().getListaOnline();
+        notifyDataSetChanged();
     }
 }
