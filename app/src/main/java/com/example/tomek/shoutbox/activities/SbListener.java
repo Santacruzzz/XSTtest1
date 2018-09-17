@@ -7,5 +7,6 @@ public interface SbListener {
     void anulujOdswiezanie();
     void odswiezWiadomosci();
     void pokazDialogDodatki();
+    void pobranoStarsze();
     void wstawLinkObrazka(String link);
 }

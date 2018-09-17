@@ -4,6 +4,7 @@ import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -34,6 +35,7 @@ public class XstApplication extends Application {
     protected boolean pokazujPowiadomienia;
     protected boolean automatyczneAktualizacje;
     protected int lastDate;
+    protected int appServerVersion;
 
     public XstApplication() {
         super();
@@ -62,9 +64,7 @@ public class XstApplication extends Application {
     public void handleUncaughtException (Thread thread, Throwable e)
     {
         e.printStackTrace(); // not all Android versions will print the stack trace automatically
-
         ToFile((Exception) e);
-
         System.exit(1); // kill off the crashed app
     }
 
@@ -97,18 +97,19 @@ public class XstApplication extends Application {
         System.exit(1);
     }
 
-    private void wczytajUstawienia() {
+    public void wczytajUstawienia() {
         apiKey = sharedPrefs.getString(Typy.PREFS_API_KEY, "");
         login = sharedPrefs.getString(Typy.PREFS_LOGIN, "");
         nickname = sharedPrefs.getString(Typy.PREFS_NICNKAME, "");
         avatarFileName = sharedPrefs.getString(Typy.PREFS_AVATAR, "");
         themeName = sharedPrefs.getString(Typy.PREFS_THEME, "dark");
         keyboardSize = sharedPrefs.getInt(Typy.PREFS_KB_SIZE, 90);
-        obrazkiLastDate = sharedPrefs.getLong(Typy.PREFS_OBRAZKI_LAST_DATE, 0);
+        obrazkiLastDate = sharedPrefs.getLong(Typy.PREFS_OBRAZKI_LAST_DATE, 0L);
         automatyczneAktualizacje = sharedPrefs.getBoolean("automatyczne_aktualizacje", true);
         pokazujPowiadomienia = sharedPrefs.getBoolean("pokazuj_powiadomienia", true);
         lastDate = sharedPrefs.getInt(Typy.PREFS_LAST_DATE, 0);
         onlineJsonString = sharedPrefs.getString(Typy.PREFS_ONLINE, "");
+        appServerVersion = sharedPrefs.getInt(Typy.APP_VERSION_ON_SERVER, 0);
     }
 
     // Called by the system when the device configuration changes while your component is running.
@@ -242,10 +243,27 @@ public class XstApplication extends Application {
         avatarFileName = null;
         themeName = null;
         keyboardSize = 0;
-        obrazkiLastDate = null;
+        obrazkiLastDate = 0L;
         automatyczneAktualizacje = false;
         pokazujPowiadomienia = false;
         lastDate = 0;
         onlineJsonString = null;
+        appServerVersion = 0;
+    }
+
+    public void zapiszWersjeApkiZSerwera(int receivedAppVersion) {
+        if (receivedAppVersion <= appServerVersion) {
+            return;
+        }
+        Log.i("xst", "XstApplication: zapisuje wersje: " + receivedAppVersion);
+        zapiszUstawienie(Typy.APP_VERSION_ON_SERVER, receivedAppVersion);
+        appServerVersion = receivedAppVersion;
+        Intent i = new Intent();
+        i.setAction(Typy.BROADCAST_UPDATE_AVAILABLE);
+        sendBroadcast(i);
+    }
+
+    public int getAppServerVersion() {
+        return appServerVersion;
     }
 }

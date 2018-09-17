@@ -50,7 +50,8 @@ public class FragmentSb extends Fragment implements
         DialogDodatki.AddonSelectedListener,
         ImagesFromGallery.ImageFoundListener,
         DialogDodatki.DialogListener,
-        SbListener {
+        SbListener,
+        ListView.OnItemClickListener {
 
     private ListView listViewWiadomosci;
     private AdapterWiadomosci adapterWiadomosci;
@@ -64,11 +65,13 @@ public class FragmentSb extends Fragment implements
     private DialogDodatki dodatkiDialog;
     private IPermission iPermission;
     private boolean isDialogShown;
+    private boolean pobieramStarsze;
 
     public FragmentSb() {
         keyboradSize = 0;
         dodatkiDialog = null;
         isDialogShown = false;
+        pobieramStarsze = false;
     }
 
     @Override
@@ -80,6 +83,7 @@ public class FragmentSb extends Fragment implements
         adapterWiadomosci = new AdapterWiadomosci(mAct);
         keyboradSize = mImain.getKeyboardSize();
         isDialogShown = false;
+        pobieramStarsze = false;
         mAct.setSbListener(this);
     }
 
@@ -95,6 +99,7 @@ public class FragmentSb extends Fragment implements
         mWiadomosc = mView.findViewById(R.id.editWyslij);
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
         textMessageCount = mView.findViewById(R.id.textMessageCount);
+        listViewWiadomosci.setOnItemClickListener(this);
 
         mWiadomosc.addTextChangedListener(new TextWatcher() {
             @Override
@@ -180,6 +185,11 @@ public class FragmentSb extends Fragment implements
         dodatkiDialog.setDialogListeer(this);
         dodatkiDialog.show(ft, "dialog");
         isDialogShown = true;
+    }
+
+    @Override
+    public void pobranoStarsze() {
+        pobieramStarsze = false;
     }
 
     private void wczytajObrazkiZdysku() {
@@ -333,6 +343,17 @@ public class FragmentSb extends Fragment implements
     @Override
     public void odswiezWiadomosci() {
         adapterWiadomosci.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        if(adapterWiadomosci.getWiadomosci().size() - 1 == i) {
+            if (pobieramStarsze) {
+            }
+            pobieramStarsze = true;
+            mAct.setSbListener(this);
+            mAct.runServiceCommand(Typy.POBIERZ_STARSZE);
+        }
     }
 }
 

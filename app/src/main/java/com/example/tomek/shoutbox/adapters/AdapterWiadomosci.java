@@ -11,7 +11,6 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -25,6 +24,7 @@ import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
 import com.example.tomek.shoutbox.utils.EmoticonsParser;
+import com.example.tomek.shoutbox.utils.Typy;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -57,6 +57,10 @@ public class AdapterWiadomosci extends BaseAdapter {
 
     @Override
     public int getCount() {
+        if (lista.size() == 0) return 0;
+        if (lista.get(lista.size() - 1).getTypWiadomosci() == Typy.TypWiadomosci.wiadomosc) {
+            lista.add(new Wiadomosc(Typy.TypWiadomosci.przycisk_pokaz_starsze));
+        }
         return lista.size();
     }
 
@@ -78,55 +82,50 @@ public class AdapterWiadomosci extends BaseAdapter {
         if (inflater == null) {
             inflater = (LayoutInflater) mAct.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
-
-        try {
-            if (inflater != null) {
-                row = inflater.inflate(R.layout.wiadomosc_layout, arg2, false);
-            } else return null;
-        } catch (NullPointerException ex) {
-            ex.printStackTrace();
+        if (lista.size() <= pozycja) {
             return null;
         }
-
         Wiadomosc mWiadomosc;
-        try {
-            mWiadomosc = lista.get(pozycja);
-        } catch (IndexOutOfBoundsException e) {
-            return null;
+        mWiadomosc = lista.get(pozycja);
+
+        if (inflater != null) {
+            if (mWiadomosc.getTypWiadomosci() == Typy.TypWiadomosci.przycisk_pokaz_starsze) {
+                row = inflater.inflate(R.layout.wiadomosc_layout_pokaz_wiecej, arg2, false);
+                return row;
+            }
+            row = inflater.inflate(R.layout.wiadomosc_layout, arg2, false);
         }
+
 
         final RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
-        if (pozycja % 2 == 0) {
-            layWiadomosc.setBackgroundResource(mBgResourceID_even);
-        } else {
-            layWiadomosc.setBackgroundResource(mBgResourceID_odd);
-        }
-
-        row.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                layWiadomosc.getBackground().setHotspot(event.getX(), event.getY());
-                layWiadomosc.performClick();
-                return(false);
-            }
-        });
-
-
-        TextView autor = row.findViewById(R.id.v_nick);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
+        TextView autor = row.findViewById(R.id.v_nick);
         TextView date = row.findViewById(R.id.v_data);
         TextView lajki = row.findViewById(R.id.v_lajki);
         ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
-
         ImageView avatar = row.findViewById(R.id.v_avatarOnline);
-        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
 
+        setMessageBackground(pozycja, layWiadomosc);
+        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
         autor.setText(mWiadomosc.getAutor());
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
-            Typeface face = Typeface.createFromAsset(mAct.getAssets(),
-                    "fonts/nasalization.ttf");
-            autor.setTypeface(face);
+        setNasalizationFont(autor);
+        fillMessageWithImagesAndEmoticons(mWiadomosc, wiadomosc);
+        date.setText(mWiadomosc.getDate());
+        setViewForLikes(mWiadomosc, lajki, img_like);
+        row.setTag(mWiadomosc.getId());
+        return row;
+    }
+
+    private void setViewForLikes(Wiadomosc mWiadomosc, TextView lajki, ImageView img_like) {
+        lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
+        if (mWiadomosc.getLajki() < 1) {
+            img_like.setVisibility(View.INVISIBLE);
+        } else {
+            img_like.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void fillMessageWithImagesAndEmoticons(Wiadomosc mWiadomosc, TextView wiadomosc) {
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
         int txtViewHeight = wiadomosc.getLineHeight();
         Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString, txtViewHeight);
@@ -144,16 +143,22 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         wiadomosc.setText(l_spanableWiadomosc);
         wiadomosc.setMovementMethod(LinkMovementMethod.getInstance());
+    }
 
-        date.setText(mWiadomosc.getDate());
-        lajki.setText(mWiadomosc.getLajki() != 0 ? Integer.valueOf(mWiadomosc.getLajki()).toString() : "");
-        if (mWiadomosc.getLajki() < 1) {
-            img_like.setVisibility(View.INVISIBLE);
-        } else {
-            img_like.setVisibility(View.VISIBLE);
+    private void setNasalizationFont(TextView autor) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            Typeface face = Typeface.createFromAsset(mAct.getAssets(),
+                    "fonts/nasalization.ttf");
+            autor.setTypeface(face);
         }
-        row.setTag(mWiadomosc.getId());
-        return row;
+    }
+
+    private void setMessageBackground(int pozycja, RelativeLayout layWiadomosc) {
+        if (pozycja % 2 == 0) {
+            layWiadomosc.setBackgroundResource(mBgResourceID_even);
+        } else {
+            layWiadomosc.setBackgroundResource(mBgResourceID_odd);
+        }
     }
 
     public void clear() {
@@ -194,23 +199,5 @@ public class AdapterWiadomosci extends BaseAdapter {
         }
         txt.setSpan(new SpanOnClickListener(obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return txt;
-
-        // v_obrazek.setOnClickListener(new ObrazekOnClickListener(obrazek));
-
-        // All the rest will have the same spannable.
-//        ClickableSpan cs = new ClickableSpan() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d("main", "textview clicked");
-//                Toast.makeText(mAct, "textview clicked", Toast.LENGTH_SHORT).show();
-//            } };
-
-        // set the "test " spannable.
-        //txt.setSpan(cs, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        // set the " span" spannable
-        //txt.setSpan(cs, 6, txt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        //tv.setText(txt);
-        //tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

@@ -248,6 +248,8 @@ public class XstService extends Service {
                             setStateOnPause();
                         }
                         break;
+                    case Typy.POBIERZ_STARSZE:
+                        pobierz_starsze();
                 }
             }
         } else {
@@ -257,6 +259,39 @@ public class XstService extends Service {
             }
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void pobierz_starsze() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("key", mKey);
+
+        if (mLastDate > 0) {
+            params.put("last_date", xstApp.getBazaDanych().getOlderDate());
+        }
+
+        Log.i("xst", "Service: wysylam getOlder: " + params.toString());
+        final JSONObject requestJson = new JSONObject(params);
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET_MORE, requestJson, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    if (response.getInt("success") == 0) {
+                        return;
+                    }
+
+                    JSONArray items = response.getJSONArray("items");
+                    int new_items = items.length();
+                    if (new_items > 0) {
+                        xstApp.getBazaDanych().setStarszeJsonListaWiadomosci(items);
+                        broadcastMessage(Typy.BROADCAST_NEW_MSG_OLDER);
+                    }
+                } catch (JSONException exception) {
+                    Log.e("xst", exception.getMessage());
+                }
+            }
+        }, new VolleyErrorListener());
+        req.setTag(Typy.POBIERZ_STARSZE);
+        getRequestQueue().add(req);
     }
 
     private void wyloguj() {
@@ -350,10 +385,7 @@ public class XstService extends Service {
 
                     mLastDate = response.getInt("last_date");
                     int receivedAppVersion = response.getInt("version");
-
-                    if ((receivedAppVersion > mAppVersion) && settings_sprawdzajAktualizacje) {
-                        poinformujOAktualizacji();
-                    }
+                    xstApp.zapiszWersjeApkiZSerwera(receivedAppVersion);
 
                     JSONArray items = response.getJSONArray("items");
                     int new_items = items.length();
@@ -410,6 +442,7 @@ public class XstService extends Service {
 
     private void broadcastConnectionError() {
         broadcastMessage(Typy.BROADCAST_KONIEC_ODSWIEZANIA);
+        broadcastMessage(Typy.BROADCAST_NEW_MSG_OLDER);
         broadcastMessage(Typy.BROADCAST_INTERNET_LOST);
     }
 

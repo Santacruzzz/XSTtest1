@@ -19,6 +19,7 @@ public class Typy {
     public static final String API_MSG_LIKE = URL_API + "msg/like";
     public static final String API_GET_OBRAZKI = URL_API + "msg/getObrazki";
     public static final String API_DEL_OBRAZKI = URL_API + "msg/delObrazki";
+    public static final String API_MSG_GET_MORE = URL_API + "msg/getOlder";
 
     public static final String TAG_GET_MSG = "getmsg";
     public static final String TAG_SEND_MSG = "sendmsg";
@@ -65,11 +66,15 @@ public class Typy {
     public static final int PERMISSION_REQUEST_CODE = 555;
     public static final int MAX_IMAGE_DIMENSION = 1200; // px
 
+    public static final String POBIERZ_STARSZE = "pobierz_starsze";
+
     public static final String STATE_MSG = "state_msg";
     public static final int STATE_ONLINE = 1;
     public static final int STATE_OFFLINE = 2;
     public static final String NOTIF_CHANNEL_MSG_ID = "xstmsgchannel";
     public static final String NOTIF_CHANNEL_UPDT_ID = "xstupdtchannel";
+    public static final String APP_VERSION_ON_SERVER = "appVersionOnServer";
+    public static final String BROADCAST_NEW_MSG_OLDER = "pobranoStarsze";
 
     public enum ServiceState {
         state_inactive,
@@ -79,12 +84,20 @@ public class Typy {
         state_wymusOdswiezenie,
         state_odswiez,
         state_blad_polaczenia;
+
+
     }
 
     public enum ServiceRequest {
         request_wymusOdswiezanie,
         request_lajkuj,
         request_wyslijWiadomosc,
-        request_none
+        request_none;
+
+    }
+
+    public enum TypWiadomosci {
+        wiadomosc,
+        przycisk_pokaz_starsze;
     }
 }

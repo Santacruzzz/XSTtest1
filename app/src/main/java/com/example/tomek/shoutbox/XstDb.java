@@ -30,6 +30,8 @@ public class XstDb {
     private XstApplication xstApp;
     private SbListener listenerSb;
     private OnlineListener listenerOnline;
+    private JSONArray starszeJsonListaWiadomosci;
+    private DbListener dbListener;
 
     public XstDb() {
         listaWiadomosci = new ArrayList<>();
@@ -40,6 +42,10 @@ public class XstDb {
         jsonListaOnline = new JSONArray();
         jsonListaObrazkow = new JSONArray();
         xstApp = null;
+    }
+
+    public void setDbListener(DbListener dbListener) {
+        this.dbListener = dbListener;
     }
 
     public void initialize(XstApplication xstApplication) {
@@ -68,6 +74,9 @@ public class XstDb {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+        if (dbListener != null) {
+            dbListener.wypelnionoListeWiadomosci();
         }
     }
 
@@ -185,4 +194,28 @@ public class XstDb {
     public void setOnlineListener(OnlineListener listener) {
         listenerOnline = listener;
     }
+
+    public String getOlderDate() {
+        return listaWiadomosci.get(listaWiadomosci.size() - 2).getRawDate();
+    }
+
+    public void setStarszeJsonListaWiadomosci(JSONArray starszeJsonListaWiadomosci) {
+        this.starszeJsonListaWiadomosci = starszeJsonListaWiadomosci;
+        dodajPobraneStarsze();
+    }
+
+    private void dodajPobraneStarsze() {
+        for(int i = 0; i < starszeJsonListaWiadomosci.length(); i++) {
+            try {
+                jsonListaWiadomosci.put(starszeJsonListaWiadomosci.getJSONObject(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        wypelnijListeWiadomosci();
+        if (dbListener != null) {
+            dbListener.pobranoStarsze();
+        }
+    }
+
 }

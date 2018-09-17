@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -28,6 +29,8 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -49,6 +52,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.tomek.shoutbox.DbListener;
 import com.example.tomek.shoutbox.MyBroadcastReceiver;
 import com.example.tomek.shoutbox.NavItem;
 import com.example.tomek.shoutbox.NowaWiadomoscReceiver;
@@ -75,7 +79,8 @@ public class MainActivity extends XstActivity
                    View.OnClickListener,
                    SwipeRefreshLayout.OnRefreshListener,
                    CompoundButton.OnCheckedChangeListener,
-                   IPermission {
+                   IPermission,
+                   DbListener {
     ArrayList<Wiadomosc> arrayListWiadomosci;
     ArrayList<User> arrayListOnline;
     MyBroadcastReceiver broadcastReceiver;
@@ -101,6 +106,7 @@ public class MainActivity extends XstActivity
     private Uri downloadedApkUri;
     private long downloadedApkId;
     private DownloadReceiver downloadReceiver;
+    private int currentAppVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,21 +123,7 @@ public class MainActivity extends XstActivity
             ustawWidokZalogowania();
         }
 
-        wczytajIntent();
-    }
-
-    private void wczytajIntent() {
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            String type = bundle.getString("type");
-            if (type != null) {
-                Log.i("xst", "MainActivity: intent-type = " + type);
-                if (type.equals("update")) {
-                    zapytajCzyPobracAktualizacje();
-                }
-            }
-        }
+        bazaDanych.setDbListener(this);
     }
 
     private void zapytajCzyPobracAktualizacje() {
@@ -199,6 +191,7 @@ public class MainActivity extends XstActivity
     }
 
     private void zaladujWidokNiezalogowany() {
+        xstApp.wczytajUstawienia();
         Log.i("xst", "MainActivity: zaladujWidokNiezalogowany");
         startActivityForResult(new Intent(this, LoginActivity.class), Typy.REQUEST_ZALOGUJ);
     }
@@ -371,8 +364,32 @@ public class MainActivity extends XstActivity
             runServiceCommand("onResume");
             wczytajWiadomosci(null);
             odswiezTytul();
+            sprawdzAktualizacje();
         }
         Log.i("xst", "MainActivity: onResume, zalogowany: " + czyZalogowany);
+    }
+
+    private void sprawdzAktualizacje() {
+        if (xstApp.isAutomatyczneAktualizacje() && czyRobicAktualizacje()) {
+            zapytajCzyPobracAktualizacje();
+        }
+    }
+
+    private int getCurrentAppVersion() {
+        PackageInfo appPackageInfo = null;
+        try {
+            appPackageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (appPackageInfo != null) {
+            return appPackageInfo.versionCode;
+        }
+        return 0;
+    }
+
+    private boolean czyRobicAktualizacje() {
+        return getCurrentAppVersion() < xstApp.getAppServerVersion();
     }
 
     @Override
@@ -429,8 +446,10 @@ public class MainActivity extends XstActivity
                 }
                 break;
             case Typy.BROADCAST_UPDATE_AVAILABLE:
-                zapytajCzyPobracAktualizacje();
+                sprawdzAktualizacje();
                 break;
+            case Typy.BROADCAST_NEW_MSG_OLDER:
+                pobranoStarsze();
         }
     }
 
@@ -525,7 +544,7 @@ public class MainActivity extends XstActivity
         }
     }
 
-    private void runServiceCommand(String msg) {
+    public void runServiceCommand(String msg) {
         Intent intentStartService = new Intent(this, XstService.class);
         intentStartService.putExtra("msg", msg);
         startService(intentStartService);
@@ -626,7 +645,7 @@ public class MainActivity extends XstActivity
         }
     }
 
-    private void pokazDialog(String message, String title, DialogInterface.OnClickListener yesListener) {
+    private AlertDialog pokazDialog(String message, String title, DialogInterface.OnClickListener yesListener) {
         AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(MainActivity.this);
         if (title.length() > 0) {
@@ -637,15 +656,35 @@ public class MainActivity extends XstActivity
         builder.setPositiveButton(android.R.string.yes, yesListener);
         builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
+                       Toast.makeText(xstApp, "anulowano", Toast.LENGTH_SHORT).show();
                     }
                 });
-        builder.create();
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         builder.show();
+
+        return dialog;
     }
 
     public void imageSelectedToUpload(String path) {
         startActivityUploadImage(Uri.fromFile(new File(path)));
+    }
+
+    @Override
+    public void wypelnionoListeWiadomosci() {
+        if (listenerSb != null) {
+            listenerSb.odswiezWiadomosci();
+        }
+    }
+
+    @Override
+    public void pobranoStarsze() {
+        if (listenerSb != null) {
+            listenerSb.pobranoStarsze();
+        }
     }
 
     private class DrawerItemClickListener implements android.widget.AdapterView.OnItemClickListener {
@@ -715,6 +754,7 @@ public class MainActivity extends XstActivity
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_KONIEC_ODSWIEZANIA));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_ONLINE));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_UPDATE_AVAILABLE));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG_OLDER));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }

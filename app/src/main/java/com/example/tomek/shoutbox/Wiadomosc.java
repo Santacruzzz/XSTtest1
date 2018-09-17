@@ -21,6 +21,7 @@ import java.util.Date;
 public class Wiadomosc {
     private String autor, wiadomosc, data, avatar, source, sex, birthday;
     private int id, autorid, lajki = 0;
+    private Typy.TypWiadomosci typWiadomosci;
     ArrayList<String> obrazki, linki;
 
     private SimpleDateFormat format_data;
@@ -34,6 +35,7 @@ public class Wiadomosc {
         format_godziny = new SimpleDateFormat("HH:mm");
         format_daty = new SimpleDateFormat("dd.MM HH:mm");
         try {
+            typWiadomosci = Typy.TypWiadomosci.wiadomosc;
             setAutor(obj.getString("nickname"));
             setAutorId(obj.getInt("userID"));
             setAvatar(obj.getString("avatar"));
@@ -55,32 +57,11 @@ public class Wiadomosc {
 
         }
     }
-    Wiadomosc(
-            String autor,
-            String wiadomosc,
-            String data,
-            int id,
-            int autorid,
-            int lajki,
-            ArrayList<String> obrazki,
-            ArrayList<String> linki,
-            String avatar) {
-        obrazki = new ArrayList<>();
-        linki = new ArrayList<>();
-        this.setAutor(autor);
-        this.setWiadomosc(wiadomosc);
-        this.setData(data);
-        this.setId(id);
-        this.setLajki(lajki);
-        this.setObrazki(obrazki);
-        this.setAutorId(autorid);
-        this.setAvatar(avatar);
-        this.setLinki(linki);
+
+    public Wiadomosc(Typy.TypWiadomosci typ) {
+        typWiadomosci = typ;
     }
 
-    /**
-     * @param obrazki2
-     */
     private void setObrazki(ArrayList<String> obrazki) {
         this.obrazki = obrazki;
     }
@@ -107,6 +88,10 @@ public class Wiadomosc {
 
     public void setWiadomosc(String wiadomosc) {
         this.wiadomosc = wiadomosc;
+    }
+
+    public String getRawDate() {
+        return data;
     }
 
     public String getDate() {
@@ -178,5 +163,9 @@ public class Wiadomosc {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public Typy.TypWiadomosci getTypWiadomosci() {
+        return typWiadomosci;
     }
 }
