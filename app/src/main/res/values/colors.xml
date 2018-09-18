@@ -31,7 +31,7 @@
     <color name="sbBottomBackground_dark">@color/colorPrimary_dark</color>
     <color name="colorMiniaturaTxt_dark">#33000000</color>
     <color name="tagi_emotki_background_dark">#262626</color>
-    <color name="toolbarBgColor_dark">#181818</color>
+    <color name="toolbarBgColor_dark">#151515</color>
     <color name="actionBarBgColor_dark">#be0000</color>
 
     <!--LIGHT-->
@@ -52,8 +52,8 @@
     <color name="nickColor_light">#000</color>
     <color name="msgColor_light">#666</color>
     <color name="msgDateColor_light">#222</color>
-    <color name="msgBackground_light">#eee</color>
-    <color name="msgBackground_odd_light">#aaa</color>
+    <color name="msgBackground_light">#ffffff</color>
+    <color name="msgBackground_odd_light">#f0f0f0</color>
     <color name="drawerBackground_light">#fafafa</color>
     <color name="drawerHeaderBackground_light">#dcdcdc</color>
     <color name="drawerHeaderTextColor_light">#000</color>

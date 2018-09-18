@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.constraint.ConstraintLayout;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -15,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.tomek.shoutbox.R;
@@ -96,8 +96,7 @@ public class AdapterWiadomosci extends BaseAdapter {
             row = inflater.inflate(R.layout.wiadomosc_layout, arg2, false);
         }
 
-
-        final RelativeLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
+        final ConstraintLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
         TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
         TextView autor = row.findViewById(R.id.v_nick);
         TextView date = row.findViewById(R.id.v_data);
@@ -141,8 +140,8 @@ public class AdapterWiadomosci extends BaseAdapter {
             }
         }
 
-        wiadomosc.setText(l_spanableWiadomosc);
         wiadomosc.setMovementMethod(LinkMovementMethod.getInstance());
+        wiadomosc.setText(l_spanableWiadomosc);
     }
 
     private void setNasalizationFont(TextView autor) {
@@ -153,7 +152,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         }
     }
 
-    private void setMessageBackground(int pozycja, RelativeLayout layWiadomosc) {
+    private void setMessageBackground(int pozycja, ConstraintLayout layWiadomosc) {
         if (pozycja % 2 == 0) {
             layWiadomosc.setBackgroundResource(mBgResourceID_even);
         } else {

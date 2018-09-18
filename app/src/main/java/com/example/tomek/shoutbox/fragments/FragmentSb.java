@@ -204,10 +204,12 @@ public class FragmentSb extends Fragment implements
             AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) menuInfo;
             ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
             Log.i("xst", "FragmentSb: onCreateContextMenu - acmi.position: " + acmi.position + "  arrayWiadomosci.size():" +  arrayWiadomosci.size());
-            Wiadomosc obj = arrayWiadomosci.get(acmi.position);
+            if (acmi.position >= adapterWiadomosci.getWiadomosci().size() - 1) {
+                return;
+            }
+            Wiadomosc obj = adapterWiadomosci.getWiadomosci().get(acmi.position);
 
             menu.setHeaderTitle("Wybierz akcję");
-
             menu.add(0, 99, 0, "Lubię to!"); //groupId, itemId, order, title
             //TODO więcej?
         }
@@ -349,6 +351,7 @@ public class FragmentSb extends Fragment implements
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         if(adapterWiadomosci.getWiadomosci().size() - 1 == i) {
             if (pobieramStarsze) {
+                return;
             }
             pobieramStarsze = true;
             mAct.setSbListener(this);

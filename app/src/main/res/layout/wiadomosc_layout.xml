@@ -1,78 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutWiadomosc"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="@dimen/message_padding_start"
-    android:paddingTop="@dimen/message_padding_top"
-    android:paddingEnd="@dimen/message_padding_end"
-    android:id="@+id/layoutWiadomosc"
     android:background="?attr/msgBackground"
     android:descendantFocusability="blocksDescendants"
     android:drawSelectorOnTop="true">
 
     <!--<com.example.tomek.shoutbox.FadeInNetworkImageView-->
-        <!--android:id="@+id/v_avatar"-->
-        <!--android:layout_width="@dimen/avatar_width"-->
-        <!--android:layout_height="@dimen/avatar_height"-->
-        <!--android:clickable="true"-->
-        <!--android:focusable="true"-->
-        <!--/>-->
+    <!--android:id="@+id/v_avatar"-->
+    <!--android:layout_width="@dimen/avatar_width"-->
+    <!--android:layout_height="@dimen/avatar_height"-->
+    <!--android:clickable="true"-->
+    <!--android:focusable="true"-->
+    <!--/>-->
 
     <ImageView
         android:id="@+id/v_avatarOnline"
         android:layout_width="70dp"
-        android:layout_height="70dp" />
+        android:layout_height="70dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/v_nick"
-        android:fontFamily="@font/nasalization"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="-5dp"
         android:layout_toEndOf="@+id/v_avatarOnline"
+        android:fontFamily="@font/nasalization"
+        android:paddingLeft="5sp"
+        android:text="Nick"
         android:textColor="?attr/nickColor"
         android:textSize="@dimen/nickSize"
-        android:paddingLeft="5sp"
-        android:text="Nick" />
+        app:layout_constraintStart_toEndOf="@+id/v_avatarOnline"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/v_wiadomosc"
-        android:textColor="?attr/msgColor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/v_nick"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_toRightOf="@+id/v_avatarOnline"
+        android:clickable="false"
         android:maxLines="20"
-        android:textSize="14sp"
         android:paddingHorizontal="5sp"
         android:paddingVertical="3sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/v_nick"
-        android:layout_toRightOf="@+id/v_avatarOnline"/>
+        android:text="df gsdfgsdfkljdshgk dsf"
+        android:textColor="?attr/msgColor"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/v_avatarOnline"
+        app:layout_constraintTop_toBottomOf="@+id/v_nick"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/v_data"
-        android:textColor="?attr/offlineTextColor"
-        android:text="13.07.2017"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginEnd="2dp"
+        android:text="13.07.2017"
+        android:textColor="?attr/offlineTextColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/v_lajki"
-        android:text="3"
-        android:paddingEnd="5dp"
-        android:textColor="#3c71ec"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toLeftOf="@+id/v_lajk_ikona" />
+        android:layout_toLeftOf="@+id/v_lajk_ikona"
+        android:paddingEnd="5dp"
+        android:text="3"
+        android:textColor="#3c71ec"
+        app:layout_constraintEnd_toStartOf="@+id/v_lajk_ikona"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/v_lajk_ikona"
-        android:src="@drawable/like"
-        android:paddingEnd="5dp"
-        android:layout_toLeftOf="@id/v_data"
         android:layout_width="@dimen/lajk_height"
-        android:layout_height="@dimen/lajk_height" />
+        android:layout_height="@dimen/lajk_height"
+        android:layout_toLeftOf="@id/v_data"
+        android:paddingEnd="5dp"
+        android:src="@drawable/like"
+        app:layout_constraintEnd_toStartOf="@+id/v_data"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

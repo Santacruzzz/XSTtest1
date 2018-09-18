@@ -60,8 +60,8 @@
         <item name="offlineTextColor">#555559</item>
         <item name="offlineNickColor">#626269</item>
         <item name="btn">@drawable/btn_dark</item>
-        <item name="msgBackground">@drawable/bg_msg_dark</item>
-        <item name="msgBackground_odd">@drawable/bg_msg_dark_odd</item>
+        <item name="msgBackground">@color/msgBackground_dark</item>
+        <item name="msgBackground_odd">@color/msgBackground_odd_dark</item>
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_dark</item>
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_dark</item>
@@ -109,8 +109,8 @@
         <item name="offlineTextColor">#282828</item>
         <item name="offlineNickColor">#1b1b1b</item>
         <item name="btn">@drawable/btn_dark</item>
-        <item name="msgBackground">@drawable/bg_msg_light</item>
-        <item name="msgBackground_odd">@drawable/bg_msg_light_odd</item>
+        <item name="msgBackground">@color/msgBackground_light</item>
+        <item name="msgBackground_odd">@color/msgBackground_odd_light</item>
 
         <item name="miniaturaTxtBg">@color/colorMiniaturaTxt_light</item>
         <item name="tagiEmotkiBackgroundColor">@color/tagi_emotki_background_light</item>

@@ -33,6 +33,7 @@
             android:fadingEdge="vertical"
             android:fadingEdgeLength="20sp"
             android:focusable="true"
+            android:drawSelectorOnTop="true"
             android:focusableInTouchMode="true" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
