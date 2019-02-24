@@ -144,6 +144,7 @@ public class MainActivity extends XstActivity
         navItemsList = new ArrayList<>();
         navItemsList.add(new NavItem(Typy.FRAGMENT_USTAWIENIA, android.R.drawable.ic_menu_preferences));
         navItemsList.add(new NavItem(Typy.FRAGMENT_MOJE_OBRAZKI, android.R.drawable.ic_menu_gallery));
+        navItemsList.add(new NavItem(Typy.FRAGMENT_TS, android.R.drawable.ic_menu_call));
 
         RelativeLayout relativeLayoutProfileBox = findViewById(R.id.profileBox);
         relativeLayoutProfileBox.setVisibility(View.VISIBLE);
@@ -699,10 +700,17 @@ public class MainActivity extends XstActivity
 
     private void selectDrawerItem(int i) {
         String selectedActivity = navItemsList.get(i).mTitle.toLowerCase();
-        if (selectedActivity.equals(Typy.FRAGMENT_USTAWIENIA)) {
+        if (selectedActivity.equals(Typy.FRAGMENT_USTAWIENIA))
+        {
             uruchomUstawienia();
-        } else if (selectedActivity.equals(Typy.FRAGMENT_MOJE_OBRAZKI)) {
+        }
+        else if (selectedActivity.equals(Typy.FRAGMENT_MOJE_OBRAZKI))
+        {
             uruchomMojeObrazki();
+        }
+        else if (selectedActivity.equals(Typy.FRAGMENT_TS))
+        {
+            uruchomTs();
         }
 
         //Bundle args = new Bundle();
@@ -714,6 +722,11 @@ public class MainActivity extends XstActivity
 
     private void uruchomMojeObrazki() {
         Intent intent = new Intent(this, MojeObrazki.class);
+        startActivityForResult(intent, Typy.REQUEST_MOJE_OBRAZKI);
+    }
+
+    private void uruchomTs() {
+        Intent intent = new Intent(this, TeamSpeakView.class);
         startActivityForResult(intent, Typy.REQUEST_MOJE_OBRAZKI);
     }
 

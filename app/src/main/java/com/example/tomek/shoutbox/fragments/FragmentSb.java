@@ -1,15 +1,22 @@
 package com.example.tomek.shoutbox.fragments;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -61,14 +68,12 @@ public class FragmentSb extends Fragment implements
     private SwipeRefreshLayout mRefreshLayout;
     private MainActivity mAct;
     private IMainActivity mImain;
-    private Integer keyboradSize;
     private DialogDodatki dodatkiDialog;
     private IPermission iPermission;
     private boolean isDialogShown;
     private boolean pobieramStarsze;
 
     public FragmentSb() {
-        keyboradSize = 0;
         dodatkiDialog = null;
         isDialogShown = false;
         pobieramStarsze = false;
@@ -81,7 +86,6 @@ public class FragmentSb extends Fragment implements
         mImain = mAct;
         iPermission = mAct;
         adapterWiadomosci = new AdapterWiadomosci(mAct);
-        keyboradSize = mImain.getKeyboardSize();
         isDialogShown = false;
         pobieramStarsze = false;
         mAct.setSbListener(this);
@@ -211,7 +215,8 @@ public class FragmentSb extends Fragment implements
 
             menu.setHeaderTitle("Wybierz akcję");
             menu.add(0, 99, 0, "Lubię to!"); //groupId, itemId, order, title
-            //TODO więcej?
+            menu.add(0, 100, 1, "Skopiuj treść"); //groupId, itemId, order, title
+            menu.add(0, 101, 2, "Cytuj"); //groupId, itemId, order, title
         }
     }
 
@@ -219,10 +224,28 @@ public class FragmentSb extends Fragment implements
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
-        Wiadomosc obj = arrayWiadomosci.get(info.position);
-        int l_id = item.getItemId();
-        if (l_id == 99) {
-            mImain.lajkujWiadomosc(obj.getId(), info.position);
+        Wiadomosc wiadomosc = arrayWiadomosci.get(info.position);
+        View view = getMessageViewFromPosition(info.position);
+        if (view == null)
+        {
+            return false;
+        }
+        TextView msgContentView = view.findViewById(R.id.v_wiadomosc);
+        TextView msgNickView = view.findViewById(R.id.v_nick);
+
+        switch (item.getItemId())
+        {
+            case 99:
+                mImain.lajkujWiadomosc(wiadomosc.getId(), info.position);
+                break;
+            case 100:
+                Utils.copyToClipboard(mAct, msgContentView.getText().toString(), "Skopiowano treść");
+                break;
+            case 101:
+                wstawCytat(msgContentView.getText().toString(), msgNickView.getText().toString());
+                break;
+            default:
+                return false;
         }
         return true;
     }
@@ -248,10 +271,9 @@ public class FragmentSb extends Fragment implements
 
     @Override
     public void polajkowanoWiadomosc(int msgid, int position) {
-        int firstPosition = listViewWiadomosci.getFirstVisiblePosition() - listViewWiadomosci.getHeaderViewsCount();
+        View row = getMessageViewFromPosition(position);
         ArrayList<Wiadomosc> arrayWiadomosci = adapterWiadomosci.getWiadomosci();
         Wiadomosc w = arrayWiadomosci.get(position);
-        View row = listViewWiadomosci.getChildAt(position - firstPosition);
         if (row == null) {
             return;
         }
@@ -264,6 +286,11 @@ public class FragmentSb extends Fragment implements
         if (ikona_lajkow.getVisibility() != View.VISIBLE) {
             ikona_lajkow.setVisibility(View.VISIBLE);
         }
+    }
+
+    private View getMessageViewFromPosition(int position) {
+        int firstPosition = listViewWiadomosci.getFirstVisiblePosition() - listViewWiadomosci.getHeaderViewsCount();
+        return listViewWiadomosci.getChildAt(position - firstPosition);
     }
 
     @Override
@@ -318,7 +345,11 @@ public class FragmentSb extends Fragment implements
     }
 
     public void wstawLinkObrazka(String url) {
-        mWiadomosc.setText(String.format("%s [img]%s[/img]", mWiadomosc.getText(), url));
+        mWiadomosc.setText(String.format("%s[img]%s[/img]", mWiadomosc.getText(), url));
+    }
+
+    public void wstawCytat(String txt, String author) {
+        mWiadomosc.setText(String.format("%s[quote]%s[/quote=%s]", mWiadomosc.getText(), txt, author));
     }
 
     @Override

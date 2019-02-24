@@ -2,6 +2,7 @@ package com.example.tomek.shoutbox.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.constraint.ConstraintLayout;
@@ -11,6 +12,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.QuoteSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +22,9 @@ import android.widget.TextView;
 
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.Wiadomosc;
-import com.example.tomek.shoutbox.activities.IMainActivity;
 import com.example.tomek.shoutbox.activities.MainActivity;
 import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
+import com.example.tomek.shoutbox.utils.CustomQuoteSpan;
 import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.utils.Typy;
 import com.squareup.picasso.Picasso;
@@ -47,11 +49,10 @@ public class AdapterWiadomosci extends BaseAdapter {
 
     public AdapterWiadomosci(MainActivity act) {
         inflater = LayoutInflater.from(act.getApplicationContext());
-        IMainActivity imain = act;
         mAct = act;
         m_parserEmotek = new EmoticonsParser(mAct.getApplicationContext());
-        mBgResourceID_even = imain.getThemeRecourceId(new int[]{R.attr.msgBackground});
-        mBgResourceID_odd = imain.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
+        mBgResourceID_even = act.getThemeRecourceId(new int[]{R.attr.msgBackground});
+        mBgResourceID_odd = act.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
         lista = mAct.getXstDatabase().getListaWiadomosci();
     }
 
@@ -128,7 +129,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
         int txtViewHeight = wiadomosc.getLineHeight();
         Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString, txtViewHeight);
-
+        replaceQuoteSpans(l_spanableWiadomosc);
         if (mWiadomosc.getObrazki().size() > 0) {
             int numer_obrazka = 1;
             for (String obrazek : mWiadomosc.getObrazki()) {
@@ -198,5 +199,23 @@ public class AdapterWiadomosci extends BaseAdapter {
         }
         txt.setSpan(new SpanOnClickListener(obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return txt;
+    }
+
+    private void replaceQuoteSpans(Spannable spannable) {
+        QuoteSpan[] quoteSpans = spannable.getSpans(0, spannable.length(), QuoteSpan.class);
+        for (QuoteSpan quoteSpan : quoteSpans) {
+            int start = spannable.getSpanStart(quoteSpan);
+            int end = spannable.getSpanEnd(quoteSpan);
+            int flags = spannable.getSpanFlags(quoteSpan);
+            spannable.removeSpan(quoteSpan);
+            spannable.setSpan(new CustomQuoteSpan(
+                            Color.parseColor("#22000000"),
+                            Color.RED,
+                            4,
+                            15),
+                    start,
+                    end,
+                    flags);
+        }
     }
 }

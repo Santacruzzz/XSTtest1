@@ -1,5 +1,8 @@
 package com.example.tomek.shoutbox.utils;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +17,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.util.Base64;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -185,5 +189,20 @@ public abstract class Utils {
     public static Uri getFileUri(Context context, File file) {
         return FileProvider.getUriForFile(
                 context, context.getApplicationContext().getPackageName() + ".provider", file);
+    }
+
+    public static void copyToClipboard(Activity act, String text, String returnText)
+    {
+        ClipboardManager clipboard = (ClipboardManager) act.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("xst", text);
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(act, returnText, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static void copyToClipboard(Activity act, String text)
+    {
+        copyToClipboard(act, text, "Skopiowano");
     }
 }

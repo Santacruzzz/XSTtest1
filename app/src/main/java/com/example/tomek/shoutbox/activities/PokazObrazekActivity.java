@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.tomek.shoutbox.R;
+import com.example.tomek.shoutbox.utils.Utils;
 import com.jsibbold.zoomage.ZoomageView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -59,12 +60,7 @@ public class PokazObrazekActivity extends XstActivity implements Callback {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_obrazki_kopiuj:
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("xst", url);
-                if (clipboard != null) {
-                    clipboard.setPrimaryClip(clip);
-                    Toast.makeText(getApplicationContext(), "Skopiowano link", Toast.LENGTH_SHORT).show();
-                }
+                Utils.copyToClipboard(this, url, "Skopiowano link");
                 break;
             case android.R.id.home:
                 finish();

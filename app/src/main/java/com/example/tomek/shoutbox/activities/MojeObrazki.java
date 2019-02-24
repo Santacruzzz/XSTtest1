@@ -35,6 +35,7 @@ import com.example.tomek.shoutbox.MojObrazek;
 import com.example.tomek.shoutbox.R;
 import com.example.tomek.shoutbox.adapters.AdapterMojeObrazki;
 import com.example.tomek.shoutbox.utils.Typy;
+import com.example.tomek.shoutbox.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -167,13 +168,7 @@ public class MojeObrazki extends XstActivity implements AdapterView.OnItemClickL
                 pokazDialogUsuwania();
                 return true;
             case R.id.menu_obrazki_kopiuj:
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("xst", zaznaczoneObrazki.get(0).getObrazekUrl());
-                if (clipboard != null) {
-                    clipboard.setPrimaryClip(clip);
-                    Toast.makeText(getApplicationContext(), "Skopiowano link", Toast.LENGTH_SHORT).show();
-                }
-                actionMode.finish();
+                Utils.copyToClipboard(this, zaznaczoneObrazki.get(0).getObrazekUrl(), "Skopiowano link");
                 return true;
             default:
                 return false;

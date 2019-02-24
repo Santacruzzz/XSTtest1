@@ -17,14 +17,14 @@
     <attr name="drawerItemBackground" format="reference|color" />
     <attr name="miniaturaTxtBg" format="reference|color" />
     <attr name="tabBackground" format="reference" />
-    <attr name="tagiEmotkiBackgroundColor" format="color"/>
-    <attr name="toolbarStyle" format="reference"/>
-    <attr name="darkenBg" format="color"/>
-    <attr name="darkBg" format="color"/>
-    <attr name="lightBg" format="color"/>
-    <attr name="lightenBg" format="color"/>
-    <attr name="toolbarBg" format="color"/>
-    <attr name="textColorSecondary" format="color"/>
+    <attr name="tagiEmotkiBackgroundColor" format="color" />
+    <attr name="toolbarStyle" format="reference" />
+    <attr name="darkenBg" format="color" />
+    <attr name="darkBg" format="color" />
+    <attr name="lightBg" format="color" />
+    <attr name="lightenBg" format="color" />
+    <attr name="toolbarBg" format="color" />
+    <attr name="textColorSecondary" format="color" />
 
     <style name="xstThemeDark" parent="Theme.AppCompat.NoActionBar">
         <item name="windowActionModeOverlay">true</item>
@@ -132,6 +132,7 @@
         <!--<item name="android:windowAnimationStyle">@style/DialogDodatkiAnimation</item>-->
         <item name="android:windowBackground">@null</item>
     </style>
+
     <style name="DialogDodatkiAnimation">
         <item name="android:windowEnterAnimation">@anim/slide_up</item>
         <item name="android:windowExitAnimation">@anim/slide_down</item>
@@ -166,5 +167,14 @@
     <style name="NickAppearance" parent="">
         <item name="android:fontFamily">@font/nasalization_font</item>
     </style>
+
+    <style name="SplashTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="SplashTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="SplashTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

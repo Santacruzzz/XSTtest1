@@ -17,4 +17,5 @@
     <dimen name="titleMaringLeft">0dp</dimen>
     <dimen name="nickSize">17sp</dimen>
     <dimen name="obrazkiSpacing">3dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

@@ -296,12 +296,7 @@ public class UploadActivity extends XstActivity
                 break;
 
             case R.id.buttonCopyToClipboard:
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("xst", receivedUrl);
-                if (clipboard != null) {
-                    clipboard.setPrimaryClip(clip);
-                    Toast.makeText(getApplicationContext(), "Skopiowano link", Toast.LENGTH_SHORT).show();
-                }
+                Utils.copyToClipboard(this, receivedUrl, "Skopiowano link");
                 break;
         }
     }
