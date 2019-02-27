@@ -760,6 +760,10 @@ public class MainActivity extends XstActivity
                 unregisterReceiver(broadcastReceiver);
                 unregisterReceiver(nowaWiadomoscReceiver);
             }
+            if (downloadReceiver != null)
+            {
+                unregisterReceiver(downloadReceiver);
+            }
         } catch (IllegalArgumentException ignored) {
 
         }
