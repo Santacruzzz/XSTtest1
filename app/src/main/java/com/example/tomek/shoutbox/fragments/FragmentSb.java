@@ -1,22 +1,15 @@
 package com.example.tomek.shoutbox.fragments;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -265,7 +258,7 @@ public class FragmentSb extends Fragment implements
         String wiadomosc = mWiadomosc.getText().toString();
         if (wiadomosc.length() > 0) {
             mBtnSend.setEnabled(false);
-            mImain.wyslij_wiadomosc(wiadomosc);
+            mImain.sendMessage(wiadomosc);
         }
     }
 

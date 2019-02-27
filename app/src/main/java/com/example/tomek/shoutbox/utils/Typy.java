@@ -5,7 +5,8 @@ package com.example.tomek.shoutbox.utils;
  */
 
 @SuppressWarnings("ALL")
-public class Typy {
+public class Typy
+{
     public static final String URL_PROTOCOL = "http://";
     public static final String URL_BASE = "xs-team.pl";
     public static final String URL_API = URL_PROTOCOL + URL_BASE + "/api/";
@@ -77,7 +78,16 @@ public class Typy {
     public static final String APP_VERSION_ON_SERVER = "appVersionOnServer";
     public static final String BROADCAST_NEW_MSG_OLDER = "pobranoStarsze";
 
-    public enum ServiceState {
+    public static final String responseGetMessages = "getMessages";
+    public static final String responseOlderMessages = "olderMessages";
+    public static final String responseLikeMessage = "likeMessage";
+    public static final String responseSendMessage = "sendMessage";
+    public static final String responseGetAppVersion = "getAppVersion";
+    public static final String responseGetImages = "getImages";
+    public static final String responseDeleteImage = "deleteImage";
+
+    public enum ServiceState
+    {
         state_inactive,
         state_onResume,
         state_onPause,
@@ -85,11 +95,10 @@ public class Typy {
         state_wymusOdswiezenie,
         state_odswiez,
         state_blad_polaczenia;
-
-
     }
 
-    public enum ServiceRequest {
+    public enum ServiceRequest
+    {
         request_wymusOdswiezanie,
         request_lajkuj,
         request_wyslijWiadomosc,
@@ -97,7 +106,8 @@ public class Typy {
 
     }
 
-    public enum TypWiadomosci {
+    public enum TypWiadomosci
+    {
         wiadomosc,
         przycisk_pokaz_starsze;
     }

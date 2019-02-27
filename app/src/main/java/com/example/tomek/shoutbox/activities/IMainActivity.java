@@ -13,7 +13,7 @@ public interface IMainActivity {
     void odswiezWiadomosci();
     int getThemeColor(int[] arr);
     int getThemeRecourceId(int[] arr);
-    void wyslij_wiadomosc(String wiadomosc);
+    void sendMessage(String wiadomosc);
     void polajkowanoWiadomosc(int msgid);
     void lajkujWiadomosc(int id, int position);
     Integer getKeyboardSize();

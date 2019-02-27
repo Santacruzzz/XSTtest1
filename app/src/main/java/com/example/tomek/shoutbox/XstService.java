@@ -49,7 +49,8 @@ import java.util.HashMap;
  * Created by Tomek on 2017-10-21.
  */
 
-public class XstService extends Service {
+public class XstService extends Service implements Response.Listener<JSONObject>,
+    Response.ErrorListener {
 
     private int mLastDate;
     private int mNewItems;
@@ -102,7 +103,7 @@ public class XstService extends Service {
         mAppVersionName = "";
         xstApp = (XstApplication) getApplicationContext();
         notificationManager = NotificationManagerCompat.from(this);
-        state = Typy.ServiceState.state_wylogowano;
+        setServiceState(Typy.ServiceState.state_wylogowano);
         request = Typy.ServiceRequest.request_none;
         activeNotificationsIds = new ArrayList<>();
         context = getApplicationContext();
@@ -147,7 +148,7 @@ public class XstService extends Service {
         };
 
         if (mKey.length() > 0) {
-            state = Typy.ServiceState.state_onPause;
+            setServiceState(Typy.ServiceState.state_onPause);
             zacznijPobieracWiadomosci();
         }
     }
@@ -220,7 +221,7 @@ public class XstService extends Service {
                     case "wymusOdswiezenie":
                         czyPokazalemAktualizacje = false;
                         mLastDate = 0;
-                        state = Typy.ServiceState.state_onResume;
+                        setServiceState(Typy.ServiceState.state_onResume);
                         request = Typy.ServiceRequest.request_wymusOdswiezanie;
                         zacznijPobieracWiadomosci();
                         break;
@@ -239,7 +240,7 @@ public class XstService extends Service {
                         break;
 
                     case "screenOff":
-                        state = Typy.ServiceState.state_inactive;
+                        setServiceState(Typy.ServiceState.state_inactive);
                         cancelRefresh();
                         break;
 
@@ -271,39 +272,28 @@ public class XstService extends Service {
 
         Log.i("xst", "Service: wysylam getOlder: " + params.toString());
         final JSONObject requestJson = new JSONObject(params);
-        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET_MORE, requestJson, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    if (response.getInt("success") == 0) {
-                        return;
-                    }
-
-                    JSONArray items = response.getJSONArray("items");
-                    int new_items = items.length();
-                    if (new_items > 0) {
-                        xstApp.getBazaDanych().setStarszeJsonListaWiadomosci(items);
-                        broadcastMessage(Typy.BROADCAST_NEW_MSG_OLDER);
-                    }
-                } catch (JSONException exception) {
-                    Log.e("xst", exception.getMessage());
-                }
-            }
-        }, new VolleyErrorListener());
+        final JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST, Typy.API_MSG_GET_MORE, requestJson, this, this);
         req.setTag(Typy.POBIERZ_STARSZE);
         getRequestQueue().add(req);
     }
 
     private void wyloguj() {
-        state = Typy.ServiceState.state_wylogowano;
+        setServiceState(Typy.ServiceState.state_wylogowano);
         request = Typy.ServiceRequest.request_none;
         mLastDate = -1;
         mAppVersion = 1;
         mKey = "";
     }
 
+    private void setServiceState(Typy.ServiceState newState) {
+        if (newState == state) return;
+        Log.i("xst", "Service: Ustawiam nowy stan: " + newState);
+        state = newState;
+    }
+
     private void setStateOnResume() {
-        state = Typy.ServiceState.state_onResume;
+        setServiceState(Typy.ServiceState.state_onResume);
         cancelAllNotifications();
         mNewItems = 0;
         mDelayMillis = 5000;
@@ -311,7 +301,7 @@ public class XstService extends Service {
     }
 
     private void setStateOnPause() {
-        state = Typy.ServiceState.state_onPause;
+        setServiceState(Typy.ServiceState.state_onPause);
         mDelayMillis = 1000 * 30; // 30s
         zacznijPobieracWiadomosci();
     }
@@ -366,57 +356,8 @@ public class XstService extends Service {
 
         Log.i("xst", "Service: wysylam getMsg: " + params.toString());
         final JSONObject requestJson = new JSONObject(params);
-        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_GET, requestJson, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                if (request == Typy.ServiceRequest.request_wymusOdswiezanie) {
-                    request = Typy.ServiceRequest.request_none;
-                    broadcastMessage(Typy.BROADCAST_KONIEC_ODSWIEZANIA);
-                }
-                if (state == Typy.ServiceState.state_blad_polaczenia) {
-                    state = Typy.ServiceState.state_onPause;
-                    broadcastMessage(Typy.BROADCAST_INTERNET_WROCIL);
-                }
-                broadcastMessage(Typy.BROADCAST_INTERNET_OK);
-                try {
-                    if (response.getInt("success") == 0) {
-                        return;
-                    }
-
-                    mLastDate = response.getInt("last_date");
-                    int receivedAppVersion = response.getInt("version");
-                    xstApp.zapiszWersjeApkiZSerwera(receivedAppVersion);
-
-                    JSONArray items = response.getJSONArray("items");
-                    int new_items = items.length();
-                    if (new_items > 0) {
-                        if (state == Typy.ServiceState.state_onPause && settings_pokazujPowiadomienia) {
-                            showNotification("Nowe wiadomości", "msg");
-                        }
-
-                        xstApp.getBazaDanych().setJsonListaWiadomosci(items);
-                        xstApp.zapiszUstawienie(Typy.PREFS_LAST_DATE, mLastDate);
-
-                        broadcastMessage(Typy.BROADCAST_NEW_MSG);
-                    }
-
-                    JSONArray online = response.getJSONArray("online");
-                    if (online.length() > 0) {
-                        if (!currentOnlineList.equals(online.toString())) {
-                            Log.i("xst", "Service: nowa lista online! wysylam broadcast");
-                            currentOnlineList = online.toString();
-                            xstApp.getBazaDanych().setJsonListaOnline(online);
-
-                            Intent i = new Intent();
-                            i.setAction(Typy.BROADCAST_ONLINE);
-                            sendBroadcast(i);
-                        }
-                    }
-                } catch (JSONException exception) {
-                    Log.e("xst", exception.getMessage());
-                }
-            }
-        }, new VolleyErrorListener());
+        final JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST, Typy.API_MSG_GET, requestJson, this, this);
         req.setTag(Typy.TAG_GET_MSG);
         getRequestQueue().add(req);
     }
@@ -452,25 +393,8 @@ public class XstService extends Service {
         params.put("msgid", String.valueOf(msgId));
         JSONObject request = new JSONObject(params);
 
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Typy.API_MSG_LIKE, request, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    int success = response.getInt("success");
-                    if (success == 1) {
-                        Intent i = new Intent();
-                        i.putExtra("msgid", msgId);
-                        i.setAction(Typy.BROADCAST_LIKE_MSG);
-                        sendBroadcast(i);
-                    } else {
-                        String msg = response.getString("message");
-                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
-                    }
-                } catch (JSONException ignored) {
-                    Log.e("xst", "Service: Blad lajkowania");
-                }
-            }
-        }, new VolleyErrorListener());
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST, Typy.API_MSG_LIKE, request, this, this);
         req.setTag(Typy.TAG_LIKE_MSG);
         getRequestQueue().add(req);
     }
@@ -534,7 +458,7 @@ public class XstService extends Service {
     }
 
     private void wczytajUstawienia() {
-        settings_sprawdzajAktualizacje = xstApp.isAutomatyczneAktualizacje();
+        settings_sprawdzajAktualizacje = xstApp.isAutomaticUpdatesEnabled();
         settings_pokazujPowiadomienia = xstApp.isPokazujPowiadomienia();
 
         mLastDate = xstApp.getLastDate();
@@ -546,26 +470,130 @@ public class XstService extends Service {
         wczytajWersjeAplikacji();
     }
 
-    private class VolleyErrorListener implements Response.ErrorListener {
-        @Override
-        public void onErrorResponse(VolleyError error) {
+    @Override
+    public void onResponse(JSONObject response) {
+        if (request == Typy.ServiceRequest.request_wymusOdswiezanie) {
+            broadcastMessage(Typy.BROADCAST_KONIEC_ODSWIEZANIA);
+        }
+        if (state == Typy.ServiceState.state_blad_polaczenia) {
+            setServiceState(Typy.ServiceState.state_onPause);
+            broadcastMessage(Typy.BROADCAST_INTERNET_WROCIL);
+        }
+        broadcastMessage(Typy.BROADCAST_INTERNET_OK);
+
+        try
+        {
+            final String responseType = response.getString("type");
+            switch (responseType) {
+                case Typy.responseLikeMessage:
+                    handleLikeMessageResponse(response);
+                    break;
+                case Typy.responseOlderMessages:
+                    handleOlderMessageResponse(response);
+                    break;
+                case Typy.responseGetMessages:
+                    handleNewMessagesResponse(response);
+                    break;
+            }
+        } catch (JSONException exception) {
+            Log.e("xst", exception.getMessage());
+        } finally {
             request = Typy.ServiceRequest.request_none;
-            if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                cancelRefresh();
-                broadcastConnectionError();
-                if (!isConnected()) {
-                    startJobSchedulerInternetOK();
-                }
-            } else if (error instanceof AuthFailureError) {
-                Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
-            } else if (error instanceof ServerError) {
-                Toast.makeText(getApplicationContext(), "ServerError", Toast.LENGTH_SHORT).show();
-            } else if (error instanceof NetworkError) {
-                Toast.makeText(getApplicationContext(), "NetworkError", Toast.LENGTH_SHORT).show();
-            } else if (error instanceof ParseError) {
-                Toast.makeText(getApplicationContext(), "ParseError", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void handleNewMessagesResponse(JSONObject response) throws JSONException {
+        if (response.getInt("success") == 0) {
+            return;
+        }
+
+        mLastDate = response.getInt("last_date");
+        int receivedAppVersion = response.getInt("version");
+        xstApp.zapiszWersjeApkiZSerwera(receivedAppVersion);
+
+        JSONArray items = response.getJSONArray("items");
+        int new_items = items.length();
+        if (new_items > 0) {
+            if (state == Typy.ServiceState.state_onPause
+                    && settings_pokazujPowiadomienia
+                    && request != Typy.ServiceRequest.request_wymusOdswiezanie) {
+                showNotification("Nowe wiadomości", "msg");
+            }
+
+            xstApp.getBazaDanych().setJsonListaWiadomosci(items);
+            xstApp.zapiszUstawienie(Typy.PREFS_LAST_DATE, mLastDate);
+
+            broadcastMessage(Typy.BROADCAST_NEW_MSG);
+        }
+
+        JSONArray online = response.getJSONArray("online");
+        if (online.length() > 0) {
+            if (!currentOnlineList.equals(online.toString())) {
+                Log.i("xst", "Service: nowa lista online! wysylam broadcast");
+                currentOnlineList = online.toString();
+                xstApp.getBazaDanych().setJsonListaOnline(online);
+
+                Intent i = new Intent();
+                i.setAction(Typy.BROADCAST_ONLINE);
+                sendBroadcast(i);
             }
         }
     }
 
+    private void handleOlderMessageResponse(JSONObject response) throws JSONException {
+        if (response.getInt("success") == 0) {
+            return;
+        }
+
+        JSONArray items = response.getJSONArray("items");
+        int new_items = items.length();
+        if (new_items > 0) {
+            xstApp.getBazaDanych().setStarszeJsonListaWiadomosci(items);
+            broadcastMessage(Typy.BROADCAST_NEW_MSG_OLDER);
+        }
+    }
+
+    private void handleLikeMessageResponse(JSONObject response) throws JSONException {
+        int success = response.getInt("success");
+        if (success == 1) {
+            int msgId = response.getInt("msgId");
+            Intent i = new Intent();
+            i.putExtra("msgid", msgId);
+            i.setAction(Typy.BROADCAST_LIKE_MSG);
+            sendBroadcast(i);
+        } else {
+            String msg = response.getString("message");
+            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onErrorResponse(VolleyError error) {
+        request = Typy.ServiceRequest.request_none;
+        if (error instanceof TimeoutError || error instanceof NoConnectionError)
+        {
+            cancelRefresh();
+            broadcastConnectionError();
+            if (! isConnected())
+            {
+                startJobSchedulerInternetOK();
+            }
+        }
+        else if (error instanceof AuthFailureError)
+        {
+            Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
+        }
+        else if (error instanceof ServerError)
+        {
+            Toast.makeText(getApplicationContext(), "ServerError", Toast.LENGTH_SHORT).show();
+        }
+        else if (error instanceof NetworkError)
+        {
+            Toast.makeText(getApplicationContext(), "NetworkError", Toast.LENGTH_SHORT).show();
+        }
+        else if (error instanceof ParseError)
+        {
+            Toast.makeText(getApplicationContext(), "ParseError", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

@@ -103,15 +103,13 @@ public class MainActivity extends XstActivity
     private boolean isThreadConnectionErrorRun;
     private SbListener listenerSb;
     private OnlineListener listenerOnline;
-    private Uri downloadedApkUri;
-    private long downloadedApkId;
     private DownloadReceiver downloadReceiver;
     private int currentAppVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        zaladujWidokPodstawowy();
+        loadDefaultView();
         enableBackButtonInActionBar();
         setHomeMenuIcon();
 
@@ -126,7 +124,7 @@ public class MainActivity extends XstActivity
         bazaDanych.setDbListener(this);
     }
 
-    private void zapytajCzyPobracAktualizacje() {
+    private void showApplicationUpdateDialog() {
         if (haveWritePermission()) {
             pokazDialog("Pobrać i zainstalować teraz?", "Jest nowa wersja aplikacji!", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
@@ -138,7 +136,7 @@ public class MainActivity extends XstActivity
         }
     }
 
-    private void zaladujWidokPodstawowy() {
+    private void loadDefaultView() {
         setContentView(R.layout.layout_glowny);
 
         navItemsList = new ArrayList<>();
@@ -269,7 +267,7 @@ public class MainActivity extends XstActivity
     }
 
     @Override
-    public void wyslij_wiadomosc(String wiadomosc) {
+    public void sendMessage(String wiadomosc) {
         HashMap<String, String> params = new HashMap<>();
         params.put("key", apiKey);
         params.put("msg", wiadomosc);
@@ -343,24 +341,35 @@ public class MainActivity extends XstActivity
 
 
     @Override
-    protected void onPause() {
+    protected void onPause()
+    {
         super.onPause();
-        if (czyZalogowany) {
+        if (czyZalogowany)
+        {
+            if (listenerSb != null)
+            {
+                listenerSb.anulujOdswiezanie();
+            }
             wyrejestrujReceivery();
             runServiceCommand("onPause");
         }
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume()
+    {
         super.onResume();
 
-        if (czyJestPolaczenie) {
+        if (czyJestPolaczenie)
+        {
             obsluzPowrotInternetu();
-        } else {
+        }
+        else
+        {
             obsluzBrakInternetu();
         }
-        if (czyZalogowany) {
+        if (czyZalogowany)
+        {
             zarejestrujReceivery();
             runServiceCommand("onResume");
             wczytajWiadomosci(null);
@@ -370,9 +379,10 @@ public class MainActivity extends XstActivity
         Log.i("xst", "MainActivity: onResume, zalogowany: " + czyZalogowany);
     }
 
-    private void sprawdzAktualizacje() {
-        if (xstApp.isAutomatyczneAktualizacje() && czyRobicAktualizacje()) {
-            zapytajCzyPobracAktualizacje();
+    private void sprawdzAktualizacje()
+    {
+        if (xstApp.isAutomaticUpdatesEnabled() && isUpdateNeeded()) {
+            showApplicationUpdateDialog();
         }
     }
 
@@ -389,7 +399,7 @@ public class MainActivity extends XstActivity
         return 0;
     }
 
-    private boolean czyRobicAktualizacje() {
+    private boolean isUpdateNeeded() {
         return getCurrentAppVersion() < xstApp.getAppServerVersion();
     }
 
@@ -611,7 +621,7 @@ public class MainActivity extends XstActivity
     public void requestPermissionAndDoUpdate() {
         Log.i("xst", "request permission");
         if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            zapytajCzyPobracAktualizacje();
+            showApplicationUpdateDialog();
         } else {
             ActivityCompat.requestPermissions(MainActivity.this,
                     new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
@@ -865,7 +875,7 @@ public class MainActivity extends XstActivity
             file.delete();
         }
 
-        downloadedApkUri = Uri.parse("file://" + destination);
+        Uri downloadedApkUri = Uri.parse("file://" + destination);
 
         String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/android/app-debug.apk";
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
@@ -873,7 +883,7 @@ public class MainActivity extends XstActivity
         request.setTitle("XST Shoutbox");
         request.setDestinationUri(downloadedApkUri);
         DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        downloadedApkId = manager.enqueue(request);
+        long downloadedApkId = manager.enqueue(request);
         registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 

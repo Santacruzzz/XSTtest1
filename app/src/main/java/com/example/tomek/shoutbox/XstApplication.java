@@ -219,7 +219,7 @@ public class XstApplication extends Application {
         return pokazujPowiadomienia;
     }
 
-    public boolean isAutomatyczneAktualizacje() {
+    public boolean isAutomaticUpdatesEnabled() {
         return automatyczneAktualizacje;
     }
 
