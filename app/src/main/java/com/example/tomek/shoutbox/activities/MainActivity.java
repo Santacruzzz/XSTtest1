@@ -103,7 +103,6 @@ public class MainActivity extends XstActivity
     private boolean isThreadConnectionErrorRun;
     private SbListener listenerSb;
     private OnlineListener listenerOnline;
-    private DownloadReceiver downloadReceiver;
     private int currentAppVersion;
 
     @Override
@@ -769,7 +768,6 @@ public class MainActivity extends XstActivity
     private void zarejestrujReceivery() {
         broadcastReceiver = new MyBroadcastReceiver(this);
         nowaWiadomoscReceiver = new NowaWiadomoscReceiver(this);
-        downloadReceiver = new DownloadReceiver();
 
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_WROCIL));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_INTERNET_LOST));
@@ -865,48 +863,9 @@ public class MainActivity extends XstActivity
 
 
     public void downloadAndInstallUpdate() {
-        String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
-        String fileName = "XST_Shoutbox.apk";
-        destination += fileName;
-
-        File file = new File(destination);
-        if (file.exists()) {
-            //file.delete() - test this, I think sometimes it doesnt work
-            file.delete();
-        }
-
-        Uri downloadedApkUri = Uri.parse("file://" + destination);
 
         String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/android/app-debug.apk";
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-        request.setDescription("Pobieranie aktualizacji");
-        request.setTitle("XST Shoutbox");
-        request.setDestinationUri(downloadedApkUri);
-        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        long downloadedApkId = manager.enqueue(request);
-        registerReceiver(downloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-    }
-
-    private class DownloadReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String destination = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/";
-            String fileName = "XST_Shoutbox.apk";
-            destination += fileName;
-
-            Intent install = new Intent(Intent.ACTION_VIEW);
-            install.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (Build.VERSION.SDK_INT >= 24) {
-                install.setDataAndType(Utils.getFileUri(xstApp, new File(destination)), "application/vnd.android.package-archive");
-                install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            } else {
-                install.setDataAndType(Uri.parse("file://" + destination), "application/vnd.android.package-archive");
-            }
-            startActivity(install);
-            finish();
-
-            Toast.makeText(xstApp, "Pobrano", Toast.LENGTH_SHORT).show();
-            unregisterReceiver(this);
-        }
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 }

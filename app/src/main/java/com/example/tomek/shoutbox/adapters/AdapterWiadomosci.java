@@ -208,14 +208,12 @@ public class AdapterWiadomosci extends BaseAdapter {
             int end = spannable.getSpanEnd(quoteSpan);
             int flags = spannable.getSpanFlags(quoteSpan);
             spannable.removeSpan(quoteSpan);
-            spannable.setSpan(new CustomQuoteSpan(
+            spannable.setSpan(
+                    new CustomQuoteSpan(
                             Color.parseColor("#22000000"),
                             Color.RED,
                             4,
-                            15),
-                    start,
-                    end,
-                    flags);
+                            15), start, end, flags);
         }
     }
 }
