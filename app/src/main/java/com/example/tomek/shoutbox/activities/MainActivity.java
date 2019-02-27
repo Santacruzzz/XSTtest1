@@ -865,7 +865,6 @@ public class MainActivity extends XstActivity
         listenerOnline = listener;
     }
 
-
     public void downloadAndInstallUpdate() {
 
         String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/android/app-debug.apk";
