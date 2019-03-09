@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.support.constraint.ConstraintLayout;
 import android.text.Html;
@@ -13,6 +14,8 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.QuoteSpan;
+import android.text.util.Linkify;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +36,8 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
+
 /**
  * Created by Tomek on 2017-10-19.
  */
@@ -50,7 +55,6 @@ public class AdapterWiadomosci extends BaseAdapter {
     public AdapterWiadomosci(MainActivity act) {
         inflater = LayoutInflater.from(act.getApplicationContext());
         mAct = act;
-        m_parserEmotek = new EmoticonsParser(mAct.getApplicationContext());
         mBgResourceID_even = act.getThemeRecourceId(new int[]{R.attr.msgBackground});
         mBgResourceID_odd = act.getThemeRecourceId(new int[]{R.attr.msgBackground_odd});
         lista = mAct.getXstDatabase().getListaWiadomosci();
@@ -59,9 +63,9 @@ public class AdapterWiadomosci extends BaseAdapter {
     @Override
     public int getCount() {
         if (lista.size() == 0) return 0;
-        if (lista.get(lista.size() - 1).getTypWiadomosci() == Typy.TypWiadomosci.wiadomosc) {
-            lista.add(new Wiadomosc(Typy.TypWiadomosci.przycisk_pokaz_starsze));
-        }
+//        if (lista.get(lista.size() - 1).getTypWiadomosci() == Typy.TypWiadomosci.wiadomosc) {
+//            lista.add(new Wiadomosc(Typy.TypWiadomosci.przycisk_pokaz_starsze));
+//        }
         return lista.size();
     }
 
@@ -89,30 +93,54 @@ public class AdapterWiadomosci extends BaseAdapter {
         Wiadomosc mWiadomosc;
         mWiadomosc = lista.get(pozycja);
 
-        if (inflater != null) {
-            if (mWiadomosc.getTypWiadomosci() == Typy.TypWiadomosci.przycisk_pokaz_starsze) {
-                row = inflater.inflate(R.layout.wiadomosc_layout_pokaz_wiecej, arg2, false);
-                return row;
-            }
-            row = inflater.inflate(R.layout.wiadomosc_layout, arg2, false);
+        ViewHolder holder;
+
+        if (row == null)
+        {
+//            if (mWiadomosc.getTypWiadomosci() == Typy.TypWiadomosci.przycisk_pokaz_starsze) {
+//                return inflater.inflate(R.layout.wiadomosc_layout_pokaz_wiecej, arg2, false);
+//            }
+
+            row = inflater.inflate(R.layout.wiadomosc_layout, null);
+            holder = new ViewHolder();
+
+            holder.layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
+            holder.wiadomosc = row.findViewById(R.id.v_wiadomosc);
+            holder.autor = row.findViewById(R.id.v_nick);
+            holder.date = row.findViewById(R.id.v_data);
+            holder.lajki = row.findViewById(R.id.v_lajki);
+            holder.img_like = row.findViewById(R.id.v_lajk_ikona);
+            holder.avatar = row.findViewById(R.id.v_avatarOnline);
+
+            row.setTag(holder);
+        }
+        else
+        {
+            holder = (ViewHolder) row.getTag();
         }
 
-        final ConstraintLayout layWiadomosc = row.findViewById(R.id.layoutWiadomosc);
-        TextView wiadomosc = row.findViewById(R.id.v_wiadomosc);
-        TextView autor = row.findViewById(R.id.v_nick);
-        TextView date = row.findViewById(R.id.v_data);
-        TextView lajki = row.findViewById(R.id.v_lajki);
-        ImageView img_like = row.findViewById(R.id.v_lajk_ikona);
-        ImageView avatar = row.findViewById(R.id.v_avatarOnline);
+        setMessageBackground(pozycja, holder.layWiadomosc);
+        Picasso.with(mAct.getApplicationContext()).load(mWiadomosc.getAvatar()).into(holder.avatar);
+        holder.autor.setText(mWiadomosc.getAutor());
+        setNasalizationFont(holder.autor);
 
-        setMessageBackground(pozycja, layWiadomosc);
-        Picasso.with(mAct).load(mWiadomosc.getAvatar()).into(avatar);
-        autor.setText(mWiadomosc.getAutor());
-        setNasalizationFont(autor);
-        fillMessageWithImagesAndEmoticons(mWiadomosc, wiadomosc);
-        date.setText(mWiadomosc.getDate());
-        setViewForLikes(mWiadomosc, lajki, img_like);
-        row.setTag(mWiadomosc.getId());
+        BetterLinkMovementMethod method =
+                BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, (ViewGroup) row);
+        method.setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
+            @Override
+            public boolean onClick(TextView textView, String url) {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                i.setData(Uri.parse(url));
+                mAct.startActivity(i);
+
+                return true;
+            }
+        });
+        holder.wiadomosc.setText(mWiadomosc.getSpanMessage());
+
+        holder.date.setText(mWiadomosc.getDate());
+        setViewForLikes(mWiadomosc, holder.lajki, holder.img_like);
         return row;
     }
 
@@ -123,26 +151,6 @@ public class AdapterWiadomosci extends BaseAdapter {
         } else {
             img_like.setVisibility(View.VISIBLE);
         }
-    }
-
-    private void fillMessageWithImagesAndEmoticons(Wiadomosc mWiadomosc, TextView wiadomosc) {
-        SpannableString spannableString = new SpannableString(Html.fromHtml((mWiadomosc.getWiadomosc())));
-        int txtViewHeight = wiadomosc.getLineHeight();
-        Spannable l_spanableWiadomosc = m_parserEmotek.getSmiledText(spannableString, txtViewHeight);
-        replaceQuoteSpans(l_spanableWiadomosc);
-        if (mWiadomosc.getObrazki().size() > 0) {
-            int numer_obrazka = 1;
-            for (String obrazek : mWiadomosc.getObrazki()) {
-                l_spanableWiadomosc = setSpannableImgLink(l_spanableWiadomosc,
-                                                          obrazek,
-                                                          numer_obrazka,
-                                                          mWiadomosc.getAutor());
-                numer_obrazka ++;
-            }
-        }
-
-        wiadomosc.setMovementMethod(LinkMovementMethod.getInstance());
-        wiadomosc.setText(l_spanableWiadomosc);
     }
 
     private void setNasalizationFont(TextView autor) {
@@ -169,51 +177,14 @@ public class AdapterWiadomosci extends BaseAdapter {
         return lista;
     }
 
-    private class SpanOnClickListener extends ClickableSpan  {
-        String url;
-        String author;
-
-        SpanOnClickListener(String p_url, String p_author) {
-            url = p_url;
-            author = p_author;
-        }
-
-        @Override
-        public void onClick(View v) {
-            Intent l_intent = new Intent(mAct, PokazObrazekActivity.class);
-            l_intent.putExtra("image_url", url);
-            l_intent.putExtra("author", author);
-            mAct.startActivity(l_intent);
-
-        }
-    }
-
-    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id, String p_author) {
-        Pattern mImgsPattern = Pattern.compile("\\[Obrazek\\ #" + id + "\\]");
-        int start = 0;
-        int end = 0;
-        Matcher l_matcher = mImgsPattern.matcher(txt);
-        while(l_matcher.find()) {
-            start = l_matcher.start();
-            end = l_matcher.end();
-        }
-        txt.setSpan(new SpanOnClickListener(obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return txt;
-    }
-
-    private void replaceQuoteSpans(Spannable spannable) {
-        QuoteSpan[] quoteSpans = spannable.getSpans(0, spannable.length(), QuoteSpan.class);
-        for (QuoteSpan quoteSpan : quoteSpans) {
-            int start = spannable.getSpanStart(quoteSpan);
-            int end = spannable.getSpanEnd(quoteSpan);
-            int flags = spannable.getSpanFlags(quoteSpan);
-            spannable.removeSpan(quoteSpan);
-            spannable.setSpan(
-                    new CustomQuoteSpan(
-                            Color.parseColor("#22000000"),
-                            Color.RED,
-                            4,
-                            15), start, end, flags);
-        }
+    private static class ViewHolder
+    {
+        public ConstraintLayout layWiadomosc;
+        public TextView wiadomosc;
+        public TextView autor;
+        public TextView date;
+        public TextView lajki;
+        public ImageView img_like;
+        public ImageView avatar;
     }
 }

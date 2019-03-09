@@ -270,9 +270,9 @@ public class FragmentSb extends Fragment implements
         if (row == null) {
             return;
         }
-        if ((int)row.getTag() != msgid) {
-            return;
-        }
+//        if ((int)row.getTag() != msgid) {
+//            return;
+//        }
         TextView ilosc_lajkow = row.findViewById(R.id.v_lajki);
         ilosc_lajkow.setText(String.valueOf(w.getLajki()));
         ImageView ikona_lajkow = row.findViewById(R.id.v_lajk_ikona);

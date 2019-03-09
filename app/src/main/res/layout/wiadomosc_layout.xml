@@ -51,7 +51,6 @@
         android:paddingVertical="3sp"
         android:text="df gsdfgsdfkljdshgk dsf"
         android:textColor="?attr/msgColor"
-        android:textIsSelectable="true"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

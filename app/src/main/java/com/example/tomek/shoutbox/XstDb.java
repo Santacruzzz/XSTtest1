@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 
 import com.example.tomek.shoutbox.activities.OnlineListener;
 import com.example.tomek.shoutbox.activities.SbListener;
+import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -32,6 +33,7 @@ public class XstDb {
     private OnlineListener listenerOnline;
     private JSONArray starszeJsonListaWiadomosci;
     private DbListener dbListener;
+    private EmoticonsParser emoticonsParser;
 
     public XstDb() {
         listaWiadomosci = new ArrayList<>();
@@ -50,6 +52,7 @@ public class XstDb {
 
     public void initialize(XstApplication xstApplication) {
         xstApp = xstApplication;
+        emoticonsParser = new EmoticonsParser(xstApplication);
         sharedPreferences = xstApplication.getSharedPreferences(Typy.PREFS_NAME, 0);
         wczytajListeWiadomosci();
 
@@ -70,7 +73,7 @@ public class XstDb {
             listaWiadomosci.clear();
             for (int i = 0; i < jsonListaWiadomosci.length(); i++) {
                 JSONObject item = jsonListaWiadomosci.getJSONObject(i);
-                listaWiadomosci.add(new Wiadomosc(item));
+                listaWiadomosci.add(new Wiadomosc(xstApp, emoticonsParser, item));
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -1,7 +1,21 @@
 package com.example.tomek.shoutbox;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.format.DateUtils;
+import android.text.style.ClickableSpan;
+import android.text.style.QuoteSpan;
+import android.view.View;
 
+import com.example.tomek.shoutbox.activities.PokazObrazekActivity;
+import com.example.tomek.shoutbox.activities.XstActivity;
+import com.example.tomek.shoutbox.adapters.AdapterWiadomosci;
+import com.example.tomek.shoutbox.utils.CustomQuoteSpan;
+import com.example.tomek.shoutbox.utils.EmoticonsParser;
 import com.example.tomek.shoutbox.utils.Typy;
 
 import org.json.JSONArray;
@@ -13,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Tomek on 2017-10-19.
@@ -22,18 +38,20 @@ public class Wiadomosc {
     private String autor, wiadomosc, data, avatar, source, sex, birthday;
     private int id, autorid, lajki = 0;
     private Typy.TypWiadomosci typWiadomosci;
+    private Spannable spanMessage;
     ArrayList<String> obrazki, linki;
-
+    XstApplication xstApp;
     private SimpleDateFormat format_data;
     private SimpleDateFormat format_godziny;
     private SimpleDateFormat format_daty;
 
-    public Wiadomosc(JSONObject obj) {
+    public Wiadomosc(XstApplication xstApplication, EmoticonsParser parser, JSONObject obj) {
         obrazki = new ArrayList<>();
         linki = new ArrayList<>();
         format_data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format_godziny = new SimpleDateFormat("HH:mm");
         format_daty = new SimpleDateFormat("dd.MM HH:mm");
+        xstApp = xstApplication;
         try {
             typWiadomosci = Typy.TypWiadomosci.wiadomosc;
             setAutor(obj.getString("nickname"));
@@ -56,7 +74,75 @@ public class Wiadomosc {
         } catch (JSONException ex) {
 
         }
+
+        SpannableString spannableString = new SpannableString(Html.fromHtml(wiadomosc));
+        int txtViewHeight = 42;
+        spanMessage = parser.getSmiledText(spannableString, txtViewHeight);
+        replaceQuoteSpans(spanMessage);
+        if (obrazki.size() > 0) {
+            int numer_obrazka = 1;
+            for (String obrazek : obrazki) {
+                spanMessage = setSpannableImgLink(spanMessage, obrazek, numer_obrazka, autor);
+                numer_obrazka ++;
+            }
+        }
     }
+
+    public Spannable getSpanMessage()
+    {
+        return spanMessage;
+    }
+
+    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id, String p_author) {
+        Pattern mImgsPattern = Pattern.compile("\\[Obrazek\\ #" + id + "\\]");
+        int start = 0;
+        int end = 0;
+        Matcher l_matcher = mImgsPattern.matcher(txt);
+        while(l_matcher.find()) {
+            start = l_matcher.start();
+            end = l_matcher.end();
+        }
+        txt.setSpan(new SpanOnClickListener(xstApp, obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return txt;
+    }
+
+    private class SpanOnClickListener extends ClickableSpan {
+        String url;
+        String author;
+        XstApplication xstApp;
+
+        SpanOnClickListener(XstApplication p_xstApp, String p_url, String p_author) {
+            url = p_url;
+            author = p_author;
+            xstApp = p_xstApp;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent l_intent = new Intent(xstApp, PokazObrazekActivity.class);
+            l_intent.putExtra("image_url", url);
+            l_intent.putExtra("author", author);
+            xstApp.startActivity(l_intent);
+
+        }
+    }
+
+    private void replaceQuoteSpans(Spannable spannable) {
+        QuoteSpan[] quoteSpans = spannable.getSpans(0, spannable.length(), QuoteSpan.class);
+        for (QuoteSpan quoteSpan : quoteSpans) {
+            int start = spannable.getSpanStart(quoteSpan);
+            int end = spannable.getSpanEnd(quoteSpan);
+            int flags = spannable.getSpanFlags(quoteSpan);
+            spannable.removeSpan(quoteSpan);
+            spannable.setSpan(
+                    new CustomQuoteSpan(
+                            Color.parseColor("#22000000"),
+                            Color.RED,
+                            4,
+                            15), start, end, flags);
+        }
+    }
+
 
     public Wiadomosc(Typy.TypWiadomosci typ) {
         typWiadomosci = typ;

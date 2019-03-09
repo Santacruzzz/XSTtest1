@@ -1,6 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias '123'
+            keyPassword '123'
+            storePassword '123'
+        }
+    }
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {
@@ -8,7 +15,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 28
-        versionName "1.7.5"
+        versionName "1.7.6"
         vectorDrawables.useSupportLibrary = true
 
     }
@@ -16,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     useLibrary 'org.apache.http.legacy'
@@ -29,10 +37,10 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
     }
-
 }
 
 dependencies {
+    implementation 'me.saket:better-link-movement-method:1.1'
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'org.ocpsoft.prettytime:prettytime:4.0.1.Final'
     implementation 'com.jsibbold:zoomage:1.2.0-SNAPSHOT'
@@ -47,8 +55,8 @@ dependencies {
     implementation 'org.apmem.tools:layouts:1.10@aar'
     implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient-android', version: '4.3.5'
-    implementation(group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.3.5') {
+    implementation 'org.apache.httpcomponents:httpclient-android:4.3.5'
+    implementation('org.apache.httpcomponents:httpmime:4.3.5') {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     }
 }
