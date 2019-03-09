@@ -73,7 +73,7 @@ public class XstDb {
             listaWiadomosci.clear();
             for (int i = 0; i < jsonListaWiadomosci.length(); i++) {
                 JSONObject item = jsonListaWiadomosci.getJSONObject(i);
-                listaWiadomosci.add(new Wiadomosc(xstApp, emoticonsParser, item));
+                listaWiadomosci.add(new Wiadomosc(emoticonsParser, item));
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -251,13 +251,13 @@ public class MojeObrazki extends XstActivity implements AdapterView.OnItemClickL
                 // błąd internetu
                 Toast.makeText(getApplicationContext(), "Sprawdź połączenie z internetem", Toast.LENGTH_SHORT).show();
             } else if (error instanceof AuthFailureError) {
-                Toast.makeText(getApplicationContext(), "AuthFailureError", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "AuthFailureError: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (error instanceof ServerError) {
-                Toast.makeText(getApplicationContext(), "ServerError", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "ServerError: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (error instanceof NetworkError) {
-                Toast.makeText(getApplicationContext(), "NetworkError", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "NetworkError:" + error.getMessage(), Toast.LENGTH_SHORT).show();
             } else if (error instanceof ParseError) {
-                Toast.makeText(getApplicationContext(), "ParseError", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "ParseError:" + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }

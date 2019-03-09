@@ -126,17 +126,7 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         BetterLinkMovementMethod method =
                 BetterLinkMovementMethod.linkify(Linkify.WEB_URLS, (ViewGroup) row);
-        method.setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
-            @Override
-            public boolean onClick(TextView textView, String url) {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                i.setData(Uri.parse(url));
-                mAct.startActivity(i);
-
-                return true;
-            }
-        });
+        method.setOnLinkClickListener(new LinkClickListener(mWiadomosc));
         holder.wiadomosc.setText(mWiadomosc.getSpanMessage());
 
         holder.date.setText(mWiadomosc.getDate());
@@ -187,4 +177,66 @@ public class AdapterWiadomosci extends BaseAdapter {
         public ImageView img_like;
         public ImageView avatar;
     }
+
+    private class LinkClickListener implements BetterLinkMovementMethod.OnLinkClickListener
+    {
+        Wiadomosc wiadomosc;
+        LinkClickListener(Wiadomosc wiad)
+        {
+            wiadomosc = wiad;
+        }
+
+        @Override
+        public boolean onClick(TextView textView, String url) {
+            Log.i("xst", "Klikniety link: " + url);
+            if (isImgLink(url))
+            {
+                int id = getImgId(url);
+                ArrayList<String> obrazki = wiadomosc.getObrazki();
+                Log.i("xst", "Klikniety id: " + id + ", obrazki: " + obrazki.toString());
+                Intent l_intent = new Intent(mAct, PokazObrazekActivity.class);
+                l_intent.putExtra("image_url", obrazki.get(id));
+                l_intent.putExtra("author", wiadomosc.getAutor());
+                mAct.startActivity(l_intent);
+            }
+            else
+            {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                i.setData(Uri.parse(url));
+                mAct.startActivity(i);
+            }
+
+
+            return true;
+        }
+
+        private int getImgId(String url) {
+            int id = 0;
+            Pattern patt = Pattern.compile("^img://(\\d+)");
+            Matcher matcher = patt.matcher(url);
+            matcher.find();
+            if (matcher.groupCount() == 1)
+            {
+                id = Integer.valueOf(matcher.group(1));
+            }
+            return id;
+        }
+
+        private boolean isImgLink(String url)
+        {
+            return IsMatch(url, "^img://.*");
+        }
+
+        private boolean IsMatch(String s, String pattern) {
+            try {
+                Pattern patt = Pattern.compile(pattern);
+                Matcher matcher = patt.matcher(s);
+                return matcher.matches();
+            } catch (RuntimeException e) {
+                return false;
+            }
+        }
+
+        }
 }

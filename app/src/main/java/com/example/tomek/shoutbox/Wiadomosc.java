@@ -1,5 +1,6 @@
 package com.example.tomek.shoutbox;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.text.Html;
@@ -39,19 +40,18 @@ public class Wiadomosc {
     private int id, autorid, lajki = 0;
     private Typy.TypWiadomosci typWiadomosci;
     private Spannable spanMessage;
-    ArrayList<String> obrazki, linki;
-    XstApplication xstApp;
+    private ArrayList<String> obrazki, linki;
     private SimpleDateFormat format_data;
     private SimpleDateFormat format_godziny;
     private SimpleDateFormat format_daty;
 
-    public Wiadomosc(XstApplication xstApplication, EmoticonsParser parser, JSONObject obj) {
+    @SuppressLint("SimpleDateFormat")
+    Wiadomosc(EmoticonsParser parser, JSONObject obj) {
         obrazki = new ArrayList<>();
         linki = new ArrayList<>();
         format_data = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         format_godziny = new SimpleDateFormat("HH:mm");
         format_daty = new SimpleDateFormat("dd.MM HH:mm");
-        xstApp = xstApplication;
         try {
             typWiadomosci = Typy.TypWiadomosci.wiadomosc;
             setAutor(obj.getString("nickname"));
@@ -79,52 +79,11 @@ public class Wiadomosc {
         int txtViewHeight = 42;
         spanMessage = parser.getSmiledText(spannableString, txtViewHeight);
         replaceQuoteSpans(spanMessage);
-        if (obrazki.size() > 0) {
-            int numer_obrazka = 1;
-            for (String obrazek : obrazki) {
-                spanMessage = setSpannableImgLink(spanMessage, obrazek, numer_obrazka, autor);
-                numer_obrazka ++;
-            }
-        }
     }
 
     public Spannable getSpanMessage()
     {
         return spanMessage;
-    }
-
-    private Spannable setSpannableImgLink(Spannable txt, String obrazek, Integer id, String p_author) {
-        Pattern mImgsPattern = Pattern.compile("\\[Obrazek\\ #" + id + "\\]");
-        int start = 0;
-        int end = 0;
-        Matcher l_matcher = mImgsPattern.matcher(txt);
-        while(l_matcher.find()) {
-            start = l_matcher.start();
-            end = l_matcher.end();
-        }
-        txt.setSpan(new SpanOnClickListener(xstApp, obrazek, p_author), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return txt;
-    }
-
-    private class SpanOnClickListener extends ClickableSpan {
-        String url;
-        String author;
-        XstApplication xstApp;
-
-        SpanOnClickListener(XstApplication p_xstApp, String p_url, String p_author) {
-            url = p_url;
-            author = p_author;
-            xstApp = p_xstApp;
-        }
-
-        @Override
-        public void onClick(View v) {
-            Intent l_intent = new Intent(xstApp, PokazObrazekActivity.class);
-            l_intent.putExtra("image_url", url);
-            l_intent.putExtra("author", author);
-            xstApp.startActivity(l_intent);
-
-        }
     }
 
     private void replaceQuoteSpans(Spannable spannable) {
@@ -142,7 +101,6 @@ public class Wiadomosc {
                             15), start, end, flags);
         }
     }
-
 
     public Wiadomosc(Typy.TypWiadomosci typ) {
         typWiadomosci = typ;
