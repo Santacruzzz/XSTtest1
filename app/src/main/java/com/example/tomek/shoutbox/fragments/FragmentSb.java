@@ -3,10 +3,13 @@ package com.example.tomek.shoutbox.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,7 +19,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.OvershootInterpolator;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -46,6 +53,7 @@ import java.util.Locale;
 
 public class FragmentSb extends Fragment implements
         View.OnClickListener,
+        ListView.OnScrollListener,
         SwipeRefreshLayout.OnRefreshListener,
         DialogDodatki.AddonSelectedListener,
         ImagesFromGallery.ImageFoundListener,
@@ -65,6 +73,8 @@ public class FragmentSb extends Fragment implements
     private IPermission iPermission;
     private boolean isDialogShown;
     private boolean pobieramStarsze;
+    private FloatingActionButton fabLoadMore;
+    private int preLast;
 
     public FragmentSb() {
         dodatkiDialog = null;
@@ -73,7 +83,8 @@ public class FragmentSb extends Fragment implements
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(Context context)
+    {
         super.onAttach(context);
         mAct = (MainActivity) context;
         mImain = mAct;
@@ -85,11 +96,13 @@ public class FragmentSb extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         Log.w("xst", "FragmentSb: onCreateView");
         final View mView = inflater.inflate(R.layout.layout_sb, container, false);
         listViewWiadomosci = mView.findViewById(R.id.listaWiadomosci);
         listViewWiadomosci.setAdapter(adapterWiadomosci);
+        listViewWiadomosci.setOnScrollListener(this);
         adapterWiadomosci.notifyDataSetChanged();
         mBtnSend = mView.findViewById(R.id.buttonWyslij);
         ImageButton btnDodatki = mView.findViewById(R.id.btnDodatki);
@@ -97,6 +110,9 @@ public class FragmentSb extends Fragment implements
         mRefreshLayout = mView.findViewById(R.id.swiperefresh);
         textMessageCount = mView.findViewById(R.id.textMessageCount);
         listViewWiadomosci.setOnItemClickListener(this);
+        fabLoadMore = mView.findViewById(R.id.fabLoadMore);
+        fabLoadMore.setOnClickListener(this);
+        fabLoadMore.hide();
 
         mWiadomosc.addTextChangedListener(new TextWatcher() {
             @Override
@@ -129,7 +145,8 @@ public class FragmentSb extends Fragment implements
         return mView;
     }
 
-    public static Intent getPickImageIntent() {
+    public static Intent getPickImageIntent()
+    {
         Intent chooserIntent = new Intent();
         chooserIntent.setType("image/*");
         chooserIntent.setAction(Intent.ACTION_GET_CONTENT);
@@ -137,13 +154,15 @@ public class FragmentSb extends Fragment implements
     }
 
     @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState)
+    {
         super.onSaveInstanceState(outState);
         outState.putString(Typy.STATE_MSG, mWiadomosc.getText().toString());
     }
 
     @Override
-    public void onClick(View view) {
+    public void onClick(View view)
+    {
         switch (view.getId()) {
             case R.id.buttonWyslij:
                 wyslij_wiadomosc();
@@ -152,18 +171,24 @@ public class FragmentSb extends Fragment implements
             case R.id.btnDodatki:
                 pokazDialogDodatki();
                 break;
+
+            case R.id.fabLoadMore:
+                getMoreMessages();
+                break;
         }
     }
 
     @Override
-    public void dismissDialog() {
+    public void dismissDialog()
+    {
         if (dodatkiDialog != null) {
             dodatkiDialog.dismiss();
         }
     }
 
     @Override
-    public void pokazDialogDodatki() {
+    public void pokazDialogDodatki()
+    {
         if (isDialogShown) {
             return;
         }
@@ -185,11 +210,14 @@ public class FragmentSb extends Fragment implements
     }
 
     @Override
-    public void pobranoStarsze() {
+    public void pobranoStarsze()
+    {
+        fabLoadMore.hide();
         pobieramStarsze = false;
     }
 
-    private void wczytajObrazkiZdysku() {
+    private void wczytajObrazkiZdysku()
+    {
         ImagesFromGallery imagesFromGallery = new ImagesFromGallery(this);
         imagesFromGallery.execute(mAct.getApplicationContext());
     }
@@ -270,9 +298,7 @@ public class FragmentSb extends Fragment implements
         if (row == null) {
             return;
         }
-//        if ((int)row.getTag() != msgid) {
-//            return;
-//        }
+
         TextView ilosc_lajkow = row.findViewById(R.id.v_lajki);
         ilosc_lajkow.setText(String.valueOf(w.getLajki()));
         ImageView ikona_lajkow = row.findViewById(R.id.v_lajk_ikona);
@@ -373,14 +399,70 @@ public class FragmentSb extends Fragment implements
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        if(adapterWiadomosci.getWiadomosci().size() - 1 == i) {
-            if (pobieramStarsze) {
-                return;
-            }
-            pobieramStarsze = true;
-            mAct.setSbListener(this);
-            mAct.runServiceCommand(Typy.POBIERZ_STARSZE);
+//        if(adapterWiadomosci.getWiadomosci().size() - 1 == i) {
+//            if (pobieramStarsze) {
+//                return;
+//            }
+//            pobieramStarsze = true;
+//            mAct.setSbListener(this);
+//            mAct.runServiceCommand(Typy.POBIERZ_STARSZE);
+//        }
+    }
+
+    public void getMoreMessages()
+    {
+        if (pobieramStarsze) {
+            return;
         }
+        pobieramStarsze = true;
+        mAct.setSbListener(this);
+        mAct.runServiceCommand(Typy.POBIERZ_STARSZE);
+    }
+
+    @Override
+    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+    }
+
+    @Override
+    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        if (fabLoadMore == null) return;
+        switch(view.getId())
+        {
+            case R.id.listaWiadomosci:
+
+                // Make your calculation stuff here. You have all your
+                // needed info from the parameters of this function.
+
+                // Sample calculation to determine if the last
+                // item is fully visible.
+                final int lastItem = firstVisibleItem + visibleItemCount;
+
+                if(lastItem == totalItemCount)
+                {
+                    if(preLast!=lastItem)
+                    {
+                        //to avoid multiple calls for last item
+                        Log.d("Last", "Last");
+                        preLast = lastItem;
+                    }
+                    showFabOnScroll();
+                }
+                else
+                {
+                    hideFabOnScroll();
+                }
+        }
+    }
+
+    private void hideFabOnScroll() {
+        if (pobieramStarsze) return;
+        fabLoadMore.hide();
+    }
+
+    private void showFabOnScroll() {
+        if (pobieramStarsze) return;
+        fabLoadMore.show();
     }
 }
 

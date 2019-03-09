@@ -14,8 +14,8 @@ android {
         applicationId "com.example.tomek.xstshoutbox"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 29
-        versionName "1.7.6"
+        versionCode 30
+        versionName "1.7.7"
         vectorDrawables.useSupportLibrary = true
 
     }

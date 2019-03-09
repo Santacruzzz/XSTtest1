@@ -13,6 +13,22 @@
     android:focusableInTouchMode="false"
     tools:context="com.example.tomek.shoutbox.activities.MainActivity">
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabLoadMore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/dots"
+        app:backgroundTint="#96AF0000"
+        app:elevation="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/swiperefresh"
         android:layout_width="0dp"
