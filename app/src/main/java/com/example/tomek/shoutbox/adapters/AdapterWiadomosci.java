@@ -97,10 +97,6 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         if (row == null)
         {
-//            if (mWiadomosc.getTypWiadomosci() == Typy.TypWiadomosci.przycisk_pokaz_starsze) {
-//                return inflater.inflate(R.layout.wiadomosc_layout_pokaz_wiecej, arg2, false);
-//            }
-
             row = inflater.inflate(R.layout.wiadomosc_layout, null);
             holder = new ViewHolder();
 
