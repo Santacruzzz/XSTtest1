@@ -95,8 +95,7 @@ public class AdapterWiadomosci extends BaseAdapter {
 
         ViewHolder holder;
 
-        if (row == null)
-        {
+        if (row == null) {
             row = inflater.inflate(R.layout.wiadomosc_layout, null);
             holder = new ViewHolder();
 
@@ -109,9 +108,7 @@ public class AdapterWiadomosci extends BaseAdapter {
             holder.avatar = row.findViewById(R.id.v_avatarOnline);
 
             row.setTag(holder);
-        }
-        else
-        {
+        } else {
             holder = (ViewHolder) row.getTag();
         }
 
@@ -140,7 +137,7 @@ public class AdapterWiadomosci extends BaseAdapter {
     }
 
     private void setNasalizationFont(TextView autor) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Typeface face = Typeface.createFromAsset(mAct.getAssets(),
                     "fonts/nasalization.ttf");
             autor.setTypeface(face);
@@ -163,8 +160,7 @@ public class AdapterWiadomosci extends BaseAdapter {
         return lista;
     }
 
-    private static class ViewHolder
-    {
+    private static class ViewHolder {
         public ConstraintLayout layWiadomosc;
         public TextView wiadomosc;
         public TextView autor;
@@ -174,19 +170,17 @@ public class AdapterWiadomosci extends BaseAdapter {
         public ImageView avatar;
     }
 
-    private class LinkClickListener implements BetterLinkMovementMethod.OnLinkClickListener
-    {
+    private class LinkClickListener implements BetterLinkMovementMethod.OnLinkClickListener {
         Wiadomosc wiadomosc;
-        LinkClickListener(Wiadomosc wiad)
-        {
+
+        LinkClickListener(Wiadomosc wiad) {
             wiadomosc = wiad;
         }
 
         @Override
         public boolean onClick(TextView textView, String url) {
             Log.i("xst", "Klikniety link: " + url);
-            if (isImgLink(url))
-            {
+            if (isImgLink(url)) {
                 int id = getImgId(url);
                 ArrayList<String> obrazki = wiadomosc.getObrazki();
                 Log.i("xst", "Klikniety id: " + id + ", obrazki: " + obrazki.toString());
@@ -194,9 +188,7 @@ public class AdapterWiadomosci extends BaseAdapter {
                 l_intent.putExtra("image_url", obrazki.get(id));
                 l_intent.putExtra("author", wiadomosc.getAutor());
                 mAct.startActivity(l_intent);
-            }
-            else
-            {
+            } else {
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 i.setData(Uri.parse(url));
@@ -212,15 +204,13 @@ public class AdapterWiadomosci extends BaseAdapter {
             Pattern patt = Pattern.compile("^img://(\\d+)");
             Matcher matcher = patt.matcher(url);
             matcher.find();
-            if (matcher.groupCount() == 1)
-            {
+            if (matcher.groupCount() == 1) {
                 id = Integer.valueOf(matcher.group(1));
             }
             return id;
         }
 
-        private boolean isImgLink(String url)
-        {
+        private boolean isImgLink(String url) {
             return IsMatch(url, "^img://.*");
         }
 
@@ -234,5 +224,5 @@ public class AdapterWiadomosci extends BaseAdapter {
             }
         }
 
-        }
+    }
 }

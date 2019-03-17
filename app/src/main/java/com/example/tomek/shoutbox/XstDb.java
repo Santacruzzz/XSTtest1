@@ -199,7 +199,7 @@ public class XstDb {
     }
 
     public String getOlderDate() {
-        return listaWiadomosci.get(listaWiadomosci.size() - 2).getRawDate();
+        return listaWiadomosci.get(listaWiadomosci.size() - 1).getRawDate();
     }
 
     public void setStarszeJsonListaWiadomosci(JSONArray starszeJsonListaWiadomosci) {
