@@ -6,14 +6,14 @@
     android:background="?attr/lightBg">
 
 
-    <com.example.tomek.shoutbox.SquareImageView
+    <pl.xsteam.santacruz.SquareImageView
         android:id="@+id/imageObrazek"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:contentDescription="@string/avatar" />
 
-    <com.example.tomek.shoutbox.SquareImageView
+    <pl.xsteam.santacruz.SquareImageView
         android:id="@+id/imgOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

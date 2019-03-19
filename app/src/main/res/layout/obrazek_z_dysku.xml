@@ -6,7 +6,7 @@
     android:background="?attr/lightBg">
 
 
-    <com.example.tomek.shoutbox.SquareImageView
+    <pl.xsteam.santacruz.SquareImageView
         android:id="@+id/imageObrazekZdysku"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

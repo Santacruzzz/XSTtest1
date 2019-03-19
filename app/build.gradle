@@ -3,15 +3,22 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
-            keyAlias '123'
-            keyPassword '123'
-            storePassword '123'
+            keyAlias 'upload'
+            keyPassword 'optimus1'
+            storeFile file('C:/Users/Tomek/xst_apka.jks')
+            storePassword 'optimus1'
+        }
+        release {
+            keyAlias 'upload'
+            keyPassword 'optimus1'
+            storePassword 'optimus1'
+            storeFile file('C:/Users/Tomek/xst_apka.jks')
         }
     }
     compileSdkVersion 28
     buildToolsVersion '28.0.3'
     defaultConfig {
-        applicationId "com.example.tomek.xstshoutbox"
+        applicationId "pl.xsteam.santacruz"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 31
@@ -21,8 +28,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
             signingConfig signingConfigs.config
         }
     }

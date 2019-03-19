@@ -11,7 +11,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:focusable="false"
     android:focusableInTouchMode="false"
-    tools:context="com.example.tomek.shoutbox.activities.MainActivity">
+    tools:context="pl.xsteam.santacruz.activities.MainActivity">
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabLoadMore"

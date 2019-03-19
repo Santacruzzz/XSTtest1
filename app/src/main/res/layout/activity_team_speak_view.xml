@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/darkenBg"
-    tools:context="com.example.tomek.shoutbox.activities.TeamSpeakView">
+    tools:context="pl.xsteam.santacruz.activities.TeamSpeakView">
 
     <include
         layout="@layout/toolbar" />
