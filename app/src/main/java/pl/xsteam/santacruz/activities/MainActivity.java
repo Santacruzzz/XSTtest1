@@ -1,5 +1,6 @@
 package pl.xsteam.santacruz.activities;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -42,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.ParseError;
@@ -144,7 +147,7 @@ public class MainActivity extends XstActivity
         navItemsList.add(new NavItem(Typy.FRAGMENT_MOJE_OBRAZKI, android.R.drawable.ic_menu_gallery));
         navItemsList.add(new NavItem(Typy.FRAGMENT_TS, android.R.drawable.ic_menu_call));
 
-        RelativeLayout relativeLayoutProfileBox = findViewById(R.id.profileBox);
+        ConstraintLayout relativeLayoutProfileBox = findViewById(R.id.profileBox);
         relativeLayoutProfileBox.setVisibility(View.VISIBLE);
 
         userAvatar = findViewById(R.id.userAvatar);
@@ -308,6 +311,10 @@ public class MainActivity extends XstActivity
                 }
             }
         });
+        req.setRetryPolicy(new DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS,
+                0,  // maxNumRetries = 0 means no retry
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         req.setTag(Typy.TAG_SEND_MSG);
         getRequestQueue().add(req);
     }
@@ -461,7 +468,16 @@ public class MainActivity extends XstActivity
                 break;
             case Typy.BROADCAST_NEW_MSG_OLDER:
                 pobranoStarsze();
+                break;
+            case Typy.BROADCAST_NEW_MONEY:
+                updateViewWithNewMoney();
         }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void updateViewWithNewMoney() {
+        TextView moneyView = findViewById(R.id.textMoney);
+        moneyView.setText(String.format("%.2f", bazaDanych.getParsedMoney()));
     }
 
     private void obsluzBrakInternetu() {
@@ -783,6 +799,7 @@ public class MainActivity extends XstActivity
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_ONLINE));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_UPDATE_AVAILABLE));
         registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG_OLDER));
+        registerReceiver(broadcastReceiver, new IntentFilter(Typy.BROADCAST_NEW_MONEY));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_NEW_MSG));
         registerReceiver(nowaWiadomoscReceiver, new IntentFilter(Typy.BROADCAST_LIKE_MSG));
     }
@@ -881,7 +898,7 @@ public class MainActivity extends XstActivity
 
         Uri downloadedApkUri = Uri.parse("file://" + destination);
 
-        String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/android/app-debug.apk";
+        String url = Typy.URL_PROTOCOL + Typy.URL_BASE + "/api/download";
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setDescription("Pobieranie aktualizacji");
         request.setTitle("XST Shoutbox");

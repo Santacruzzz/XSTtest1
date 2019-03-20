@@ -26,6 +26,7 @@ public class XstDb {
     private JSONArray jsonListaOnline;
     private JSONArray jsonListaObrazkow;
     private int lastDate = 0;
+    private int kasa = 0;
     private int iloscPobranych = 0;
     private SharedPreferences sharedPreferences;
     private XstApplication xstApp;
@@ -35,7 +36,7 @@ public class XstDb {
     private DbListener dbListener;
     private EmoticonsParser emoticonsParser;
 
-    public XstDb() {
+    XstDb() {
         listaWiadomosci = new ArrayList<>();
         listaOnline = new ArrayList<>();
         listaObrazkow = new ArrayList<>();
@@ -44,13 +45,14 @@ public class XstDb {
         jsonListaOnline = new JSONArray();
         jsonListaObrazkow = new JSONArray();
         xstApp = null;
+        kasa = 0;
     }
 
     public void setDbListener(DbListener dbListener) {
         this.dbListener = dbListener;
     }
 
-    public void initialize(XstApplication xstApplication) {
+    void initialize(XstApplication xstApplication) {
         xstApp = xstApplication;
         emoticonsParser = new EmoticonsParser(xstApplication);
         sharedPreferences = xstApplication.getSharedPreferences(Typy.PREFS_NAME, 0);
@@ -87,7 +89,6 @@ public class XstDb {
         return listaWiadomosci;
     }
 
-
     public ArrayList<User> getListaOnline() {
         return listaOnline;
     }
@@ -102,6 +103,22 @@ public class XstDb {
 
     public void setLastDate(int lastDate) {
         this.lastDate = lastDate;
+    }
+
+    public void setMoney(int kasa)
+    {
+        this.kasa = kasa;
+        xstApp.zapiszUstawienie(Typy.PREFS_MONEY, kasa);
+    }
+
+    public float getParsedMoney() { return getMoney() / 100.0f; }
+    int getMoney()
+    {
+        if (this.kasa == 0)
+        {
+            kasa = xstApp.wczytajUstawienieInt(Typy.PREFS_MONEY, 0);
+        }
+        return this.kasa;
     }
 
     public int getIloscPobranych() {
@@ -186,7 +203,7 @@ public class XstDb {
         }
     }
 
-    public JSONArray getJsonListaOnline() {
+    JSONArray getJsonListaOnline() {
         return jsonListaOnline;
     }
 
@@ -198,11 +215,12 @@ public class XstDb {
         listenerOnline = listener;
     }
 
-    public String getOlderDate() {
+    String getOlderDate() {
+        if (listaWiadomosci.size() == 0) return "0";
         return listaWiadomosci.get(listaWiadomosci.size() - 1).getRawDate();
     }
 
-    public void setStarszeJsonListaWiadomosci(JSONArray starszeJsonListaWiadomosci) {
+    void setStarszeJsonListaWiadomosci(JSONArray starszeJsonListaWiadomosci) {
         this.starszeJsonListaWiadomosci = starszeJsonListaWiadomosci;
         dodajPobraneStarsze();
     }

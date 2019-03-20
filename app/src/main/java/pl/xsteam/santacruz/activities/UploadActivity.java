@@ -143,6 +143,7 @@ public class UploadActivity extends XstActivity
     }
 
     private boolean haveValidSize() {
+        if (bitmapToUpload == null) return false;
         return bitmapToUpload.getHeight() < Typy.MAX_IMAGE_DIMENSION && bitmapToUpload.getWidth() < Typy.MAX_IMAGE_DIMENSION;
     }
 
@@ -300,6 +301,10 @@ public class UploadActivity extends XstActivity
 
     @Override
     public void onBackPressed() {
+        if (fileToUpload.exists())
+        {
+            fileToUpload.delete();
+        }
         setResult(Activity.RESULT_CANCELED);
         super.onBackPressed();
     }

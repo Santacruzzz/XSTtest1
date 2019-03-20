@@ -167,6 +167,11 @@ public class XstApplication extends Application {
         wczytajUstawienia();
     }
 
+    public int wczytajUstawienieInt(String key, int def)
+    {
+        return sharedPrefs.getInt(key, def);
+    }
+
     public void zapiszUstawienie(String key, long val)
     {
         SharedPreferences.Editor editor = sharedPrefs.edit();

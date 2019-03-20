@@ -31,6 +31,7 @@ public class Typy
     public static final String BROADCAST_INTERNET_OK = "jest_net";
     public static final String BROADCAST_ONLINE = "online_change";
     public static final String BROADCAST_NEW_MSG = "nowa_wiadomosc";
+    public static final String BROADCAST_NEW_MONEY = "nowa_kasa";
     public static final String BROADCAST_LIKE_MSG = "nowy_like";
     public static final String BROADCAST_INTERNET_LOST = "error";
     public static final String BROADCAST_KONIEC_ODSWIEZANIA = "odswiezono";
@@ -43,6 +44,7 @@ public class Typy
     public static final String PREFS_AVATAR = "avatar";
     public static final String PREFS_LAST_DATE = "lastdate";
     public static final String PREFS_MSGS = "msgs";
+    public static final String PREFS_MONEY = "kasa";
     public static final String PREFS_ONLINE = "onlineitems";
     public static final String PREFS_OBRAZKI = "obrazki";
     public static final String PREFS_KB_SIZE = "kbsize";
