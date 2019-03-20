@@ -382,6 +382,7 @@ public class MainActivity extends XstActivity
             wczytajWiadomosci(null);
             odswiezTytul();
             sprawdzAktualizacje();
+            updateViewWithNewMoney();
         }
         Log.i("xst", "MainActivity: onResume, zalogowany: " + czyZalogowany);
     }
